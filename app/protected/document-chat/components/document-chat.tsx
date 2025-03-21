@@ -6,23 +6,14 @@ import { DocumentSelector } from "./document-selector";
 import { ChatInterface } from "./chat-interface";
 import { useState } from "react";
 
-interface Document {
-  id: string;
-  name: string;
-  description?: string;
-  category?: string;
-  created_at: string;
-  file_url?: string;
-  file_type?: string;
-  user_id: string;
-  [key: string]: any;
-}
+import type { Document } from "@/models"; // ✅ Import here
 
 interface DocumentChatProps {
   personalDocuments: Document[];
   publicDocuments: Document[];
   userId: string;
 }
+
 
 export function DocumentChat({ personalDocuments, publicDocuments, userId }: DocumentChatProps) {
   const [selectedDocuments, setSelectedDocuments] = useState<Document[]>([]);
