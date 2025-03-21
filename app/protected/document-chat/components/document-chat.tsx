@@ -1,23 +1,39 @@
-"use client"
+"use client";
 
 import { useChat } from "@ai-sdk/react";
-import { useSession } from "@supabase/auth-helpers-react"; // to grab user info
+import { useSession } from "@supabase/auth-helpers-react";
 import { DocumentSelector } from "./document-selector";
 import { ChatInterface } from "./chat-interface";
 import { useState } from "react";
-import { Document } from "c:/Users/teodo/OneDrive/Escritorio/ECOFILIA/ecofiliaV2/ecofilia-auth/models";
 
-export function DocumentChat() {
+interface Document {
+  id: string;
+  name: string;
+  description?: string;
+  category?: string;
+  created_at: string;
+  file_url?: string;
+  file_type?: string;
+  user_id: string;
+  [key: string]: any;
+}
+
+interface DocumentChatProps {
+  personalDocuments: Document[];
+  publicDocuments: Document[];
+  userId: string;
+}
+
+export function DocumentChat({ personalDocuments, publicDocuments, userId }: DocumentChatProps) {
   const [selectedDocuments, setSelectedDocuments] = useState<Document[]>([]);
-  const session = useSession(); // assuming you already have auth setup
-  const userId= session?.user.id;
+  const session = useSession();
 
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
-    api: "/api/chat/query", // Updated to point to query endpoint
+    api: "/api/chat/query",
     body: {
       documentIds: selectedDocuments.map((doc) => doc.id),
-      projectId: "proj_xyz", // Replace this with the actual project ID (can pass as prop)
-      userId: session?.user.id, // pass user id to backend
+      projectId: "proj_xyz",
+      userId: session?.user.id,
     },
   });
 
@@ -29,9 +45,11 @@ export function DocumentChat() {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-1">
         <DocumentSelector
+          personalDocuments={personalDocuments}
+          publicDocuments={publicDocuments}
           onDocumentsSelected={handleDocumentSelect}
           selectedDocuments={selectedDocuments}
-          userId={userId || ""} />
+        />
       </div>
       <div className="lg:col-span-2">
         <ChatInterface

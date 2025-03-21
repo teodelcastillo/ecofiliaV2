@@ -1,52 +1,28 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { createClient } from "@/utils/supabase/client"; 
 import type { Document } from "@/models";
 
 interface DocumentSelectorProps {
+  personalDocuments: Document[];
+  publicDocuments: Document[];
   onDocumentsSelected: (documents: Document[]) => void;
   selectedDocuments: Document[];
-  userId: string; // Add userId prop for personal docs filtering
 }
 
-export function DocumentSelector({ onDocumentsSelected, selectedDocuments, userId }: DocumentSelectorProps) {
-  const [personalDocuments, setPersonalDocuments] = useState<Document[]>([]);
-  const [publicDocuments, setPublicDocuments] = useState<Document[]>([]);
+export function DocumentSelector({
+  personalDocuments,
+  publicDocuments,
+  onDocumentsSelected,
+  selectedDocuments,
+}: DocumentSelectorProps) {
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Fetch documents from Supabase
-  useEffect(() => {
-    const fetchDocuments = async () => {
-      // Fetch personal documents
-      const supabase = await createClient();
-      const { data: personal, error: personalError } = await supabase
-        .from("documents")
-        .select("*")
-        .eq("user_id", userId); // Filter personal docs by user
-
-      if (!personalError && personal) {
-        setPersonalDocuments(personal);
-      }
-
-      // Fetch public documents
-      const { data: pubDocs, error: publicError } = await supabase
-        .from("public_documents")
-        .select("*");
-
-      if (!publicError && pubDocs) {
-        setPublicDocuments(pubDocs);
-      }
-    };
-
-    fetchDocuments();
-  }, [userId]);
 
   const toggleDocumentSelection = (document: Document) => {
     const isSelected = selectedDocuments.some((doc) => doc.id === document.id);
@@ -60,7 +36,9 @@ export function DocumentSelector({ onDocumentsSelected, selectedDocuments, userI
 
   const filterDocuments = (documents: Document[]) => {
     if (!searchQuery) return documents;
-    return documents.filter((doc) => doc.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    return documents.filter((doc) =>
+      doc.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
   };
 
   const filteredPersonalDocs = filterDocuments(personalDocuments);
