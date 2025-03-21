@@ -1,24 +1,24 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 import type { Message } from "ai";
-import { type FormEvent, useRef, useEffect } from "react"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Send, Loader2 } from "lucide-react"
-import type { Document } from "@/models"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { type FormEvent, useRef, useEffect } from "react";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Send, Loader2 } from "lucide-react";
+import type { Document } from "@/models";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface ChatInterfaceProps {
-  messages: Message[]
-  input: string
-  handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
-  handleSubmit: (e: FormEvent<HTMLFormElement>) => void
-  isLoading: boolean
-  selectedDocuments: Document[]
+  messages: Message[];
+  input: string;
+  handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
+  isLoading: boolean;
+  selectedDocuments: Document[];
 }
 
 export function ChatInterface({
@@ -29,13 +29,15 @@ export function ChatInterface({
   isLoading,
   selectedDocuments,
 }: ChatInterfaceProps) {
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages])
+  }, [messages]);
+
+  const isSubmitDisabled = isLoading || !input.trim() || selectedDocuments.length === 0;
 
   return (
     <Card className="h-[calc(100vh-12rem)] flex flex-col">
@@ -69,9 +71,13 @@ export function ChatInterface({
           ) : (
             <div className="space-y-4 pt-4">
               {messages.map((message, index) => (
-                <div key={message.id || index}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <div className={`flex gap-3 max-w-[80%] ${message.role === "user" ? "flex-row-reverse" : ""}`}>
+                <div
+                  key={message.id || index}
+                  className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                >
+                  <div
+                    className={`flex gap-3 max-w-[80%] ${message.role === "user" ? "flex-row-reverse" : ""}`}
+                  >
                     <Avatar className="h-8 w-8">
                       {message.role === "user" ? (
                         <>
@@ -87,7 +93,9 @@ export function ChatInterface({
                     </Avatar>
                     <div
                       className={`rounded-lg px-4 py-2 ${
-                        message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
+                        message.role === "user"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted"
                       }`}
                     >
                       <p className="text-sm">{message.content}</p>
@@ -109,23 +117,27 @@ export function ChatInterface({
               value={input}
               onChange={handleInputChange}
               className="min-h-24 flex-1"
-              disabled={isLoading || selectedDocuments.length === 0}
+              disabled={isLoading}
             />
             <Button
               type="submit"
               size="icon"
               className="h-24"
-              disabled={isLoading || !input.trim() || selectedDocuments.length === 0}
             >
-              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
             </Button>
           </div>
           {selectedDocuments.length === 0 && (
-            <p className="text-xs text-muted-foreground">Please select at least one document to start chatting</p>
+            <p className="text-xs text-muted-foreground">
+              Please select at least one document to start chatting
+            </p>
           )}
         </form>
       </CardFooter>
     </Card>
-  )
+  );
 }
-

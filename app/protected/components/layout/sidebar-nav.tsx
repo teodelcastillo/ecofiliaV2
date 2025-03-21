@@ -29,22 +29,22 @@ interface NavItem {
 const mainNavItems: NavItem[] = [
   {
     title: "Dashboard",
-    href: "/dashboard",
+    href: "/protected/analytics",
     icon: Home,
   },
   {
     title: "My Library",
-    href: "/my-library",
+    href: "/protected/my-library",
     icon: Library,
   },
   {
     title: "Projects",
-    href: "/projects",
+    href: "/protected/projects",
     icon: FolderKanban,
   },
   {
     title: "Documents",
-    href: "/documents",
+    href: "/protected/document-chat",
     icon: FileText,
   },
 ]
@@ -52,7 +52,7 @@ const mainNavItems: NavItem[] = [
 const resourcesNavItems: NavItem[] = [
   {
     title: "Sustainability Library",
-    href: "/sustainability-library",
+    href: "/protected/sustainability-library",
     icon: Leaf,
   },
   {
@@ -70,7 +70,7 @@ const settingsNavItems: NavItem[] = [
   },
   {
     title: "Settings",
-    href: "/settings",
+    href: "protected/settings",
     icon: Settings,
   },
 ]
