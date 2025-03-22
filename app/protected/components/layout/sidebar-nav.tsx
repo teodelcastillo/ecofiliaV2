@@ -1,161 +1,105 @@
 "use client"
 
-import type React from "react"
-
+import { useState } from "react"
+import { Home, FolderKanban, BarChart, FileText, Compass, Settings, ChevronDown, Zap, Users } from "lucide-react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import { BarChart3, FileText, FolderKanban, Home, Leaf, Library, Settings, Users } from "lucide-react"
 import {
-  Sidebar,
+  Sidebar as ShadcnSidebar,
   SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-  SidebarSeparator,
 } from "@/components/ui/sidebar"
 
-interface NavItem {
-  title: string
-  href: string
-  icon: React.ElementType
-}
-
-const mainNavItems: NavItem[] = [
-  {
-    title: "Dashboard",
-    href: "/protected/analytics",
-    icon: Home,
-  },
-  {
-    title: "My Library",
-    href: "/protected/my-library",
-    icon: Library,
-  },
-  {
-    title: "Projects",
-    href: "/protected/projects",
-    icon: FolderKanban,
-  },
-  {
-    title: "Documents",
-    href: "/protected/document-chat",
-    icon: FileText,
-  },
+const menuItems = [
+  { icon: Home, label: "Home", href: "/protected/" },
+  { icon: Zap, label: "Functionalities", dropdown: true },
+  { icon: Users, label: "User management", href: "/protected/users" },
+  { icon: Settings, label: "Settings", href: "/protected/settings" },
 ]
 
-const resourcesNavItems: NavItem[] = [
-  {
-    title: "Sustainability Library",
-    href: "/protected/sustainability-library",
-    icon: Leaf,
-  },
-  {
-    title: "Analytics",
-    href: "/analytics",
-    icon: BarChart3,
-  },
+const functionalitiesItems = [
+  { icon: FolderKanban, label: "Sustainability library", href: "/protected/library" },
+  { icon: FolderKanban, label: "My Library", href: "/protected/my-library" },
+  { icon: BarChart, label: "Analytics", href: "/protected/analytics" },
+  { icon: FileText, label: "Reports", href: "/protected/reports" },
+  { icon: Compass, label: "Sustainability Assistant", href: "/protected/document-chat" },
 ]
 
-const settingsNavItems: NavItem[] = [
-  {
-    title: "Team",
-    href: "/settings/team",
-    icon: Users,
-  },
-  {
-    title: "Settings",
-    href: "protected/settings",
-    icon: Settings,
-  },
-]
-
-export function SidebarNav() {
+export function Sidebar() {
   const pathname = usePathname()
+  const [isDropdownOpen, setDropdownOpen] = useState(false)
+
+  if (pathname === "/") return null // Hide sidebar when on homepage
 
   return (
-    <Sidebar>
-      <SidebarHeader className="flex h-14 items-center border-b px-4">
-        <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
-          <Leaf className="h-6 w-6 text-primary" />
-          <span className="text-xl">Ecofilia</span>
-        </Link>
+    <ShadcnSidebar>
+      <SidebarHeader className="flex items-center justify-center h-14 border-b">
+        <h1 className="text-xl font-bold">Ecofilia</h1>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {mainNavItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
+        <SidebarMenu className="flex flex-col space-y-2 mt-2">
+          {menuItems.map((item) => {
+            if (item.dropdown) {
+              return (
+                <div key="functionalities" className="w-full">
                   <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.href || pathname?.startsWith(`${item.href}/`)}
-                    tooltip={item.title}
+                    onClick={() => setDropdownOpen(!isDropdownOpen)}
+                    className="flex items-center w-full px-4 py-3 text-left text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded-lg transition-colors"
                   >
-                    <Link href={item.href}>
-                      <item.icon className="h-5 w-5" />
-                      <span>{item.title}</span>
-                    </Link>
+                    <item.icon />
+                    <span className="font-medium">Functionalities</span>
+                    <ChevronDown className={`h-5 w-5 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} />
                   </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                  {isDropdownOpen && (
+                    <div className="pl-6 mt-1 space-y-1">
+                      {functionalitiesItems.map((subItem) => {
+                        const isActive = pathname === subItem.href
+                        return (
+                          <SidebarMenuItem key={subItem.href} className="w-full">
+                            <SidebarMenuButton asChild className="w-full">
+                              <Link
+                                href={subItem.href}
+                                className={`flex items-center gap-3 py-2 w-full rounded-lg transition-colors
+                                  ${isActive ? "bg-accent text-accent-foreground font-semibold" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}
+                                `}
+                              >
+                                <subItem.icon className="h-5 w-5" />
+                                <span className="text-sm font-medium">{subItem.label}</span>
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            }
 
-        <SidebarSeparator />
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Resources</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {resourcesNavItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.href || pathname?.startsWith(`${item.href}/`)}
-                    tooltip={item.title}
+            const isActive = pathname === item.href
+            return (
+              <SidebarMenuItem key={item.href} className="w-full">
+                <SidebarMenuButton asChild className="w-full">
+                  <Link
+                    href={item.href ? item.href : "#"}
+                    className={`flex items-center gap-3 py-3 pl-4 w-full rounded-lg transition-colors
+                      ${isActive ? "bg-accent text-accent-foreground font-semibold" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}
+                    `}
                   >
-                    <Link href={item.href}>
-                      <item.icon className="h-5 w-5" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                    {item.icon && <item.icon className="h-5 w-5" />}
+                    <span className="text-sm font-medium">{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )
+          })}
+        </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {settingsNavItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.href || pathname?.startsWith(`${item.href}/`)}
-                    tooltip={item.title}
-                  >
-                    <Link href={item.href}>
-                      <item.icon className="h-5 w-5" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarFooter>
       <SidebarRail />
-    </Sidebar>
+    </ShadcnSidebar>
   )
 }
-

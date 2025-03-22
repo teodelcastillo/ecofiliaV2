@@ -1,5 +1,6 @@
-import { Reports } from "./components/Reports"
-export default function ReportsPage() {
-  return <Reports />
+import { Analytics } from "./components/analytics"
+
+export default function AnalyticsPage() {
+  return <Analytics />
 }
 

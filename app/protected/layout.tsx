@@ -1,7 +1,7 @@
 import type React from "react"
 import { createClient } from "@/utils/supabase/server"
 import { redirect } from "next/navigation"
-import { SidebarNav } from "./components/layout/sidebar-nav"
+import { Sidebar } from "./components/layout/sidebar-nav"
 import { Header } from "./components/layout/header"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 
@@ -23,7 +23,7 @@ export default async function ProtectedLayout({
 
   return (
     <SidebarProvider>
-      <SidebarNav />
+      <Sidebar />
       <SidebarInset className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-1 p-4 md:p-6">{children}</main>
