@@ -12,7 +12,7 @@ export default async function MyLibraryPage() {
 
   // If no user is logged in, redirect to login page
   if (!user) {
-    redirect("/login")
+    redirect("/sign-in")
   }
 
   // Fetch user's documents
