@@ -5,6 +5,12 @@ import Link from "next/link"
 const resources = [
   {
     icon: FileText,
+    title: "All categories",
+    description: "All our documents. Explore a curated selection of global sustainability documents.",
+    category: "all",
+  },
+  {
+    icon: FileText,
     title: "Nationally Determined Contributions (NDCs)",
     description: "Understand the commitments countries have made under the Paris Agreement.",
     category: "NDCs",
