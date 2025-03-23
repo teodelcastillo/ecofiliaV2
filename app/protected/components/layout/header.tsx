@@ -13,7 +13,6 @@ export function Header() {
       <SidebarTrigger />
       <Separator orientation="vertical" className="h-6" />
       <div className="w-full flex items-center justify-between">
-        <Input />
         <div className="flex items-center gap-2">
           <ModeToggle />
           <UserNav />
