@@ -8,12 +8,13 @@ import { Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface SustainabilityLibraryProps {
-  documents: any[];
-  categories: string[];
+  documents: any[]
+  categories: string[]
+  initialCategory?: string | null
 }
 
-export function SustainabilityLibrary({ documents, categories }: SustainabilityLibraryProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+export function SustainabilityLibrary({ documents, categories, initialCategory = null }: SustainabilityLibraryProps) {
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory)
   const [searchQuery, setSearchQuery] = useState("")
 
   // Filter documents based on search query and category
