@@ -1,13 +1,12 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
-import pdf from 'pdf-parse';
+const { createClient } = require('@supabase/supabase-js');
+const pdf = require('pdf-parse');
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PRIVATE_SERVICE_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PRIVATE_SERVICE_KEY
 );
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+module.exports = async (req, res) => {
   console.log('Received request at serverless function');
 
   if (req.method !== 'POST') {
@@ -63,4 +62,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.error('Error in serverless function:', err);
     return res.status(500).json({ error: 'Unexpected server error' });
   }
-}
+};

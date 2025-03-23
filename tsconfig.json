@@ -28,7 +28,8 @@
 		"**/*.ts",
 		"**/*.tsx",
 		".next/types/**/*.ts",
-		"app/protected/my-library/components"
+		"app/protected/my-library/components",
+		"api/extract-text-serverless.js"
 	],
 	"exclude": ["node_modules"]
 }
