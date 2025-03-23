@@ -1,9 +1,27 @@
-export default async function Layout({
+import type React from "react"
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import "../globals.css"
+import { Providers } from "../providers"
+
+const inter = Inter({ subsets: ["latin"] })
+
+export const metadata: Metadata = {
+  title: "Ecofilia - Sustainability Platform",
+  description: "Manage your sustainability documents and projects",
+}
+
+export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
-    <div className="max-w-7xl flex flex-col gap-12 items-start">{children}</div>
-  );
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  )
 }
+
