@@ -1,7 +1,11 @@
 import { createClient } from "@/utils/supabase/server"
 import { SustainabilityLibrary } from "../components/sustainability-library"
 
-export default async function CategoryPage({ params }: { params: { category: string } }) {
+export default async function CategoryPage({
+  params,
+}: {
+  params: { category: string }
+}) {
   const supabase = await createClient()
 
   const { data: documents } = await supabase.from("public_documents").select()
