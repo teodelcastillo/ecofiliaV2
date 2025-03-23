@@ -5,7 +5,7 @@ import OpenAI from 'openai'; // ✅ FIXED
 // 🔑 Initialize Supabase Client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.NEXT_PRIVATE_SERVICE_KEY!
 );
 
 // 🔑 Initialize OpenAI Client (v4+ syntax)
