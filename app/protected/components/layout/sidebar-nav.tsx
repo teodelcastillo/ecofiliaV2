@@ -22,7 +22,7 @@ const menuItems = [
 ]
 
 const functionalitiesItems = [
-  { icon: FolderKanban, label: "Sustainability library", href: "/protected/library" },
+  { icon: FolderKanban, label: "Sustainability library", href: "/protected/sustainability-library" },
   { icon: FolderKanban, label: "My Library", href: "/protected/my-library" },
   { icon: BarChart, label: "Analytics", href: "/protected/analytics" },
   { icon: FileText, label: "Reports", href: "/protected/reports" },
