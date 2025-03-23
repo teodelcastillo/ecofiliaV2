@@ -41,7 +41,7 @@ export default function Home() {
               </CardHeader>
               <CardFooter>
                 <Button variant="ghost" asChild className="w-full justify-start">
-                  <Link href="/projects" className="flex items-center">
+                  <Link href="/protected/dashboard" className="flex items-center">
                     View <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
@@ -55,7 +55,7 @@ export default function Home() {
               </CardHeader>
               <CardFooter>
                 <Button variant="ghost" asChild className="w-full justify-start">
-                  <Link href="/about" className="flex items-center">
+                  <Link href="/protected/document-chat" className="flex items-center">
                     View <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
