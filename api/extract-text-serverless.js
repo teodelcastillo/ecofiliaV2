@@ -1,7 +1,6 @@
 const { createClient } = require('@supabase/supabase-js');
 const pdf = require('pdf-parse');
 
-// 🔑 Initialize Supabase Client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PRIVATE_SERVICE_KEY
@@ -18,14 +17,13 @@ module.exports = async (req, res) => {
     const { documentId, type } = req.body;
 
     if (!documentId || !type) {
-      console.error('Missing documentId or type');
-      return res.status(400).json({ error: 'Missing documentId or type (public or user)' });
+      return res.status(400).json({ error: 'Missing documentId or type' });
     }
 
     console.log(`Received documentId: ${documentId}`);
     console.log(`Document type: ${type}`);
 
-    // Determine table and bucket dynamically
+    // Decide table and bucket
     let tableName = '';
     let bucketName = '';
 
@@ -36,7 +34,7 @@ module.exports = async (req, res) => {
       tableName = 'documents';
       bucketName = 'user_documents';
     } else {
-      return res.status(400).json({ error: 'Invalid type. Must be "public" or "user"' });
+      return res.status(400).json({ error: 'Invalid document type' });
     }
 
     // Fetch document metadata
@@ -53,15 +51,18 @@ module.exports = async (req, res) => {
     }
     console.log('Successfully fetched document metadata:', doc);
 
-    // Extract file path from file_url
-    const filePath = doc.file_url.split(`/${bucketName}/`)[1];
+    // Get file path
+    const bucketFolder = bucketName === 'user_documents' ? 'user_documents' : 'documents';
+    const filePath = doc.file_url.split(`/${bucketFolder}/`)[1];
+
     if (!filePath) {
       console.error('Could not parse file path from file_url');
       return res.status(500).json({ error: 'Invalid file_url format' });
     }
-    console.log('Parsed file path:', filePath);
 
-    // Download PDF from Supabase Storage
+    console.log('File path:', filePath);
+
+    // Download file from storage
     const { data: fileData, error: downloadError } = await supabase.storage
       .from(bucketName)
       .download(filePath);
@@ -70,31 +71,33 @@ module.exports = async (req, res) => {
       console.error('Error downloading file:', downloadError);
       return res.status(500).json({ error: 'Failed to download file' });
     }
-    console.log('Successfully downloaded file');
+    console.log('Successfully downloaded PDF');
 
+    // Extract text
     const arrayBuffer = await fileData.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Extract text using pdf-parse
     const parsed = await pdf(buffer);
     console.log('Extracted text length:', parsed.text.length);
 
-    // Store extracted text back in the correct table
+    // Update extracted_text column
     const { error: updateError } = await supabase
       .from(tableName)
       .update({ extracted_text: parsed.text })
       .eq('id', documentId);
 
     if (updateError) {
-      console.error('Error updating document with extracted text:', updateError);
+      console.error('Error updating document:', updateError);
       return res.status(500).json({ error: 'Failed to store extracted text' });
     }
 
-    console.log('Successfully stored extracted text');
+    console.log('Successfully stored extracted text.');
+
+    // Return success
     return res.status(200).json({ success: true, extractedText: parsed.text });
 
   } catch (err) {
-    console.error('Unhandled server error:', err);
+    console.error('Error in serverless function:', err);
     return res.status(500).json({ error: 'Unexpected server error' });
   }
 };
