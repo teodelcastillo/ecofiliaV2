@@ -4,7 +4,6 @@ import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import { UserNav } from "./user-nav"
 import { ModeToggle } from "./mode-toggle"
-import { Input } from "@/components/ui/input"
 
 
 export function Header() {
