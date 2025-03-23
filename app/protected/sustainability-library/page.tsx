@@ -21,6 +21,32 @@ const resources = [
     description: "Discover strategies for adapting to climate change across different nations.",
     category: "NAPs",
   },
+  {
+    icon: Target,
+    title: "Long-Term Strategies (LTS)",
+    description: "Review long-term approaches to achieving sustainability goals.",
+    category: "all",
+  },
+  {
+    icon: PieChart,
+    title: "ESG Guidelines",
+    description: "Follow best practices for Environmental, Social, and Governance performance.",
+    category: "all",
+  },
+  {
+    icon: Thermometer,
+    title: "IPCC Reports",
+    description:
+      "Access the latest scientific findings on climate change from the Intergovernmental Panel on Climate Change.",
+    category: "all",
+  },
+  {
+    icon: Leaf,
+    title: "IPBES Reports",
+    description:
+      "Explore biodiversity assessments from the Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services.",
+    category: "all",
+  },
   // ... add the rest
 ]
 
