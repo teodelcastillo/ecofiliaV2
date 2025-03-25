@@ -12,7 +12,7 @@ const openai = new OpenAI({
 });
 
 // Max token estimate → 128,000 tokens = ~500,000 characters (very rough estimate)
-const MAX_TEXT_LENGTH = 100_000; // Safely under limit
+const MAX_TEXT_LENGTH = 115_000; // Safely under limit
 
 export async function POST(req: NextRequest) {
   console.log('🚀 Received POST request at /api/chat/query');
