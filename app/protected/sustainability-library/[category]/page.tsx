@@ -6,9 +6,12 @@ export default async function CategoryPage({ params }: any) {
 
   const { data: documents } = await supabase
   .from("public_documents")
-  .select("id, name, category, file_path, created_at, file_type")
+  .select("id, name, category, created_at, file_url")
   .range(0, 10)
-  const { data: categories } = await supabase.from("public_documents").select("category")
+  const { data: categories } = await supabase
+  .from("public_documents")
+  .select("category")
+  .range(0, 10)
   const rawCategories = categories?.map(c => c.category).filter(Boolean) || []
   const filteredCategories = Array.from(new Set(rawCategories))
 
