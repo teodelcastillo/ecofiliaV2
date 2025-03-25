@@ -24,13 +24,15 @@ export function DocumentSelector({
 }: DocumentSelectorProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const toggleDocumentSelection = (document: Document) => {
+  const toggleDocumentSelection = (document: Document, type: 'user' | 'public') => {
     const isSelected = selectedDocuments.some((doc) => doc.id === document.id);
+
+    const docWithType = { ...document, type }; // Explicitly add type here
 
     if (isSelected) {
       onDocumentsSelected(selectedDocuments.filter((doc) => doc.id !== document.id));
     } else {
-      onDocumentsSelected([...selectedDocuments, document]);
+      onDocumentsSelected([...selectedDocuments, docWithType]);
     }
   };
 
@@ -70,7 +72,7 @@ export function DocumentSelector({
               <DocumentList
                 documents={filteredPersonalDocs}
                 selectedDocuments={selectedDocuments}
-                onToggle={toggleDocumentSelection}
+                onToggle={(doc) => toggleDocumentSelection(doc, 'user')}
               />
             </ScrollArea>
           </TabsContent>
@@ -80,7 +82,7 @@ export function DocumentSelector({
               <DocumentList
                 documents={filteredPublicDocs}
                 selectedDocuments={selectedDocuments}
-                onToggle={toggleDocumentSelection}
+                onToggle={(doc) => toggleDocumentSelection(doc, 'public')}
               />
             </ScrollArea>
           </TabsContent>
@@ -112,7 +114,7 @@ function DocumentList({ documents, selectedDocuments, onToggle }: DocumentListPr
           <Checkbox checked={selectedDocuments.some((d) => d.id === doc.id)} onCheckedChange={() => onToggle(doc)} />
           <div className="flex-1">
             <p className="text-sm font-medium">{doc.name}</p>
-            <p className="text-xs text-muted-foreground">{doc.type?.toUpperCase()}</p>
+            <p className="text-xs text-muted-foreground">{doc.type?.toUpperCase() || 'UNKNOWN'}</p>
           </div>
         </div>
       ))}
