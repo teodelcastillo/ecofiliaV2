@@ -8,6 +8,6 @@ export interface Document {
   file_path?: string;
   file_type?: string;
   user_id: string;
-  type?: string;       // <- missing in your local defs
-  dateAdded?: string;  // <- missing in your local defs
+  type?: string;      
+  dateAdded?: string;  
 }

@@ -16,6 +16,7 @@ interface Document {
   created_at: string
   file_url?: string
   file_type?: string
+  file_path: string
   user_id: string
   [key: string]: any
 }
