@@ -29,20 +29,26 @@ export function SustainabilityLibrary({ initialDocuments, categories, initialCat
     setLoadingMore(true)
     const from = page * PAGE_SIZE
     const to = from + PAGE_SIZE - 1
-
+  
     const { data: moreDocs, error } = await supabase
       .from("public_documents")
       .select("id, name, category, created_at, file_url")
       .range(from, to)
-
+  
     if (error) console.error("Error loading more:", error.message)
+  
     if (moreDocs && moreDocs.length > 0) {
-      setDocuments((prev) => [...prev, ...moreDocs])
+      setDocuments((prev) => {
+        const allDocs = [...prev, ...moreDocs]
+        const uniqueDocs = Array.from(new Map(allDocs.map(doc => [doc.id, doc])).values())
+        return uniqueDocs
+      })
       setPage((prev) => prev + 1)
     }
-
+  
     setLoadingMore(false)
   }
+  
 
   const filteredDocuments = useMemo(() => {
     return documents.filter((doc) => {
