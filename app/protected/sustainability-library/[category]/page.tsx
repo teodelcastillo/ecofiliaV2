@@ -4,7 +4,10 @@ import { SustainabilityLibrary } from "../components/sustainability-library"
 export default async function CategoryPage({ params }: any) {
   const supabase = await createClient()
 
-  const { data: documents } = await supabase.from("public_documents").select()
+  const { data: documents } = await supabase
+  .from("public_documents")
+  .select("id, name, category, file_path, created_at, file_type")
+  .range(0, 10)
   const { data: categories } = await supabase.from("public_documents").select("category")
   const rawCategories = categories?.map(c => c.category).filter(Boolean) || []
   const filteredCategories = Array.from(new Set(rawCategories))
