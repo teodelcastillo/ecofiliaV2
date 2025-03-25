@@ -19,6 +19,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { getSignedUrl } from "@/lib/getSignedUrl";
+
+
 
 interface DocumentCardProps {
   document: {
@@ -27,7 +30,7 @@ interface DocumentCardProps {
     description?: string
     category?: string
     created_at: string
-    file_path?: string
+    file_path: string
     file_type?: string
     user_id: string
     [key: string]: any
@@ -43,11 +46,28 @@ export function DocumentCard({ document, isOwner = false, onDelete }: DocumentCa
 
   const FileTypeIcon = getFileIcon(file_type)
 
-  const handleDownload = () => {
-    if (file_path) {
-      window.open(file_path, "_blank")
+  const handleOpenDocument = async (filePath: string) => {
+    const signedUrl = await getSignedUrl(filePath);
+    if (signedUrl) {
+      window.open(signedUrl, "_blank");
+    } else {
+      alert("Could not access file. Please try again.");
     }
+  };
+
+const handleDownload = async () => {
+  if (!file_path) return;
+
+  const signedUrl = await getSignedUrl(file_path);
+  if (signedUrl) {
+    const link = document.createElement("a");
+    link.href = signedUrl;
+    link.download = name || "document.pdf"; // fallback filename
+    link.click();
+  } else {
+    alert("Could not download file. Please try again.");
   }
+};
 
   const handleDelete = async () => {
     if (!id) return
@@ -58,10 +78,7 @@ export function DocumentCard({ document, isOwner = false, onDelete }: DocumentCa
     try {
       // Delete the file from storage if it exists
       if (file_path) {
-        const filePath = file_path.split("/").pop()
-        if (filePath) {
-          await supabase.storage.from("documents").remove([filePath])
-        }
+          await supabase.storage.from("user_documents").remove([file_path])
       }
 
       // Delete the document record
@@ -135,7 +152,7 @@ export function DocumentCard({ document, isOwner = false, onDelete }: DocumentCa
           </div>
         </CardContent>
         <CardFooter>
-          <Button className="w-full" variant="outline" onClick={handleDownload} disabled={!file_path}>
+          <Button className="w-full" variant="outline" onClick={() => handleOpenDocument(document.file_path)} disabled={!file_path}>
             <FileText className="mr-2 h-4 w-4" />
             View Document
           </Button>
