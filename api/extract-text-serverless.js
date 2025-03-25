@@ -10,6 +10,9 @@ module.exports = async (req, res) => {
   console.log('Received request at serverless function');
   console.log("🔥 extract-text-serverless TRIGGERED");
   console.log("Referer:", req.headers.referer);
+  console.log("🔥 extract-text-serverless TRIGGERED");
+  console.log("Headers:", req.headers);
+
 
 
   if (req.method !== 'POST') {
