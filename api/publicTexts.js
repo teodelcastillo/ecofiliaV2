@@ -1,4 +1,4 @@
-// publicTexts.js
+/*// publicTexts.js
 require('dotenv').config({ path: '../.env.local' });
 const { createClient } = require('@supabase/supabase-js');
 
@@ -59,3 +59,4 @@ async function main() {
 }
 
 main();
+*/
