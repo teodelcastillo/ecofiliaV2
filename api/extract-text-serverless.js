@@ -40,10 +40,11 @@ module.exports = async (req, res) => {
     // Fetch document metadata
     console.log(`Fetching from table: ${tableName}`);
     const { data: doc, error: docError } = await supabase
-      .from(tableName)
-      .select('file_path')
-      .eq('id', documentId)
-      .single();
+    .from(tableName)
+    .select(type === 'public' ? 'file_url' : 'file_path')
+    .eq('id', documentId)
+    .single();
+  
 
     if (docError || !doc) {
       console.error('Error fetching document:', docError);
