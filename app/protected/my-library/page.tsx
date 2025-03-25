@@ -20,7 +20,7 @@ export default async function MyLibraryPage() {
 
     const { data: userDocuments, error } = await supabase
       .from("documents")
-      .select("id, name, file_path, created_at, user_id, category, description, file_type")
+      .select("id, name, file_path, created_at, user_id, category, description")
       .eq("user_id", user.id)
       .limit(10);
     
