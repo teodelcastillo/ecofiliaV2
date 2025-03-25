@@ -51,11 +51,28 @@ module.exports = async (req, res) => {
       return res.status(404).json({ error: 'Document not found' });
     }
 
-    const filePath = doc.file_path;
-    if (!filePath) {
-      console.error('Missing file path in document');
-      return res.status(500).json({ error: 'Missing file path in document' });
+    let filePath;
+    if (type === 'public') {
+      const publicUrl = doc.file_url;
+      if (!publicUrl) {
+        console.error('Missing file_url in public document');
+        return res.status(500).json({ error: 'Missing file_url in document' });
+      }
+      // Extract the file path from the public URL
+      const parts = publicUrl.split('/documents/');
+      filePath = parts[1];
+      if (!filePath) {
+        console.error('Could not parse file path from file_url');
+        return res.status(500).json({ error: 'Invalid file_url format' });
+      }
+    } else {
+      filePath = doc.file_path;
+      if (!filePath) {
+        console.error('Missing file_path in private document');
+        return res.status(500).json({ error: 'Missing file_path in document' });
+      }
     }
+    
 
     console.log('File path:', filePath);
 
