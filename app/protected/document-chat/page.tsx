@@ -17,7 +17,7 @@ export default async function DocumentChatPage() {
   // Fetch user's personal documents
   const { data: personalDocs } = await supabase
     .from("documents")
-    .select("id, name, description, category, created_at, file_path, file_type, user_id")
+    .select("id, name, description, category, created_at, file_path, user_id")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
