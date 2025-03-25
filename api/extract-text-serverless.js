@@ -8,6 +8,9 @@ const supabase = createClient(
 
 module.exports = async (req, res) => {
   console.log('Received request at serverless function');
+  console.log("🔥 extract-text-serverless TRIGGERED");
+  console.log("Referer:", req.headers.referer);
+
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
