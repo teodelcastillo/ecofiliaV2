@@ -18,8 +18,9 @@ export default async function MyLibraryPage() {
   // Fetch user's documents
   const { data: userDocuments } = await supabase
     .from("documents")
-    .select("*")
+    .select("id, name, description, category, created_at, file_path, file_type, user_id")
     .eq("user_id", user.id)
+    .range(0, 10)
     .order("created_at", { ascending: false })
 
   return (
