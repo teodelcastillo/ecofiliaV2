@@ -8,6 +8,7 @@ export default async function CategoryPage({ params }: any) {
   .from("public_documents")
   .select("id, name, category, created_at, file_url")
   .range(0, 10)
+  
   const { data: categories } = await supabase
   .from("public_documents")
   .select("category")
@@ -31,10 +32,11 @@ export default async function CategoryPage({ params }: any) {
       </div>
 
       <SustainabilityLibrary
-        documents={documents || []}
+        initialDocuments={documents || []}
         categories={filteredCategories}
         initialCategory={selectedCategory}
       />
+
     </div>
   )
 }

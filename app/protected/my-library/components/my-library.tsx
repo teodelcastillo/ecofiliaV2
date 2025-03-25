@@ -7,6 +7,7 @@ import { DocumentCard } from "./document-card"
 import { DocumentFilters } from "./document-filters"
 import { UploadDocumentDialog } from "./upload-documents"
 import { Search, Plus } from "lucide-react"
+import { createClient } from "@/utils/supabase/client"
 
 interface Document {
   id: string
@@ -24,13 +25,40 @@ interface Document {
 interface MyLibraryProps {
   documents: Document[]
   userId: string
+  initialLimit: number
 }
 
-export function MyLibrary({ documents, userId }: MyLibraryProps) {
+
+export function MyLibrary({ documents, userId, initialLimit }: MyLibraryProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false)
   const [libraryDocuments, setLibraryDocuments] = useState<Document[]>(documents)
+  const [page, setPage] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  
+
+  const handleLoadMore = async () => {
+    setIsLoadingMore(true);
+    const supabase = createClient();
+    const from = page * initialLimit;
+    const to = from + initialLimit - 1;
+  
+    const { data: moreDocs, error } = await supabase
+      .from("documents")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .range(from, to);
+  
+    if (moreDocs && moreDocs.length > 0) {
+      setLibraryDocuments(prev => [...prev, ...moreDocs]);
+      setPage(prev => prev + 1);
+    }
+  
+    setIsLoadingMore(false);
+  };
+  
 
   // Extract unique categories from documents
   const categories = useMemo(() => {
@@ -127,7 +155,15 @@ export function MyLibrary({ documents, userId }: MyLibraryProps) {
           {filteredDocuments.map((doc) => (
             <DocumentCard key={doc.id} document={doc} onDelete={handleDocumentDeleted} isOwner={true} />
           ))}
+        {filteredDocuments.length < libraryDocuments.length && (
+          <div className="text-center mt-6">
+            <Button onClick={handleLoadMore} disabled={isLoadingMore}>
+              {isLoadingMore ? "Loading..." : "Load More"}
+            </Button>
+          </div>
+        )}
         </div>
+        
       )}
 
       <UploadDocumentDialog

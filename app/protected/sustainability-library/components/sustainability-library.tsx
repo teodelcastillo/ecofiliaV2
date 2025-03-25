@@ -1,23 +1,49 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { DocumentCard } from "./document-card"
 import { DocumentFilters } from "./document-filters"
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { createClient } from "@/utils/supabase/client"
 
 interface SustainabilityLibraryProps {
-  documents: any[]
+  initialDocuments: any[]
   categories: string[]
   initialCategory?: string | null
 }
 
-export function SustainabilityLibrary({ documents, categories, initialCategory = null }: SustainabilityLibraryProps) {
+export function SustainabilityLibrary({ initialDocuments, categories, initialCategory = null }: SustainabilityLibraryProps) {
+  const supabase = createClient()
+  const [documents, setDocuments] = useState(initialDocuments)
+  const [page, setPage] = useState(1)
+  const [loadingMore, setLoadingMore] = useState(false)
+
   const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory)
   const [searchQuery, setSearchQuery] = useState("")
 
-  // Filter documents based on search query and category
+  const PAGE_SIZE = 10
+
+  const loadMoreDocuments = async () => {
+    setLoadingMore(true)
+    const from = page * PAGE_SIZE
+    const to = from + PAGE_SIZE - 1
+
+    const { data: moreDocs, error } = await supabase
+      .from("public_documents")
+      .select("id, name, category, created_at, file_url")
+      .range(from, to)
+
+    if (error) console.error("Error loading more:", error.message)
+    if (moreDocs && moreDocs.length > 0) {
+      setDocuments((prev) => [...prev, ...moreDocs])
+      setPage((prev) => prev + 1)
+    }
+
+    setLoadingMore(false)
+  }
+
   const filteredDocuments = useMemo(() => {
     return documents.filter((doc) => {
       const matchesSearch =
@@ -67,25 +93,20 @@ export function SustainabilityLibrary({ documents, categories, initialCategory =
         <div className="text-center py-12 border rounded-lg bg-muted/10">
           <h3 className="text-lg font-medium">No documents found</h3>
           <p className="text-muted-foreground mt-2">Try adjusting your search or filters</p>
-          {(searchQuery || selectedCategory) && (
-            <Button
-              variant="outline"
-              className="mt-4"
-              onClick={() => {
-                setSearchQuery("")
-                setSelectedCategory(null)
-              }}
-            >
-              Clear filters
-            </Button>
-          )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredDocuments.map((document) => (
-            <DocumentCard key={document.id} document={document} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredDocuments.map((document) => (
+              <DocumentCard key={document.id} document={document} />
+            ))}
+          </div>
+          <div className="text-center mt-6">
+            <Button onClick={loadMoreDocuments} disabled={loadingMore}>
+              {loadingMore ? "Loading..." : "Load More"}
+            </Button>
+          </div>
+        </>
       )}
     </div>
   )

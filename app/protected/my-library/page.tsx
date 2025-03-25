@@ -18,11 +18,15 @@ export default async function MyLibraryPage() {
   // Fetch user's documents
   console.log("📁 Fetching documents for user:", user.id);
 
-    const { data: userDocuments, error } = await supabase
-      .from("documents")
-      .select("id, name, file_path, created_at, user_id, category, description")
-      .eq("user_id", user.id)
-      .limit(10);
+  const INITIAL_PAGE_SIZE = 10;
+
+  const { data: userDocuments, error } = await supabase
+    .from("documents")
+    .select("id, name, file_path, created_at, user_id, category, description")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .range(0, INITIAL_PAGE_SIZE - 1);
+  
     
     if (error) {
       console.error("❌ Error fetching documents:", error.message);
@@ -35,7 +39,11 @@ export default async function MyLibraryPage() {
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-2">My Library</h1>
       <p className="text-muted-foreground mb-8">Manage your personal documents and projects</p>
-      <MyLibrary documents={userDocuments || []} userId={user.id} />
+      <MyLibrary 
+        documents={userDocuments || []} 
+        userId={user.id}
+        initialLimit={INITIAL_PAGE_SIZE}
+      />
     </div>
   )
 }
