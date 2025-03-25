@@ -114,7 +114,7 @@ function DocumentList({ documents, selectedDocuments, onToggle }: DocumentListPr
           <Checkbox checked={selectedDocuments.some((d) => d.id === doc.id)} onCheckedChange={() => onToggle(doc)} />
           <div className="flex-1">
             <p className="text-sm font-medium">{doc.name}</p>
-            <p className="text-xs text-muted-foreground">{doc.type?.toUpperCase() || 'UNKNOWN'}</p>
+            <p className="text-xs text-muted-foreground">{doc.category?.toUpperCase() || 'UNKNOWN'}</p>
           </div>
         </div>
       ))}
