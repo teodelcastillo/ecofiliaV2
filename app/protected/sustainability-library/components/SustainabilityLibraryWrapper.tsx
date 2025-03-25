@@ -38,7 +38,7 @@ export function SustainabilityLibraryWrapper({ documents, categories }: Sustaina
 
       {/* Document List */}
       <SustainabilityLibrary
-        documents={documents}
+        initialDocuments={documents}
         categories={categories}
         initialCategory={initialCategory}
       />
