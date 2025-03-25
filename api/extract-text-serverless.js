@@ -32,7 +32,7 @@ module.exports = async (req, res) => {
       bucketName = 'documents';
     } else if (type === 'user') {
       tableName = 'documents';
-      bucketName = 'user_documents';
+      bucketName = 'user-documents';
     } else {
       return res.status(400).json({ error: 'Invalid document type' });
     }
@@ -41,7 +41,7 @@ module.exports = async (req, res) => {
     console.log(`Fetching from table: ${tableName}`);
     const { data: doc, error: docError } = await supabase
       .from(tableName)
-      .select('file_url')
+      .select('file_path')
       .eq('id', documentId)
       .single();
 
@@ -49,20 +49,16 @@ module.exports = async (req, res) => {
       console.error('Error fetching document:', docError);
       return res.status(404).json({ error: 'Document not found' });
     }
-    console.log('Successfully fetched document metadata:', doc);
 
-    // Get file path
-    const bucketFolder = bucketName === 'user_documents' ? 'user_documents' : 'documents';
-    const filePath = doc.file_url.split(`/${bucketFolder}/`)[1];
-
+    const filePath = doc.file_path;
     if (!filePath) {
-      console.error('Could not parse file path from file_url');
-      return res.status(500).json({ error: 'Invalid file_url format' });
+      console.error('Missing file path in document');
+      return res.status(500).json({ error: 'Missing file path in document' });
     }
 
     console.log('File path:', filePath);
 
-    // Download file from storage
+    // Download file from storage (private bucket)
     const { data: fileData, error: downloadError } = await supabase.storage
       .from(bucketName)
       .download(filePath);
@@ -71,6 +67,7 @@ module.exports = async (req, res) => {
       console.error('Error downloading file:', downloadError);
       return res.status(500).json({ error: 'Failed to download file' });
     }
+
     console.log('Successfully downloaded PDF');
 
     // Extract text

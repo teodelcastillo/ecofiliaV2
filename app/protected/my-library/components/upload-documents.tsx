@@ -87,36 +87,49 @@ export function UploadDocumentDialog({
 
       // Upload file to Supabase Storage
       const fileExt = getFileExtension(file.name);
-      const filePath = `${user.id}/${Date.now()}.${fileExt}`; // Store in user-specific folder
+      const filePath = `${user.id}/${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from("user-documents")
         .upload(filePath, file);
-
+      
       if (uploadError) throw new Error(`File upload error: ${uploadError.message}`);
-
-      // Get public URL
-      const { data: fileUrlData } = supabase.storage
-        .from("user-documents")
-        .getPublicUrl(filePath);
-
-      const publicUrl = fileUrlData?.publicUrl;
-      if (!publicUrl) throw new Error("Failed to retrieve file URL");
-
-      // Insert into documents table
+      
+      // Store only the file path in DB (not URL)
       const { data: document, error: insertError } = await supabase
         .from("documents")
         .insert({
           name: title,
           description,
           category,
-          file_url: publicUrl,
-          user_id: user.id, // Reference to auth.users.id
+          file_path: filePath,  // <-- new field
+          user_id: user.id,
         })
         .select()
         .single();
-
+      
       if (insertError) throw new Error(`Database insert error: ${insertError.message}`);
+      
+      // Trigger text extraction serverless function
+      try {
+        const response = await fetch(`${window.location.origin}/api/extract-text-serverless`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            documentId: document.id,
+            type: "user",
+          }),
+        });
+      
+        if (!response.ok) {
+          const errData = await response.json();
+          console.error("Text extraction failed:", errData.error);
+        } else {
+          console.log("Text extraction succeeded");
+        }
+      } catch (extractionError) {
+        console.error("Failed to call extract-text function:", extractionError);
+      }
 
       // Notify parent
       onDocumentUploaded(document);
