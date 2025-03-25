@@ -24,7 +24,7 @@ export default async function DocumentChatPage() {
   // Fetch public documents
   const { data: publicDocs } = await supabase
     .from("public_documents")
-    .select("id, name, description, category, created_at, file_path, file_type, user_id")
+    .select("id, name, category, created_at, file_url")
     .order("created_at", { ascending: false });
 
   return (

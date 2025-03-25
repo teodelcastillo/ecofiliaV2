@@ -7,7 +7,7 @@ export interface Document {
   file_url?: string;
   file_path?: string;
   file_type?: string;
-  user_id: string;
+  user_id?: string;
   type?: string;      
   dateAdded?: string;  
 }
