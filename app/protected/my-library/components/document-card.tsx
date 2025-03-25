@@ -27,7 +27,7 @@ interface DocumentCardProps {
     description?: string
     category?: string
     created_at: string
-    file_url?: string
+    file_path?: string
     file_type?: string
     user_id: string
     [key: string]: any
@@ -37,15 +37,15 @@ interface DocumentCardProps {
 }
 
 export function DocumentCard({ document, isOwner = false, onDelete }: DocumentCardProps) {
-  const { id, name, description, category, created_at, file_url, file_type } = document
+  const { id, name, description, category, created_at, file_path, file_type } = document
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
   const FileTypeIcon = getFileIcon(file_type)
 
   const handleDownload = () => {
-    if (file_url) {
-      window.open(file_url, "_blank")
+    if (file_path) {
+      window.open(file_path, "_blank")
     }
   }
 
@@ -57,8 +57,8 @@ export function DocumentCard({ document, isOwner = false, onDelete }: DocumentCa
 
     try {
       // Delete the file from storage if it exists
-      if (file_url) {
-        const filePath = file_url.split("/").pop()
+      if (file_path) {
+        const filePath = file_path.split("/").pop()
         if (filePath) {
           await supabase.storage.from("documents").remove([filePath])
         }
@@ -102,7 +102,7 @@ export function DocumentCard({ document, isOwner = false, onDelete }: DocumentCa
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleDownload} disabled={!file_url}>
+                  <DropdownMenuItem onClick={handleDownload} disabled={!file_path}>
                     <Download className="h-4 w-4 mr-2" />
                     Download
                   </DropdownMenuItem>
@@ -135,7 +135,7 @@ export function DocumentCard({ document, isOwner = false, onDelete }: DocumentCa
           </div>
         </CardContent>
         <CardFooter>
-          <Button className="w-full" variant="outline" onClick={handleDownload} disabled={!file_url}>
+          <Button className="w-full" variant="outline" onClick={handleDownload} disabled={!file_path}>
             <FileText className="mr-2 h-4 w-4" />
             View Document
           </Button>
