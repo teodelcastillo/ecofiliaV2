@@ -16,11 +16,20 @@ export default async function MyLibraryPage() {
   }
 
   // Fetch user's documents
-  const { data: userDocuments } = await supabase
-    .from("documents")
-    .select("id, name, description, category, created_at, file_path, file_type, user_id")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false })
+  console.log("📁 Fetching documents for user:", user.id);
+
+    const { data: userDocuments, error } = await supabase
+      .from("documents")
+      .select("id, name, file_path, created_at, user_id, category, description, file_type")
+      .eq("user_id", user.id)
+      .limit(10);
+    
+    if (error) {
+      console.error("❌ Error fetching documents:", error.message);
+    }
+    
+    console.log("✅ Documents fetched:", userDocuments?.length);
+  
 
   return (
     <div className="container mx-auto py-8 px-4">
