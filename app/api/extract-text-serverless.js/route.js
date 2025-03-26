@@ -1,7 +1,7 @@
 // /app/api/extract-text-serverless/route.js
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import pdf from "pdf-parse";
+import pdf from "pdf-parse/lib/pdf-parse.js";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
