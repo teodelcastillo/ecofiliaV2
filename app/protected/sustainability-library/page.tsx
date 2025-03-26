@@ -47,7 +47,6 @@ const resources = [
       "Explore biodiversity assessments from the Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services.",
     category: "all",
   },
-  // ... add the rest
 ]
 
 export default function SustainabilityOverview() {
