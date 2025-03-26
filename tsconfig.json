@@ -29,7 +29,7 @@
 		"**/*.tsx",
 		".next/types/**/*.ts",
 		"app/protected/my-library/components",
-		"app/api/extract-text-serverless.js/extract-text-serverless.js"
+		"app/api/extract-text-serverless/extract-text-serverless.js"
 	],
 	"exclude": ["node_modules"]
 }
