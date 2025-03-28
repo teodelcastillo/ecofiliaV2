@@ -71,6 +71,7 @@ export async function POST(req: NextRequest) {
     const openaiStream = await openai.chat.completions.create({
       model: 'gpt-4-turbo',
       stream: true,
+      max_tokens: 4096,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: question },
