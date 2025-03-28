@@ -20,7 +20,10 @@ export async function POST(req: NextRequest) {
   console.log('🚀 POST /api/chat/query');
 
   try {
+    // Debug: Log the incoming request
     const body = await req.json();
+    console.log("Received request body:", body);
+
     const { documents, question, userId } = body;
 
     if (!documents?.length || !question?.trim() || !userId) {
@@ -31,6 +34,7 @@ export async function POST(req: NextRequest) {
 
     // 🔹 Embed the user question
     const questionEmbedding = await embedder.embedQuery(question);
+    console.log("Embedded question:", questionEmbedding); // Log the embedded question
 
     // 🔹 Retrieve all matching chunks via vector search (limited to selected docs)
     const { data: matches, error } = await supabase.rpc('match_document_chunks', {
@@ -49,6 +53,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No relevant content found in selected documents' }, { status: 400 });
     }
 
+    // Debug: Log matches found
+    console.log("Document chunks found:", matches);
+
     // 🔹 Build the context string
     let combinedText = '';
     for (const match of matches) {
@@ -65,6 +72,7 @@ export async function POST(req: NextRequest) {
 
     const systemPrompt = `You are an expert assistant in environmental issues. Respond clearly, completely, and professionally. Always explain the reasoning behind your answer, and if appropriate, include examples or calculations. Use the following retrieved chunks to answer the user's question:\n\n${combinedText}\n\nQuestion: ${question}`;
 
+    // Debug: Log the prompt length
     console.log(`🧠 Prompt length: ${systemPrompt.length} chars`);
 
     // 🔹 Stream response from OpenAI
@@ -78,6 +86,8 @@ export async function POST(req: NextRequest) {
       ],
     });
 
+    console.log("Stream started from OpenAI...");
+
     const encoder = new TextEncoder();
 
     const stream = new ReadableStream({
@@ -85,10 +95,12 @@ export async function POST(req: NextRequest) {
         for await (const chunk of openaiStream) {
           const content = chunk.choices?.[0]?.delta?.content;
           if (content) {
+            console.log("Streaming chunk:", content); // Log each chunk as it's streamed
             controller.enqueue(encoder.encode(content));
           }
         }
         controller.close();
+        console.log("Stream completed.");
       },
     });
 
