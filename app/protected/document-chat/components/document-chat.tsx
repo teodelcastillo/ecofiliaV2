@@ -51,10 +51,12 @@ export function DocumentChat({ personalDocuments, publicDocuments, userId }: Doc
         body: JSON.stringify({
           documents: selectedDocuments.map((doc) => ({
             id: doc.id,
-            type: doc.type, // "public" or "user"
+            type: doc.type,
           })),
           question: input,
+          userId, // ✅ Pass the userId to the API
         }),
+        
       });
 
       const data = await res.json();

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
+import { OpenAIEmbeddings } from "@langchain/openai";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,65 +12,62 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
 });
 
+const embedder = new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY });
+
 const MAX_TOTAL_CHARS = 115_000;
-const MAX_PER_DOC_CHARS = 30_000;
 
 export async function POST(req: NextRequest) {
   console.log('🚀 POST /api/chat/query');
 
   try {
     const body = await req.json();
-    const { documents, question } = body;
+    const { documents, question, userId } = body;
 
-    if (!documents?.length || !question?.trim()) {
-      return NextResponse.json({ error: 'Missing question or documents' }, { status: 400 });
+    if (!documents?.length || !question?.trim() || !userId) {
+      return NextResponse.json({ error: 'Missing question, documents, or userId' }, { status: 400 });
     }
 
+    const documentIds = documents.map((doc: { id: string }) => doc.id);
+
+    // 🔹 Embed the user question
+    const questionEmbedding = await embedder.embedQuery(question);
+
+    // 🔹 Retrieve all matching chunks via vector search (limited to selected docs)
+    const { data: matches, error } = await supabase.rpc('match_document_chunks', {
+      query_embedding: questionEmbedding,
+      match_count: 15,
+      match_user_id: userId,
+      filter_document_ids: documentIds,
+    });
+
+    if (error) {
+      console.error('❌ match_document_chunks error:', error);
+      return NextResponse.json({ error: 'Failed to match document chunks' }, { status: 500 });
+    }
+
+    if (!matches?.length) {
+      return NextResponse.json({ error: 'No relevant content found in selected documents' }, { status: 400 });
+    }
+
+    // 🔹 Build the context string
     let combinedText = '';
+    for (const match of matches) {
+      const chunkText = match.content?.trim();
+      if (!chunkText) continue;
 
-    for (const doc of documents) {
-      if (!doc.id || !doc.type) {
-        console.warn(`⚠️ Skipping doc with missing id/type`, doc);
-        continue;
-      }
-
-      const table = doc.type === 'public' ? 'public_documents' : 'documents';
-      const { data, error } = await supabase
-        .from(table)
-        .select('extracted_text')
-        .eq('id', doc.id)
-        .single();
-
-      if (error || !data?.extracted_text?.trim()) {
-        console.warn(`⚠️ Skipping doc ${doc.id}: empty or fetch error`, error);
-        continue;
-      }
-
-      let text = data.extracted_text.trim();
-
-      if (text.length > MAX_PER_DOC_CHARS) {
-        console.warn(`✂️ Truncating doc ${doc.id} from ${text.length} to ${MAX_PER_DOC_CHARS}`);
-        text = text.slice(0, MAX_PER_DOC_CHARS);
-      }
-
-      combinedText += `\n--- Document ${doc.id} Content ---\n${text}\n`;
+      if ((combinedText + chunkText).length > MAX_TOTAL_CHARS) break;
+      combinedText += `\n--- Chunk from document ${match.document_id} (${match.document_type}) ---\n${chunkText}\n`;
     }
 
     if (!combinedText.trim()) {
-      return NextResponse.json({ error: 'No usable text from documents' }, { status: 400 });
+      return NextResponse.json({ error: 'No usable content from matched chunks' }, { status: 400 });
     }
 
-    if (combinedText.length > MAX_TOTAL_CHARS) {
-      console.error("❌ Combined text still too large, even after slicing. Aborting.");
-      return NextResponse.json({
-        error: 'Selected documents are too long. Try fewer or smaller documents.',
-      }, { status: 400 });
-    }
-
-    const systemPrompt = `You are an expert assistant in environmental issues. Respond clearly, completely, and professionally. Always explain the reasoning behind your answer, and if appropriate, include examples or calculations. Use the following documents to answer the user's question:\n\n${combinedText}\n\nQuestion: ${question}`;
+    const systemPrompt = `You are an expert assistant in environmental issues. Respond clearly, completely, and professionally. Always explain the reasoning behind your answer, and if appropriate, include examples or calculations. Use the following retrieved chunks to answer the user's question:\n\n${combinedText}\n\nQuestion: ${question}`;
 
     console.log(`🧠 Prompt length: ${systemPrompt.length} chars`);
 
+    // 🔹 Generate answer with OpenAI
     let completion;
     try {
       completion = await openai.chat.completions.create({
