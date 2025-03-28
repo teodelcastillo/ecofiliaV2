@@ -46,22 +46,20 @@ export function DocumentChat({ personalDocuments, publicDocuments, userId }: Doc
 
   const handleSafeSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+  
     if (selectedDocuments.length === 0 || !input.trim()) {
       alert("Please enter a question and select at least one document.");
       return;
     }
-
+  
     setIsLoading(true);
     const userQuestion = input;
     setInput(""); // Clear the input
-
+  
     appendMessage({ role: "user", content: userQuestion, id: nanoid() });
-
-    // Add placeholder assistant message
     const assistantId = nanoid();
     appendMessage({ role: "assistant", content: "...", id: assistantId });
-
+  
     try {
       const res = await fetch("/api/chat-document", {
         method: "POST",
@@ -75,38 +73,37 @@ export function DocumentChat({ personalDocuments, publicDocuments, userId }: Doc
           userId,
         }),
       });
-
+  
       if (!res.ok || !res.body) {
         const error = await res.json();
         throw new Error(error.error || "Unknown error");
       }
-
+  
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let finalAnswer = "";
       let lastFlush = Date.now();
-      
+  
+      // Only flush content every 100ms to avoid UI flooding
       const flush = () => {
         updateLastAssistantMessage(finalAnswer);
         lastFlush = Date.now();
       };
-      
+  
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-      
+  
         const chunk = decoder.decode(value, { stream: true });
         finalAnswer += chunk;
-      
-        // Only flush every ~100ms
+  
         if (Date.now() - lastFlush > 100) {
           flush();
         }
       }
-      
-      // Final flush to ensure end is written
+  
+      // Ensure the final part is written out
       flush();
-      
     } catch (err) {
       console.error("❌ Error streaming response:", err);
       alert("Failed to get a response from the assistant.");
@@ -114,6 +111,7 @@ export function DocumentChat({ personalDocuments, publicDocuments, userId }: Doc
       setIsLoading(false);
     }
   };
+  
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
