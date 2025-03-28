@@ -1,11 +1,12 @@
 "use client";
 
-import { useChat } from "@ai-sdk/react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { DocumentSelector } from "./document-selector";
 import { ChatInterface } from "./chat-interface";
 import { useState } from "react";
+import { nanoid } from "nanoid";
 
+import type { Message } from "ai";
 import type { Document } from "@/models";
 
 interface DocumentChatProps {
@@ -16,33 +17,50 @@ interface DocumentChatProps {
 
 export function DocumentChat({ personalDocuments, publicDocuments, userId }: DocumentChatProps) {
   const [selectedDocuments, setSelectedDocuments] = useState<Document[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const session = useSession();
-
-  // ✅ Disable automatic call to API from useChat
-  const { messages, input, handleInputChange, isLoading, append } = useChat({
-    api: "", // disables auto-calling API
-    initialMessages: [],
-  });
 
   const handleDocumentSelect = (documents: Document[]) => {
     setSelectedDocuments(documents);
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+  };
+
+  const appendMessage = (message: Message) => {
+    setMessages((prev) => [...prev, message]);
+  };
+
+  const updateLastAssistantMessage = (content: string) => {
+    setMessages((prev) =>
+      prev.map((msg, i) =>
+        i === prev.length - 1 && msg.role === "assistant"
+          ? { ...msg, content }
+          : msg
+      )
+    );
+  };
+
   const handleSafeSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (selectedDocuments.length === 0) {
-      alert("Please select at least one document before starting chat.");
+    if (selectedDocuments.length === 0 || !input.trim()) {
+      alert("Please enter a question and select at least one document.");
       return;
     }
 
-    if (!input || input.trim() === "") {
-      alert("Please enter a message before sending.");
-      return;
-    }
+    setIsLoading(true);
+    const userQuestion = input;
+    setInput(""); // Clear the input
 
-    // Add user message to local chat UI
-    await append({ role: "user", content: input });
+    appendMessage({ role: "user", content: userQuestion, id: nanoid() });
+
+    // Add placeholder assistant message
+    const assistantId = nanoid();
+    appendMessage({ role: "assistant", content: "...", id: assistantId });
 
     try {
       const res = await fetch("/api/chat-document", {
@@ -53,23 +71,45 @@ export function DocumentChat({ personalDocuments, publicDocuments, userId }: Doc
             id: doc.id,
             type: doc.type,
           })),
-          question: input,
-          userId, // ✅ Pass the userId to the API
+          question: userQuestion,
+          userId,
         }),
-        
       });
 
-      const data = await res.json();
-
-      if (res.ok && data.response) {
-        await append({ role: "assistant", content: data.response });
-      } else {
-        console.error(data.error || "Unknown error");
-        alert("Error: " + (data.error || "Unknown"));
+      if (!res.ok || !res.body) {
+        const error = await res.json();
+        throw new Error(error.error || "Unknown error");
       }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let finalAnswer = "";
+
+      let updating = false;
+      const scheduleUpdate = () => {
+        if (updating) return;
+        updating = true;
+        requestAnimationFrame(() => {
+          updateLastAssistantMessage(finalAnswer);
+          updating = false;
+        });
+      };
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        finalAnswer += chunk;
+        scheduleUpdate();
+      }
+
+      updateLastAssistantMessage(finalAnswer);
     } catch (err) {
-      console.error("❌ Fetch error:", err);
-      alert("An unexpected error occurred while contacting the AI.");
+      console.error("❌ Error streaming response:", err);
+      alert("Failed to get a response from the assistant.");
+    } finally {
+      setIsLoading(false);
     }
   };
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
-import { OpenAIEmbeddings } from "@langchain/openai";
+import { OpenAIEmbeddings } from '@langchain/openai';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -67,30 +67,38 @@ export async function POST(req: NextRequest) {
 
     console.log(`🧠 Prompt length: ${systemPrompt.length} chars`);
 
-    // 🔹 Generate answer with OpenAI
-    let completion;
-    try {
-      completion = await openai.chat.completions.create({
-        model: 'gpt-4-turbo',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: question },
-        ],
-      });
-    } catch (apiErr) {
-      console.error("❌ OpenAI API error:", apiErr);
-      return NextResponse.json({ error: 'OpenAI failed to generate a response' }, { status: 500 });
-    }
+    // 🔹 Stream response from OpenAI
+    const openaiStream = await openai.chat.completions.create({
+      model: 'gpt-4-turbo',
+      stream: true,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: question },
+      ],
+    });
 
-    const answer = completion.choices?.[0]?.message?.content?.trim();
-    if (!answer) {
-      return NextResponse.json({ error: 'No answer returned from OpenAI' }, { status: 500 });
-    }
+    const encoder = new TextEncoder();
 
-    return NextResponse.json({ response: answer });
+    const stream = new ReadableStream({
+      async start(controller) {
+        for await (const chunk of openaiStream) {
+          const content = chunk.choices?.[0]?.delta?.content;
+          if (content) {
+            controller.enqueue(encoder.encode(content));
+          }
+        }
+        controller.close();
+      },
+    });
 
+    return new NextResponse(stream, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+      },
+    });
   } catch (err) {
-    console.error("🔥 Unhandled server error:", err);
+    console.error('🔥 Unhandled server error:', err);
     return NextResponse.json({ error: 'Unexpected server error' }, { status: 500 });
   }
 }
