@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    const systemPrompt = `You are an environmental report assistant. Use the following documents to answer the user's question:\n\n${combinedText}\n\nQuestion: ${question}`;
+    const systemPrompt = `You are an expert assistant in environmental issues. Respond clearly, completely, and professionally. Always explain the reasoning behind your answer, and if appropriate, include examples or calculations. Use the following documents to answer the user's question:\n\n${combinedText}\n\nQuestion: ${question}`;
 
     console.log(`🧠 Prompt length: ${systemPrompt.length} chars`);
 
