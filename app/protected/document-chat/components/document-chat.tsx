@@ -84,27 +84,29 @@ export function DocumentChat({ personalDocuments, publicDocuments, userId }: Doc
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let finalAnswer = "";
-
-      let updating = false;
-      const scheduleUpdate = () => {
-        if (updating) return;
-        updating = true;
-        requestAnimationFrame(() => {
-          updateLastAssistantMessage(finalAnswer);
-          updating = false;
-        });
+      let lastFlush = Date.now();
+      
+      const flush = () => {
+        updateLastAssistantMessage(finalAnswer);
+        lastFlush = Date.now();
       };
-
+      
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
+      
         const chunk = decoder.decode(value, { stream: true });
         finalAnswer += chunk;
-        scheduleUpdate();
+      
+        // Only flush every ~100ms
+        if (Date.now() - lastFlush > 100) {
+          flush();
+        }
       }
-
-      updateLastAssistantMessage(finalAnswer);
+      
+      // Final flush to ensure end is written
+      flush();
+      
     } catch (err) {
       console.error("❌ Error streaming response:", err);
       alert("Failed to get a response from the assistant.");
