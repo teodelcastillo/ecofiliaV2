@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Plus, Search, User, Globe, FileText } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { AiReportGenerator } from "./AiReportGenerator"
+import { CreateProjectModal } from "../../projects/components/create-project"
 
 type Project = {
   id: string
@@ -28,6 +29,8 @@ export function ReportsOverview() {
   const [projects, setProjects] = useState<Project[]>([])
   const [selected, setSelected] = useState<string[]>([])
   const [search, setSearch] = useState("")
+  const [modalOpen, setModalOpen] = useState(false)
+
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -94,10 +97,14 @@ export function ReportsOverview() {
                 onChange={e => setSearch(e.target.value)}
               />
             </div>
-            <Button className="h-12 rounded-xl">
-              <Plus className="mr-2 h-5 w-5" />
-              New Project
-            </Button>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <Button onClick={() => setModalOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+                New Project
+              </Button>
+              <CreateProjectModal open={modalOpen} onClose={() => setModalOpen(false)} />
+
+            </div>
           </div>
 
           {filtered.length === 0 ? (
@@ -106,10 +113,13 @@ export function ReportsOverview() {
               title="No projects found"
               description="You haven't created any projects yet."
               action={
-                <Button className="mt-4">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Project
-                </Button>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <Button onClick={() => setModalOpen(true)} className="mt-2">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Create Project
+                    </Button>
+                  <CreateProjectModal open={modalOpen} onClose={() => setModalOpen(false)} />
+                </div>
               }
             />
           ) : (
