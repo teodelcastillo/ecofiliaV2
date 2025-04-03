@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,9 +39,32 @@ export function UploadDocumentDialog({
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [projectId, setProjectId] = useState<string | undefined>(undefined);
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
+
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const supabase = createClient();
+
+  // 🔄 Fetch user's projects on mount
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("projects")
+        .select("id, name")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (!error && data) setProjects(data);
+    };
+
+    if (open) fetchProjects();
+  }, [open, supabase]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -76,41 +99,60 @@ export function UploadDocumentDialog({
     setIsUploading(true);
     setError(null);
 
-    const supabase = createClient();
-
     try {
-      // Get authenticated user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) {
         throw new Error("Authentication error. Please log in again.");
       }
 
-      // Upload file to Supabase Storage
       const fileExt = getFileExtension(file.name);
       const filePath = `${user.id}/${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from("user-documents")
         .upload(filePath, file);
-      
+
       if (uploadError) throw new Error(`File upload error: ${uploadError.message}`);
-      
-      // Store only the file path in DB (not URL)
+
       const { data: document, error: insertError } = await supabase
         .from("documents")
         .insert({
           name: title,
           description,
           category,
-          file_path: filePath,  // <-- new field
+          file_path: filePath,
           user_id: user.id,
         })
         .select()
         .single();
-      
+
       if (insertError) throw new Error(`Database insert error: ${insertError.message}`);
-      
-      // Trigger text extraction serverless function
+
+      // ✅ Vincular al proyecto si se eligió uno
+// ✅ Vincular al proyecto si se eligió uno
+if (projectId) {
+  console.log("✅ Intentando vincular documento al proyecto:");
+  console.log("projectId:", projectId);
+  console.log("documentId:", document.id);
+
+  const { error: linkError } = await supabase.from("project_documents").insert({
+    project_id: projectId,
+    document_id: document.id,           // 👈 Solo para documentos privados
+    public_document_id: null            // 👈 Por claridad
+  });
+  
+  if (linkError) {
+    console.error("❌ Error al vincular documento al proyecto:", linkError.message);
+    console.error("🔍 Detalles del error:", linkError);
+  } else {
+    console.log("✅ Documento vinculado correctamente al proyecto");
+  }
+} else {
+  console.log("ℹ️ No se seleccionó ningún proyecto, no se vinculará el documento.");
+}
+
+
+      // Trigger text extraction
       try {
         const response = await fetch(`${window.location.origin}/api/extract-text-serverless`, {
           method: "POST",
@@ -120,24 +162,22 @@ export function UploadDocumentDialog({
             type: "user",
           }),
         });
-      
+
         if (!response.ok) {
           const errData = await response.json();
           console.error("Text extraction failed:", errData.error);
-        } else {
-          console.log("Text extraction succeeded");
         }
       } catch (extractionError) {
         console.error("Failed to call extract-text function:", extractionError);
       }
 
-      // Notify parent
       onDocumentUploaded(document);
 
-      // Reset form
+      // Reset
       setTitle("");
       setDescription("");
       setCategory("");
+      setProjectId(undefined);
       setFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       onOpenChange(false);
@@ -157,14 +197,14 @@ export function UploadDocumentDialog({
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Upload Document</DialogTitle>
-            <DialogDescription>Add a new document to your library.</DialogDescription>
+            <DialogDescription>
+              Add a new document to your library, and optionally to a project.
+            </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="title" className="required">
-                Title
-              </Label>
+              <Label htmlFor="title" className="required">Title</Label>
               <Input
                 id="title"
                 value={title}
@@ -203,9 +243,23 @@ export function UploadDocumentDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="file" className="required">
-                File
-              </Label>
+              <Label htmlFor="project">Link to Project (optional)</Label>
+              <Select value={projectId} onValueChange={setProjectId}>
+                <SelectTrigger id="project">
+                  <SelectValue placeholder="Select project" />
+                </SelectTrigger>
+                <SelectContent>
+                  {projects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="file" className="required">File</Label>
               {!file ? (
                 <div
                   className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-muted/50 transition-colors"
@@ -230,7 +284,9 @@ export function UploadDocumentDialog({
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{file.name}</p>
-                    <p className="text-xs text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    <p className="text-xs text-muted-foreground">
+                      {(file.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
                   </div>
                   <Button type="button" variant="ghost" size="icon" onClick={removeFile}>
                     <X className="h-4 w-4" />
