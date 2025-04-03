@@ -15,6 +15,7 @@ import { DocumentCard } from "../../my-library/components/document-card"
 import { DocumentList } from "../../my-library/components/document-list"
 import { Project } from "@/models"
 import { createClient } from "@/utils/supabase/client"
+import { LinkDocumentsBadge } from "./LinkDocumentsBadge"
 
 const documentTypes = ["All", "pdf", "docx", "xlsx", "pptx"]
 const sortOptions = ["Name (A-Z)", "Name (Z-A)", "Date (Newest)", "Date (Oldest)"]
@@ -146,10 +147,7 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
             <List className={`h-4 w-4 ${viewMode === "list" ? "text-primary" : "text-muted-foreground"}`} />
           </Button>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Document
-        </Button>
+        <LinkDocumentsBadge projectId={project.id}/>
       </div>
 
       <div className="flex flex-col gap-4 sm:flex-row">
