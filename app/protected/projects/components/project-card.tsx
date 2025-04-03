@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation"
 
 interface ProjectCardProps {
   project: Project
+  onClick?: (project: Project) => void
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
