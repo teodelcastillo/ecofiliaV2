@@ -1,15 +1,15 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { ChevronLeft, Filter, Search, Plus, Grid, List } from "lucide-react"
+import { ChevronLeft, Filter, Search, Grid, List } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { DocumentCard } from "../../my-library/components/document-card"
 import { DocumentList } from "../../my-library/components/document-list"
@@ -38,68 +38,63 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
   const [selectedDocument, setSelectedDocument] = useState<any | null>(null)
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    const fetchProjectDocuments = async () => {
-      setLoading(true)
+  const fetchProjectDocuments = useCallback(async () => {
+    setLoading(true)
 
-      const { data: projectLinks, error } = await supabase
-        .from("project_documents")
-        .select("*")
-        .eq("project_id", project.id)
+    const { data: projectLinks, error } = await supabase
+      .from("project_documents")
+      .select("*")
+      .eq("project_id", project.id)
 
-      if (error) {
-        console.error("Error fetching project documents:", error.message)
-        setLoading(false)
-        return
-      }
-
-      const userDocIds = projectLinks
-        .filter(link => link.document_id !== null)
-        .map(link => link.document_id)
-
-      const publicDocIds = projectLinks
-        .filter(link => link.public_document_id !== null)
-        .map(link => link.public_document_id)
-
-      const [userDocsResp, publicDocsResp] = await Promise.all([
-        userDocIds.length > 0
-          ? supabase.from("documents").select("*").in("id", userDocIds)
-          : Promise.resolve({ data: [], error: null }),
-        publicDocIds.length > 0
-          ? supabase.from("public_documents").select("*").in("id", publicDocIds)
-          : Promise.resolve({ data: [], error: null })
-      ])
-
-      const formattedUserDocs = (userDocsResp.data || []).map(doc => ({
-        id: doc.id,
-        name: doc.name || "Untitled Document",
-        description: doc.description || "",
-        category: doc.category || "",
-        created_at: doc.created_at,
-        file_path: doc.file_path,
-        file_type: doc.file_path?.split(".").pop() || "pdf",
-        user_id: doc.user_id,
-      }))
-
-      const formattedPublicDocs = (publicDocsResp.data || []).map(doc => ({
-        id: doc.id,
-        name: doc.name || "Untitled Document",
-        description: doc.description || "",
-        category: doc.category || "Public",
-        created_at: doc.created_at,
-        file_path: doc.file_url,
-        file_type: doc.file_url?.split(".").pop() || "pdf",
-        user_id: "public",
-      }))
-
-      setDocuments([...formattedUserDocs, ...formattedPublicDocs])
+    if (error) {
+      console.error("Error fetching project documents:", error.message)
       setLoading(false)
+      return
     }
 
-    fetchProjectDocuments()
+    const userDocIds = projectLinks.filter(link => link.document_id).map(link => link.document_id)
+    const publicDocIds = projectLinks.filter(link => link.public_document_id).map(link => link.public_document_id)
+
+    const [userDocsResp, publicDocsResp] = await Promise.all([
+      userDocIds.length > 0
+        ? supabase.from("documents").select("*").in("id", userDocIds)
+        : Promise.resolve({ data: [] }),
+      publicDocIds.length > 0
+        ? supabase.from("public_documents").select("*").in("id", publicDocIds)
+        : Promise.resolve({ data: [] }),
+    ])
+
+    const formattedUserDocs = (userDocsResp.data || []).map(doc => ({
+      id: doc.id,
+      name: doc.name || "Untitled Document",
+      description: doc.description || "",
+      category: doc.category || "",
+      created_at: doc.created_at,
+      file_path: doc.file_path,
+      file_type: doc.file_path?.split(".").pop() || "pdf",
+      user_id: doc.user_id,
+    }))
+
+    const formattedPublicDocs = (publicDocsResp.data || []).map(doc => ({
+      id: doc.id,
+      name: doc.name || "Untitled Document",
+      description: doc.description || "",
+      category: doc.category || "Public",
+      created_at: doc.created_at,
+      file_path: doc.file_url,
+      file_type: doc.file_url?.split(".").pop() || "pdf",
+      user_id: "public",
+    }))
+
+    setDocuments([...formattedUserDocs, ...formattedPublicDocs])
+    setLoading(false)
   }, [project.id, supabase])
 
-  const filteredDocuments = documents.filter((doc) => {
+  useEffect(() => {
+    fetchProjectDocuments()
+  }, [fetchProjectDocuments])
+
+  const filteredDocuments = documents.filter(doc => {
     const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesType = selectedType === "All" || doc.file_type === selectedType
     return matchesSearch && matchesType
@@ -107,17 +102,18 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
 
   const sortedDocuments = [...filteredDocuments].sort((a, b) => {
     switch (sortBy) {
-      case "Name (A-Z)": return a.name.localeCompare(b.name)
-      case "Name (Z-A)": return b.name.localeCompare(a.name)
-      case "Date (Newest)": return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      case "Date (Oldest)": return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-      default: return 0
+      case "Name (A-Z)":
+        return a.name.localeCompare(b.name)
+      case "Name (Z-A)":
+        return b.name.localeCompare(a.name)
+      case "Date (Newest)":
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      case "Date (Oldest)":
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      default:
+        return 0
     }
   })
-
-  const handleDocumentClick = (doc: any) => {
-    setSelectedDocument(doc)
-  }
 
   const handleBack = () => {
     if (onBack) onBack()
@@ -140,14 +136,28 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-1" onClick={() => setViewMode("grid")}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1"
+            onClick={() => setViewMode("grid")}
+          >
             <Grid className={`h-4 w-4 ${viewMode === "grid" ? "text-primary" : "text-muted-foreground"}`} />
           </Button>
-          <Button variant="outline" size="sm" className="gap-1" onClick={() => setViewMode("list")}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1"
+            onClick={() => setViewMode("list")}
+          >
             <List className={`h-4 w-4 ${viewMode === "list" ? "text-primary" : "text-muted-foreground"}`} />
           </Button>
         </div>
-        <LinkDocumentsBadge projectId={project.id}/>
+
+        <LinkDocumentsBadge
+          projectId={project.id}
+          onDocumentsLinked={fetchProjectDocuments}
+        />
       </div>
 
       <div className="flex flex-col gap-4 sm:flex-row">
@@ -169,7 +179,7 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            {documentTypes.map((type) => (
+            {documentTypes.map(type => (
               <DropdownMenuItem key={type} onClick={() => setSelectedType(type)}>
                 {type}
               </DropdownMenuItem>
@@ -185,7 +195,7 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            {sortOptions.map((option) => (
+            {sortOptions.map(option => (
               <DropdownMenuItem key={option} onClick={() => setSortBy(option)}>
                 {option}
               </DropdownMenuItem>
@@ -198,8 +208,8 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
         <p className="text-muted-foreground">Loading documents...</p>
       ) : viewMode === "grid" ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {sortedDocuments.map((doc) => (
-            <DocumentCard key={doc.id} document={doc} onClick={() => handleDocumentClick(doc)} />
+          {sortedDocuments.map(doc => (
+            <DocumentCard key={doc.id} document={doc} onClick={() => setSelectedDocument(doc)} />
           ))}
           {sortedDocuments.length === 0 && (
             <div className="col-span-full flex h-40 items-center justify-center rounded-md border border-dashed">
@@ -208,7 +218,7 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
           )}
         </div>
       ) : (
-        <DocumentList documents={sortedDocuments} onDocumentClick={handleDocumentClick} />
+        <DocumentList documents={sortedDocuments} onDocumentClick={setSelectedDocument} />
       )}
 
       {selectedDocument && (
