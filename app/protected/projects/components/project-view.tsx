@@ -17,7 +17,7 @@ import { Project } from "@/models"
 import { createClient } from "@/utils/supabase/client"
 
 const documentTypes = ["All", "pdf", "docx", "xlsx", "pptx"]
-const sortOptions = ["Name (A-Z)", "Name (Z-A)", "Date (Newest)", "Date (Oldest)", "Size (Largest)", "Size (Smallest)"]
+const sortOptions = ["Name (A-Z)", "Name (Z-A)", "Date (Newest)", "Date (Oldest)"]
 
 interface ProjectViewProps {
   project: Project
@@ -52,8 +52,13 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
         return
       }
 
-      const userDocIds = projectLinks.filter(d => !d.public_document).map(d => d.document_id)
-      const publicDocIds = projectLinks.filter(d => d.public_document).map(d => d.document_id)
+      const userDocIds = projectLinks
+        .filter(link => link.document_id !== null)
+        .map(link => link.document_id)
+
+      const publicDocIds = projectLinks
+        .filter(link => link.public_document_id !== null)
+        .map(link => link.public_document_id)
 
       const [userDocsResp, publicDocsResp] = await Promise.all([
         userDocIds.length > 0
@@ -66,26 +71,24 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
 
       const formattedUserDocs = (userDocsResp.data || []).map(doc => ({
         id: doc.id,
-        title: doc.name,
-        type: doc.file_url.split(".").pop(), // crude way to get type
-        size: "Unknown", // optional: fetch metadata or use stored size
-        lastModified: doc.created_at,
-        createdBy: "You",
-        tags: [],
-        thumbnail: "/placeholder.svg?height=120&width=90",
-        source: "user"
+        name: doc.name || "Untitled Document",
+        description: doc.description || "",
+        category: doc.category || "",
+        created_at: doc.created_at,
+        file_path: doc.file_path,
+        file_type: doc.file_path?.split(".").pop() || "pdf",
+        user_id: doc.user_id,
       }))
 
       const formattedPublicDocs = (publicDocsResp.data || []).map(doc => ({
         id: doc.id,
-        title: doc.name,
-        type: doc.file_url.split(".").pop(),
-        size: "Unknown",
-        lastModified: doc.created_at,
-        createdBy: "Public",
-        tags: [],
-        thumbnail: "/placeholder.svg?height=120&width=90",
-        source: "public"
+        name: doc.name || "Untitled Document",
+        description: doc.description || "",
+        category: doc.category || "Public",
+        created_at: doc.created_at,
+        file_path: doc.file_url,
+        file_type: doc.file_url?.split(".").pop() || "pdf",
+        user_id: "public",
       }))
 
       setDocuments([...formattedUserDocs, ...formattedPublicDocs])
@@ -96,20 +99,17 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
   }, [project.id, supabase])
 
   const filteredDocuments = documents.filter((doc) => {
-    const matchesSearch =
-      doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      doc.tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-    const matchesType = selectedType === "All" || doc.type === selectedType
-
+    const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesType = selectedType === "All" || doc.file_type === selectedType
     return matchesSearch && matchesType
   })
 
   const sortedDocuments = [...filteredDocuments].sort((a, b) => {
     switch (sortBy) {
-      case "Name (A-Z)": return a.title.localeCompare(b.title)
-      case "Name (Z-A)": return b.title.localeCompare(a.title)
-      case "Date (Newest)": return new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
-      case "Date (Oldest)": return new Date(a.lastModified).getTime() - new Date(b.lastModified).getTime()
+      case "Name (A-Z)": return a.name.localeCompare(b.name)
+      case "Name (Z-A)": return b.name.localeCompare(a.name)
+      case "Date (Newest)": return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      case "Date (Oldest)": return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       default: return 0
     }
   })
@@ -216,8 +216,7 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
       {selectedDocument && (
         <div className="rounded-lg border p-4">
           <h3 className="text-lg font-medium">Selected Document</h3>
-          <p>You selected: {selectedDocument.title}</p>
-          <p>This is where you would typically open the document viewer.</p>
+          <p>You selected: {selectedDocument.name}</p>
         </div>
       )}
     </div>
