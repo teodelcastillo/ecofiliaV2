@@ -10,4 +10,15 @@ export interface Document {
   user_id?: string;
   type?: string;      
   dateAdded?: string;  
+  source?: "user" | "public";
+}
+
+export interface Project {
+  id: string
+  name: string
+  description?: string
+  category?: string
+  client?: string
+  user_id: string
+  created_at: string
 }

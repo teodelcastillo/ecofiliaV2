@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Home, FolderKanban, BarChart, FileText, Compass, Settings, ChevronDown, Zap, Users } from "lucide-react"
+import { Home, FolderKanban, BarChart, FileText, Compass, Settings, ChevronDown, Zap, Users, Folder } from "lucide-react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import {
@@ -27,6 +27,7 @@ const functionalitiesItems = [
   { icon: BarChart, label: "Analytics", href: "/protected/analytics" },
   { icon: FileText, label: "Reports", href: "/protected/reports" },
   { icon: Compass, label: "Sustainability Assistant", href: "/protected/document-chat" },
+  { icon: Folder, label: "Projects", href: "/protected/projects" },
 ]
 
 export function Sidebar() {

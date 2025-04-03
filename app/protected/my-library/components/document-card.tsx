@@ -37,6 +37,7 @@ interface DocumentCardProps {
   }
   isOwner?: boolean
   onDelete?: (documentId: string) => void
+  onClick?: () => void
 }
 
 export function DocumentCard({ document, isOwner = false, onDelete }: DocumentCardProps) {

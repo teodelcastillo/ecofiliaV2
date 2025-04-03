@@ -30,7 +30,8 @@
 		".next/types/**/*.ts",
 		"app/protected/my-library/components",
 		"app/api/extract-text-serverless/extract-text-serverless.js",
-		"scripts/backfillChunks.js"
+		"scripts/backfillChunks.js",
+		"app/protected/projects"
 	],
 	"exclude": ["node_modules"]
 }
