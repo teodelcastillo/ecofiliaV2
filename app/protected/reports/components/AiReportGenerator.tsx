@@ -5,141 +5,215 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import { Sparkles, Loader2 } from "lucide-react"
-
-// 1️⃣ Type Definitions
-type ReportType =
-  | "carbon-footprint"
-  | "water-usage"
-  | "renewable-energy"
-  | "biodiversity"
-  | "sustainability"
-
-type IncludeOptions = {
-  charts: boolean
-  recommendations: boolean
-  executiveSummary: boolean
-  references: boolean
-}
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Progress } from "@/components/ui/progress"
+import {
+  Sparkles,
+  FileText,
+  Lightbulb,
+  Leaf,
+  BarChart,
+  FileQuestion,
+  Clock,
+  CheckCircle2,
+  Download,
+} from "lucide-react"
 
 export function AiReportGenerator() {
-  // 2️⃣ State
-  const [prompt, setPrompt] = useState<string>("")
-  const [reportType, setReportType] = useState<ReportType | "">("")
-  const [isGenerating, setIsGenerating] = useState<boolean>(false)
-  const [includeOptions, setIncludeOptions] = useState<IncludeOptions>({
-    charts: true,
-    recommendations: true,
-    executiveSummary: true,
-    references: false,
-  })
+  const [prompt, setPrompt] = useState("")
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [reportType, setReportType] = useState("impact")
+  const [progress, setProgress] = useState(0)
+  const [activeTab, setActiveTab] = useState("generate")
 
-  // 3️⃣ Handlers
   const handleGenerate = () => {
-    if (!prompt || !reportType) return
+    if (!prompt) return
 
     setIsGenerating(true)
+    setProgress(0)
 
-    // Simulate AI generation process
-    setTimeout(() => {
-      setIsGenerating(false)
-      // Normally handle result here
-      alert("Report generated successfully! Check your reports tab.")
-    }, 3000)
+    // Simulate generation process with progress
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(interval)
+          setIsGenerating(false)
+          return 100
+        }
+        return prev + 5
+      })
+    }, 100)
   }
 
-  const toggleOption = (option: keyof IncludeOptions) => {
-    setIncludeOptions((prev) => ({
-      ...prev,
-      [option]: !prev[option],
-    }))
-  }
+  const reportTypes = [
+    { value: "impact", label: "Environmental Impact", icon: <Leaf className="h-4 w-4" /> },
+    { value: "sustainability", label: "Sustainability Assessment", icon: <BarChart className="h-4 w-4" /> },
+    { value: "compliance", label: "Regulatory Compliance", icon: <CheckCircle2 className="h-4 w-4" /> },
+    { value: "carbon", label: "Carbon Footprint", icon: <FileQuestion className="h-4 w-4" /> },
+  ]
+
+  const recentReports = [
+    { title: "Water Conservation Analysis", date: "2 days ago", type: "impact" },
+    { title: "Carbon Emissions Report", date: "1 week ago", type: "carbon" },
+    { title: "Biodiversity Assessment", date: "2 weeks ago", type: "sustainability" },
+  ]
 
   return (
-    <Card className="h-full">
-      <CardHeader>
-        <CardTitle className="flex items-center">
+    <Card className="border-t-4 border-t-primary shadow-md">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center text-xl">
           <Sparkles className="mr-2 h-5 w-5 text-primary" />
           AI Report Generator
         </CardTitle>
-        <CardDescription>Generate environmental reports using AI based on BID standards</CardDescription>
+        <CardDescription>Create professional environmental reports in seconds</CardDescription>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        {/* Report Type */}
-        <div className="space-y-2">
-          <Label htmlFor="report-type">Report Type</Label>
-          <Select value={reportType} onValueChange={(val) => setReportType(val as ReportType)}>
-            <SelectTrigger id="report-type">
-              <SelectValue placeholder="Select report type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="carbon-footprint">Carbon Footprint Analysis</SelectItem>
-              <SelectItem value="water-usage">Water Usage Assessment</SelectItem>
-              <SelectItem value="renewable-energy">Renewable Energy Transition</SelectItem>
-              <SelectItem value="biodiversity">Biodiversity Impact</SelectItem>
-              <SelectItem value="sustainability">Sustainability Strategy</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-4 px-6">
+          <TabsTrigger value="generate" className="text-sm">
+            Generate
+          </TabsTrigger>
+          <TabsTrigger value="history" className="text-sm">
+            History
+          </TabsTrigger>
+        </TabsList>
 
-        {/* Prompt */}
-        <div className="space-y-2">
-          <Label htmlFor="prompt">Describe what you need</Label>
-          <Textarea
-            id="prompt"
-            placeholder="E.g., Generate a report on carbon emissions for a manufacturing facility in Brazil for Q2 2023..."
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            rows={4}
-          />
-        </div>
+        <TabsContent value="generate" className="mt-0">
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="report-type" className="text-sm font-medium">
+                Report Type
+              </label>
+              <Select value={reportType} onValueChange={setReportType}>
+                <SelectTrigger id="report-type" className="h-10">
+                  <SelectValue placeholder="Select report type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {reportTypes.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      <div className="flex items-center">
+                        {type.icon}
+                        <span className="ml-2">{type.label}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-        {/* Include Options */}
-        <div className="space-y-3">
-          <Label>Include in report</Label>
-          <div className="space-y-2">
-            {(
-              Object.keys(includeOptions) as Array<keyof IncludeOptions>
-            ).map((optionKey) => (
-              <div key={optionKey} className="flex items-center space-x-2">
-                <Checkbox
-                  id={optionKey}
-                  checked={includeOptions[optionKey]}
-                  onCheckedChange={() => toggleOption(optionKey)}
-                />
-                <Label htmlFor={optionKey} className="text-sm font-normal capitalize">
-                  {optionKey === "executiveSummary"
-                    ? "Executive summary"
-                    : optionKey === "charts"
-                    ? "Data visualizations & charts"
-                    : optionKey === "recommendations"
-                    ? "Actionable recommendations"
-                    : "Scientific references"}
-                </Label>
+            <div className="space-y-2">
+              <label htmlFor="prompt" className="text-sm font-medium flex items-center justify-between">
+                <span>Describe what you need</span>
+                <span className="text-xs text-muted-foreground">{prompt.length}/500</span>
+              </label>
+              <Textarea
+                id="prompt"
+                placeholder="Describe the environmental report you need..."
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                rows={5}
+                maxLength={500}
+                className="resize-none"
+              />
+            </div>
+
+            <div className="bg-muted/40 rounded-lg p-3 space-y-2">
+              <div className="flex items-center text-sm font-medium">
+                <Lightbulb className="h-4 w-4 mr-2 text-amber-500" />
+                Suggestions
               </div>
-            ))}
-          </div>
-        </div>
-      </CardContent>
+              <div className="flex flex-wrap gap-2">
+                <SuggestionPill
+                  text="Water conservation analysis"
+                  onClick={() =>
+                    setPrompt("Analyze water conservation efforts in urban areas with recommendations for improvement")
+                  }
+                />
+                <SuggestionPill
+                  text="Carbon footprint assessment"
+                  onClick={() =>
+                    setPrompt("Assess the carbon footprint of manufacturing processes and suggest reduction strategies")
+                  }
+                />
+                <SuggestionPill
+                  text="Biodiversity impact report"
+                  onClick={() =>
+                    setPrompt("Create a biodiversity impact report for coastal development with mitigation measures")
+                  }
+                />
+              </div>
+            </div>
 
-      <CardFooter>
-        <Button className="w-full" onClick={handleGenerate} disabled={isGenerating || !prompt || !reportType}>
-          {isGenerating ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating Report...
-            </>
-          ) : (
-            <>
-              <Sparkles className="mr-2 h-4 w-4" />
-              Generate Report
-            </>
-          )}
-        </Button>
-      </CardFooter>
+            {isGenerating && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span>Generating report...</span>
+                  <span>{progress}%</span>
+                </div>
+                <Progress value={progress} className="h-2" />
+              </div>
+            )}
+          </CardContent>
+
+          <CardFooter>
+            <Button className="w-full h-10 rounded-lg" onClick={handleGenerate} disabled={!prompt || isGenerating}>
+              {isGenerating ? "Generating..." : "Generate Report"}
+            </Button>
+          </CardFooter>
+        </TabsContent>
+
+        <TabsContent value="history" className="mt-0">
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              {recentReports.map((report, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center">
+                    <FileText className="h-5 w-5 mr-3 text-primary/70" />
+                    <div>
+                      <div className="font-medium text-sm">{report.title}</div>
+                      <div className="text-xs text-muted-foreground flex items-center mt-1">
+                        <Clock className="h-3 w-3 mr-1" />
+                        {report.date}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                      <FileText className="h-4 w-4" />
+                      <span className="sr-only">View</span>
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                      <Download className="h-4 w-4" />
+                      <span className="sr-only">Download</span>
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-center pt-2">
+              <Button variant="outline" size="sm" className="text-xs">
+                View all reports
+              </Button>
+            </div>
+          </CardContent>
+        </TabsContent>
+      </Tabs>
     </Card>
   )
 }
+
+function SuggestionPill({ text, onClick }: { text: string; onClick: () => void }) {
+  return (
+    <button
+      className="text-xs bg-background rounded-full px-3 py-1 border hover:bg-muted transition-colors"
+      onClick={onClick}
+    >
+      {text}
+    </button>
+  )
+}
+

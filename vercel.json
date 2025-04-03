@@ -1,6 +1,9 @@
 {
 	"functions": {
-		"api/chat-document/route.ts": {
+		"app/api/chat-document/route.ts": {
+			"maxDuration": 60
+		},
+		"app/api/extract-text-serverless/route.js": {
 			"maxDuration": 60
 		}
 	}

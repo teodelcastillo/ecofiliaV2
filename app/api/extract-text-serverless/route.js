@@ -11,15 +11,18 @@ const supabase = createClient(
 );
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 export async function POST(req) {
   try {
     console.log("🔥 extract-text-serverless TRIGGERED");
+
     const { documentId, type } = await req.json();
+    console.log("📥 Received request for document:", documentId, "| type:", type);
 
     if (!documentId || !type) {
+      console.error("❌ Missing documentId or type");
       return NextResponse.json({ error: "Missing documentId or type" }, { status: 400 });
     }
 
@@ -33,8 +36,11 @@ export async function POST(req) {
       tableName = "documents";
       bucketName = "user-documents";
     } else {
+      console.error("❌ Invalid document type");
       return NextResponse.json({ error: "Invalid document type" }, { status: 400 });
     }
+
+    console.log("📁 Table:", tableName, "| Bucket:", bucketName);
 
     // Fetch document metadata
     const { data: doc, error: docError } = await supabase
@@ -44,6 +50,7 @@ export async function POST(req) {
       .single();
 
     if (docError || !doc) {
+      console.error("❌ Document not found in table:", tableName, "| Error:", docError);
       return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
@@ -56,34 +63,49 @@ export async function POST(req) {
     }
 
     if (!filePath) {
+      console.error("❌ File path not found or malformed");
       return NextResponse.json({ error: "Invalid file path" }, { status: 500 });
     }
 
-    // Download file from Supabase Storage
+    console.log("📄 File path resolved:", filePath);
+
+    // Download file
     const { data: fileData, error: downloadError } = await supabase.storage
       .from(bucketName)
       .download(filePath);
 
     if (downloadError || !fileData) {
+      console.error("❌ Failed to download file:", downloadError);
       return NextResponse.json({ error: "Failed to download file" }, { status: 500 });
     }
+
+    console.log("✅ File downloaded successfully");
 
     const arrayBuffer = await fileData.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const parsed = await pdf(buffer);
-    const extractedText = parsed.text;
 
-    // Update extracted_text in original document table
+    const extractedText = parsed.text;
+    console.log("📚 Extracted text length:", extractedText.length);
+
+    if (!extractedText || extractedText.length < 20) {
+      console.warn("⚠️ Extracted text seems too short or empty. Might be scanned/invisible text.");
+    }
+
+    // Save extracted text to DB
     const { error: updateError } = await supabase
       .from(tableName)
       .update({ extracted_text: extractedText })
       .eq("id", documentId);
 
     if (updateError) {
+      console.error("❌ Failed to update extracted_text:", updateError);
       return NextResponse.json({ error: "Failed to store extracted text" }, { status: 500 });
     }
 
-    // 🔹 Chunk the text
+    console.log("💾 Extracted text saved to DB");
+
+    // Split into chunks
     const splitter = new RecursiveCharacterTextSplitter({
       chunkSize: 1000,
       chunkOverlap: 200,
@@ -92,13 +114,17 @@ export async function POST(req) {
     const chunks = await splitter.createDocuments([extractedText]);
     const texts = chunks.map((chunk) => chunk.pageContent);
 
-    // 🔹 Embed each chunk
-    const embedder = new OpenAIEmbeddings({
-      openAIApiKey: process.env.OPENAI_API_KEY
-    });
-    const embeddings = await embedder.embedDocuments(texts);
+    console.log(`🔹 Created ${texts.length} text chunks`);
 
-    // 🔹 Insert into document_chunks
+    // Embed chunks
+    const embedder = new OpenAIEmbeddings({
+      openAIApiKey: process.env.OPENAI_API_KEY,
+    });
+
+    const embeddings = await embedder.embedDocuments(texts);
+    console.log("🧠 Generated embeddings for chunks");
+
+    // Insert into document_chunks
     const chunksToInsert = embeddings.map((embedding, i) => ({
       document_id: documentId,
       document_type: type,
@@ -111,12 +137,19 @@ export async function POST(req) {
       .insert(chunksToInsert);
 
     if (insertError) {
+      console.error("❌ Failed to insert chunks into document_chunks:", insertError);
       return NextResponse.json({ error: "Failed to insert chunks" }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, extractedText, chunksInserted: chunksToInsert.length });
+    console.log("✅ Chunks inserted into document_chunks");
+
+    return NextResponse.json({
+      success: true,
+      extractedTextLength: extractedText.length,
+      chunksInserted: chunksToInsert.length,
+    });
   } catch (err) {
-    console.error("❌ Serverless error:", err);
+    console.error("❌ Serverless function error:", err);
     return NextResponse.json({ error: "Unexpected server error" }, { status: 500 });
   }
 }

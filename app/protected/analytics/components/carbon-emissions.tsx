@@ -15,7 +15,7 @@ export function CarbonEmissions() {
     <Card className="col-span-2">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Carbon Footprint</CardTitle>
+          <CardTitle>Brazil- Housing Project</CardTitle>
           <p className="text-2xl font-bold text-primary">-15%</p>
         </div>
       </CardHeader>
