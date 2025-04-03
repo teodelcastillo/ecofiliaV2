@@ -46,10 +46,9 @@ export function AiReportGenerator() {
   }
 
   const reportTypes = [
-    { value: "impact", label: "Environmental Impact", icon: <Leaf className="h-4 w-4" /> },
-    { value: "sustainability", label: "Sustainability Assessment", icon: <BarChart className="h-4 w-4" /> },
-    { value: "compliance", label: "Regulatory Compliance", icon: <CheckCircle2 className="h-4 w-4" /> },
-    { value: "carbon", label: "Carbon Footprint", icon: <FileQuestion className="h-4 w-4" /> },
+    { value: "Overview", label: "Project Overview", icon: <Leaf className="h-4 w-4" /> },
+    { value: "sustainability", label: "Climate Change and Sustainability Filter", icon: <BarChart className="h-4 w-4" /> },
+    { value: "Inputs", label: "Inputs for Climate Change and Sustainability Annex", icon: <CheckCircle2 className="h-4 w-4" /> },
   ]
 
   const recentReports = [
@@ -124,21 +123,21 @@ export function AiReportGenerator() {
               </div>
               <div className="flex flex-wrap gap-2">
                 <SuggestionPill
-                  text="Water conservation analysis"
+                  text="A concise summary of the project's objectives, components, and expected development outcomes with relevance to climate and sustainability."
                   onClick={() =>
-                    setPrompt("Analyze water conservation efforts in urban areas with recommendations for improvement")
+                    setPrompt("A concise summary of the project's objectives, components, and expected development outcomes with relevance to climate and sustainability.")
                   }
                 />
                 <SuggestionPill
-                  text="Carbon footprint assessment"
+                  text="Climate Change and Sustainability Filter: An initial screening that identifies the project’s potential climate risks, impacts, and opportunities for climate action or environmental sustainability."
                   onClick={() =>
-                    setPrompt("Assess the carbon footprint of manufacturing processes and suggest reduction strategies")
+                    setPrompt("Climate Change and Sustainability Filter: An initial screening that identifies the project’s potential climate risks, impacts, and opportunities for climate action or environmental sustainability.")
                   }
                 />
                 <SuggestionPill
-                  text="Biodiversity impact report"
+                  text="Inputs for Climate Change and Sustainability Annex:"
                   onClick={() =>
-                    setPrompt("Create a biodiversity impact report for coastal development with mitigation measures")
+                    setPrompt("Detailed technical inputs supporting the project’s alignment with climate and sustainability goals, including mitigation, adaptation, resilience, and co-benefits.")
                   }
                 />
               </div>
