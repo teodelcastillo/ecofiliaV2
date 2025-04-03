@@ -16,8 +16,6 @@ import { createClient } from "@/utils/supabase/client"
 import { CreateProjectModal } from "./create-project"
 
 const categories = ["All", "Sustainability", "Energy", "Water", "Waste"]
-const statuses = ["All", "Planning", "In Progress", "Completed"] // Not implemented yet
-
 interface ProjectsViewProps {
   onSelectProject?: (project: Project) => void
   className?: string
@@ -27,7 +25,6 @@ export function ProjectsView({ onSelectProject, className = "" }: ProjectsViewPr
   const [projects, setProjects] = useState<Project[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
-  const [selectedStatus, setSelectedStatus] = useState("All") // Placeholder for future use
   const [loading, setLoading] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
 
@@ -100,23 +97,6 @@ export function ProjectsView({ onSelectProject, className = "" }: ProjectsViewPr
             {categories.map((category) => (
               <DropdownMenuItem key={category} onClick={() => setSelectedCategory(category)}>
                 {category}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Status dropdown - Placeholder for now */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="w-full sm:w-auto">
-              <Filter className="mr-2 h-4 w-4" />
-              Status: {selectedStatus}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            {statuses.map((status) => (
-              <DropdownMenuItem key={status} onClick={() => setSelectedStatus(status)}>
-                {status}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
