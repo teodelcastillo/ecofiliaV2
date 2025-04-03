@@ -113,27 +113,28 @@ export function LinkDocumentsBadge({ projectId, className = "", onDocumentsLinke
           </TabsList>
 
           <ScrollArea className="h-[300px] pr-4">
-            <TabsContent value="user" className="space-y-4 mt-2">
-              {filterDocs(userDocs).map((doc) => (
-                <DocumentItem
-                  key={doc.id}
-                  doc={{ ...doc, source: "user" }}
-                  selected={selectedDocuments.some(d => d.id === doc.id && d.source === "user")}
-                  onToggle={() => handleToggle(doc)}
-                />
-              ))}
-            </TabsContent>
+          <TabsContent value="user" className="space-y-4 mt-2">
+            {filterDocs(userDocs).map((doc) => (
+              <DocumentItem
+                key={`user-${doc.id}`}
+                doc={{ ...doc, source: "user" }}
+                selected={selectedDocuments.some(d => d.id === doc.id && d.source === "user")}
+                onToggle={() => handleToggle({ ...doc, source: "user" })} // ✅ Pass full doc
+              />
+            ))}
+          </TabsContent>
 
-            <TabsContent value="public" className="space-y-4 mt-2">
-              {filterDocs(publicDocs).map((doc) => (
-                <DocumentItem
-                  key={doc.id}
-                  doc={{ ...doc, source: "public" }}
-                  selected={selectedDocuments.some(d => d.id === doc.id && d.source === "public")}
-                  onToggle={() => handleToggle(doc)}
-                />
-              ))}
-            </TabsContent>
+          <TabsContent value="public" className="space-y-4 mt-2">
+            {filterDocs(publicDocs).map((doc) => (
+              <DocumentItem
+                key={`public-${doc.id}`}
+                doc={{ ...doc, source: "public" }}
+                selected={selectedDocuments.some(d => d.id === doc.id && d.source === "public")}
+                onToggle={() => handleToggle({ ...doc, source: "public" })} // ✅ Pass full doc
+              />
+            ))}
+          </TabsContent>
+
           </ScrollArea>
         </Tabs>
 
@@ -151,19 +152,31 @@ export function LinkDocumentsBadge({ projectId, className = "", onDocumentsLinke
 function DocumentItem({ doc, selected, onToggle }: { doc: any, selected: boolean, onToggle: () => void }) {
   return (
     <div
-      className={`flex items-center gap-3 rounded-lg border p-3 transition-colors cursor-pointer ${
+      className={`flex items-center gap-3 rounded-lg border p-3 transition-colors cursor-pointer group ${
         selected ? "border-primary bg-primary/5" : "hover:bg-muted/50"
       }`}
       onClick={onToggle}
     >
-      <Checkbox checked={selected} onCheckedChange={onToggle} className="h-5 w-5" />
+      <Checkbox
+        checked={selected}
+        onCheckedChange={onToggle}
+        className={`h-5 w-5 transition-colors ${
+          selected ? "bg-primary border-primary" : ""
+        }`}
+      />
+
       <div className="flex-1 overflow-hidden">
         <h4 className="font-medium leading-none line-clamp-1">{doc.name}</h4>
         <p className="text-sm text-muted-foreground truncate">
           {doc.category || "Uncategorized"} • {new Date(doc.created_at).toLocaleDateString()}
         </p>
       </div>
-      <div className={`flex h-6 w-6 items-center justify-center rounded-full ${selected ? "bg-primary text-white" : "bg-muted"}`}>
+
+      <div
+        className={`flex h-6 w-6 items-center justify-center rounded-full text-white transition ${
+          selected ? "bg-primary" : "bg-muted text-muted-foreground"
+        }`}
+      >
         {selected ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
       </div>
     </div>
