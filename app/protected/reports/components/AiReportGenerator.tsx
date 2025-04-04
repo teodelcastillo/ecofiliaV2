@@ -25,9 +25,9 @@ export function AiReportGenerator() {
   const [activeTab, setActiveTab] = useState("generate")
 
   const reportTemplates: Record<string, string> = {
-    overview: "/templates/Brazil Urban Development Project - Climate Change and Sustainability Filter.docx",
-    sustainability: "/templates/Brazil Urban Development Project - Inputs for Climate Change and Sustainability Annex.docx",
-    inputs: "/templates/Brazil Urban Development Project - Project Overview.docx",
+    overview: "/templates/Brazil Urban Development Project - Project Overview.docx",
+    sustainability: "/templates/Brazil Urban Development Project - Climate Change and Sustainability Filter.docx",
+    inputs: "/templates/Brazil Urban Development Project - Inputs for Climate Change and Sustainability Annex.docx",
   }
   
 
