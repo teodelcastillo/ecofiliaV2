@@ -126,7 +126,7 @@ export function AiReportGenerator() {
               <div className="flex flex-wrap gap-2 text-xs">
                 <SuggestionPill
                   text="A concise summary of the project's objectives..."
-                  onClick={() => setPrompt("Climate Change and Sustainability Filter: An initial screening that identifies the project’s potential climate risks, impacts, and opportunities for climate action or environmental sustainability.")}
+                  onClick={() => setPrompt("A concise summary of the project's objectives, components, and expected development outcomes with relevance to climate and sustainability.")}
                 />
                 <SuggestionPill
                   text="Climate Change and Sustainability Filter..."
