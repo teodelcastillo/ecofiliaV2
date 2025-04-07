@@ -29,7 +29,6 @@ interface ProjectViewProps {
 export function ProjectView({ project, onBack, className = "" }: ProjectViewProps) {
   const router = useRouter()
   const supabase = createClient()
-
   const [documents, setDocuments] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedType, setSelectedType] = useState("All")
@@ -38,23 +37,30 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
   const [selectedDocument, setSelectedDocument] = useState<any | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const fetchProjectDocuments = useCallback(async () => {
-    setLoading(true)
+  console.log("Project object:", project)
+  console.log("Project ID:", project.id)
+  console.log("Project name:", project.name)
 
+  const fetchProjectDocuments = useCallback(async () => {
+    console.log("Fetching project documents for:", project.id)
+    setLoading(true)
+  
     const { data: projectLinks, error } = await supabase
       .from("project_documents")
       .select("*")
       .eq("project_id", project.id)
-
+  
     if (error) {
       console.error("Error fetching project documents:", error.message)
       setLoading(false)
       return
     }
-
+  
+    console.log("Project links found:", projectLinks)
+  
     const userDocIds = projectLinks.filter(link => link.document_id).map(link => link.document_id)
     const publicDocIds = projectLinks.filter(link => link.public_document_id).map(link => link.public_document_id)
-
+  
     const [userDocsResp, publicDocsResp] = await Promise.all([
       userDocIds.length > 0
         ? supabase.from("documents").select("*").in("id", userDocIds)
@@ -63,32 +69,47 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
         ? supabase.from("public_documents").select("*").in("id", publicDocIds)
         : Promise.resolve({ data: [] }),
     ])
-
-    const formattedUserDocs = (userDocsResp.data || []).map(doc => ({
+  
+    console.log("User docs:", userDocsResp)
+    console.log("Public docs:", publicDocsResp)
+  
+    // Add fallback just in case
+    if (!userDocsResp || !publicDocsResp) {
+      console.error("Failed to load documents properly")
+      setLoading(false)
+      return
+    }
+  
+    // format + set
+    const formatType = (path: string | null | undefined) =>
+      path?.split(".").pop()?.toLowerCase().trim() || "pdf"
+  
+    const formattedUserDocs = (userDocsResp.data ?? []).map(doc => ({
       id: doc.id,
       name: doc.name || "Untitled Document",
       description: doc.description || "",
       category: doc.category || "",
       created_at: doc.created_at,
       file_path: doc.file_path,
-      file_type: doc.file_path?.split(".").pop() || "pdf",
+      file_type: formatType(doc.file_path),
       user_id: doc.user_id,
     }))
-
-    const formattedPublicDocs = (publicDocsResp.data || []).map(doc => ({
+  
+    const formattedPublicDocs = (publicDocsResp.data ?? []).map(doc => ({
       id: doc.id,
       name: doc.name || "Untitled Document",
       description: doc.description || "",
       category: doc.category || "Public",
       created_at: doc.created_at,
       file_path: doc.file_url,
-      file_type: doc.file_url?.split(".").pop() || "pdf",
+      file_type: formatType(doc.file_url),
       user_id: "public",
     }))
-
+  
     setDocuments([...formattedUserDocs, ...formattedPublicDocs])
     setLoading(false)
-  }, [project.id, supabase])
+  }, [project.id])
+  
 
   useEffect(() => {
     fetchProjectDocuments()
@@ -116,12 +137,12 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
   })
 
   const handleBack = () => {
-    if (onBack) onBack()
-    else router.back()
+    onBack ? onBack() : router.back()
   }
 
   return (
     <div className={`space-y-6 ${className}`}>
+      {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={handleBack}>
           <ChevronLeft className="h-5 w-5" />
@@ -134,32 +155,20 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
         </div>
       </div>
 
+      {/* Toolbar */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1"
-            onClick={() => setViewMode("grid")}
-          >
+          <Button variant="outline" size="sm" onClick={() => setViewMode("grid")}>
             <Grid className={`h-4 w-4 ${viewMode === "grid" ? "text-primary" : "text-muted-foreground"}`} />
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1"
-            onClick={() => setViewMode("list")}
-          >
+          <Button variant="outline" size="sm" onClick={() => setViewMode("list")}>
             <List className={`h-4 w-4 ${viewMode === "list" ? "text-primary" : "text-muted-foreground"}`} />
           </Button>
         </div>
-
-        <LinkDocumentsBadge
-          projectId={project.id}
-          onDocumentsLinked={fetchProjectDocuments}
-        />
+        <LinkDocumentsBadge projectId={project.id} onDocumentsLinked={fetchProjectDocuments} />
       </div>
 
+      {/* Filters */}
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -204,18 +213,18 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
         </DropdownMenu>
       </div>
 
+      {/* Content */}
       {loading ? (
         <p className="text-muted-foreground">Loading documents...</p>
+      ) : sortedDocuments.length === 0 ? (
+        <div className="flex h-40 items-center justify-center rounded-md border border-dashed">
+          <p className="text-muted-foreground">No documents found</p>
+        </div>
       ) : viewMode === "grid" ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {sortedDocuments.map(doc => (
             <DocumentCard key={doc.id} document={doc} onClick={() => setSelectedDocument(doc)} />
           ))}
-          {sortedDocuments.length === 0 && (
-            <div className="col-span-full flex h-40 items-center justify-center rounded-md border border-dashed">
-              <p className="text-muted-foreground">No documents found</p>
-            </div>
-          )}
         </div>
       ) : (
         <DocumentList documents={sortedDocuments} onDocumentClick={setSelectedDocument} />

@@ -1,70 +1,76 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Progress } from "@/components/ui/progress"
-import {
-  Sparkles,
-  FileText,
-  Lightbulb,
-  Leaf,
-  BarChart,
-  Clock,
-  CheckCircle2,
-} from "lucide-react"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
+import { Sparkles, Leaf, BarChart, CheckCircle2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
-export function AiReportGenerator() {
-  const [prompt, setPrompt] = useState("")
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [reportType, setReportType] = useState("overview")
-  const [progress, setProgress] = useState(0)
-  const [activeTab, setActiveTab] = useState("generate")
-
-  const reportTemplates: Record<string, string> = {
-    overview: "/templates/Brazil Urban Development Project - Project Overview.docx",
-    sustainability: "/templates/Brazil Urban Development Project - Climate Change and Sustainability Filter.docx",
-    inputs: "/templates/Brazil Urban Development Project - Inputs for Climate Change and Sustainability Annex.docx",
-  }
-  
-
-  const handleGenerateAndDownload = () => {
-    if (!prompt) return
-
-    setIsGenerating(true)
-    setProgress(0)
-
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval)
-          setIsGenerating(false)
-          downloadTemplate()
-          return 100
-        }
-        return prev + 5
-      })
-    }, 100)
-  }
-
-  const downloadTemplate = () => {
-    const fileUrl = reportTemplates[reportType]
-    const link = document.createElement("a")
-    link.href = fileUrl
-    link.download = fileUrl.split("/").pop() || "report.docx"
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+export function AiReportGenerator({ selectedProjectId }: { selectedProjectId?: string }) {
+  const [reportType, setReportType] = useState("overview");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const { toast } = useToast();
+  const router = useRouter();
 
   const reportTypes = [
     { value: "overview", label: "Project Overview", icon: <Leaf className="h-4 w-4" /> },
-    { value: "sustainability", label: "Climate Change and Sustainability Filter", icon: <BarChart className="h-4 w-4" /> },
+    { value: "filter", label: "Climate Change and Sustainability Filter", icon: <BarChart className="h-4 w-4" /> },
     { value: "inputs", label: "Inputs for Climate Change and Sustainability Annex", icon: <CheckCircle2 className="h-4 w-4" /> },
-  ]
+  ];
+
+  const handleGenerate = async () => {
+    if (!selectedProjectId || !reportType) {
+      toast({ title: "Missing selection", description: "Please select a project and report type.", variant: "destructive" });
+      return;
+    }
+
+    setIsGenerating(true);
+    setProgress(0);
+
+    const interval = setInterval(() => {
+      setProgress((prev) => (prev >= 95 ? 95 : prev + 5));
+    }, 300);
+
+    try {
+      const res = await fetch("/api/generate-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId: selectedProjectId, reportType }),
+      });
+
+      const data = await res.json();
+      clearInterval(interval);
+      setIsGenerating(false);
+      setProgress(100);
+
+      if (res.ok && data?.report) {
+        toast({ title: "Report ready", description: "Redirecting to download...", variant: "default" });
+
+        // Esperá 1 segundo y redirigí al visor
+        setTimeout(() => {
+          router.push(`/projects/${selectedProjectId}/reports`);
+        }, 1000);
+      } else {
+        toast({
+          title: "Generation failed",
+          description: data?.error || "The report could not be generated.",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      clearInterval(interval);
+      setIsGenerating(false);
+      toast({
+        title: "Unexpected error",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <Card className="border-t-4 border-t-primary shadow-md">
@@ -73,109 +79,31 @@ export function AiReportGenerator() {
           <Sparkles className="mr-2 h-5 w-5 text-primary" />
           AI Report Generator
         </CardTitle>
-        <CardDescription>Create professional environmental reports in seconds</CardDescription>
+        <CardDescription>Create professional environmental reports quickly</CardDescription>
       </CardHeader>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-4 px-6">
-          <TabsTrigger value="generate">Generate</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
-        </TabsList>
+      <CardContent className="space-y-4">
+        <Select value={reportType} onValueChange={setReportType}>
+          <SelectTrigger className="h-10">
+            <SelectValue placeholder="Select report type" />
+          </SelectTrigger>
+          <SelectContent>
+            {reportTypes.map((type) => (
+              <SelectItem key={type.value} value={type.value}>
+                {type.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-        <TabsContent value="generate">
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="report-type" className="text-sm font-medium">Report Type</label>
-              <Select value={reportType} onValueChange={setReportType}>
-                <SelectTrigger id="report-type" className="h-10">
-                  <SelectValue placeholder="Select report type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {reportTypes.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      <div className="flex items-center">
-                        {type.icon}
-                        <span className="ml-2">{type.label}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+        {isGenerating && <Progress value={progress} className="h-2" />}
+      </CardContent>
 
-            <div className="space-y-2">
-              <label htmlFor="prompt" className="text-sm font-medium flex justify-between">
-                <span>Describe what you need</span>
-                <span className="text-xs text-muted-foreground">{prompt.length}/500</span>
-              </label>
-              <Textarea
-                id="prompt"
-                placeholder="Describe the environmental report you need..."
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                rows={5}
-                maxLength={500}
-              />
-            </div>
-
-            <div className="bg-muted/40 rounded-lg p-3 space-y-2">
-              <div className="flex items-center text-sm font-medium">
-                <Lightbulb className="h-4 w-4 mr-2 text-amber-500" />
-                Suggestions
-              </div>
-              <div className="flex flex-wrap gap-2 text-xs">
-                <SuggestionPill
-                  text="A concise summary of the project's objectives..."
-                  onClick={() => setPrompt("A concise summary of the project's objectives, components, and expected development outcomes with relevance to climate and sustainability.")}
-                />
-                <SuggestionPill
-                  text="Climate Change and Sustainability Filter..."
-                  onClick={() => setPrompt("Climate Change and Sustainability Filter: An initial screening that identifies the project’s potential climate risks, impacts, and opportunities for climate action or environmental sustainability.")}
-                />
-                <SuggestionPill
-                  text="Detailed technical inputs for sustainability annex..."
-                  onClick={() => setPrompt("Detailed technical inputs supporting the project’s alignment with climate and sustainability goals, including mitigation, adaptation, resilience, and co-benefits.")}
-                />
-              </div>
-            </div>
-
-            {isGenerating && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span>Generating report...</span>
-                  <span>{progress}%</span>
-                </div>
-                <Progress value={progress} className="h-2" />
-              </div>
-            )}
-          </CardContent>
-
-          <CardFooter>
-            <Button 
-              className="w-full h-10 rounded-lg"
-              onClick={handleGenerateAndDownload}
-              disabled={!prompt || isGenerating}
-            >
-              {isGenerating ? "Generating..." : "Generate & Download"}
-            </Button>
-          </CardFooter>
-        </TabsContent>
-
-        <TabsContent value="history">
-          <CardContent className="text-muted-foreground text-sm">Coming soon...</CardContent>
-        </TabsContent>
-      </Tabs>
+      <CardFooter>
+        <Button className="w-full" onClick={handleGenerate} disabled={isGenerating}>
+          {isGenerating ? "Generating..." : "Generate Report"}
+        </Button>
+      </CardFooter>
     </Card>
-  )
-}
-
-function SuggestionPill({ text, onClick }: { text: string; onClick: () => void }) {
-  return (
-    <button
-      className="bg-background rounded-full px-3 py-1 border hover:bg-muted transition-colors"
-      onClick={onClick}
-    >
-      {text}
-    </button>
-  )
+  );
 }

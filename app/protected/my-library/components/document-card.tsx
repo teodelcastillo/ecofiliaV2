@@ -48,7 +48,7 @@ export function DocumentCard({ document, isOwner = false, onDelete }: DocumentCa
   const FileTypeIcon = getFileIcon(file_type)
 
   const handleOpenDocument = async (filePath: string) => {
-    const signedUrl = await getSignedUrl(filePath);
+    const signedUrl = await getSignedUrl("user-documents", filePath);
     if (signedUrl) {
       window.open(signedUrl, "_blank");
     } else {
@@ -59,7 +59,7 @@ export function DocumentCard({ document, isOwner = false, onDelete }: DocumentCa
 const handleDownload = async () => {
   if (!file_path) return;
 
-  const signedUrl = await getSignedUrl(file_path);
+  const signedUrl = await getSignedUrl("user-documents", file_path);
   if (signedUrl) {
     const link = document.createElement("a");
     link.href = signedUrl;
