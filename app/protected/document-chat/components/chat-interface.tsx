@@ -11,6 +11,8 @@ import { Send, Loader2 } from "lucide-react";
 import type { Document } from "@/models";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import ChatMarkdown from "../../components/chat-markdown";
+
 
 interface ChatInterfaceProps {
   messages: Message[];
@@ -98,7 +100,7 @@ export function ChatInterface({
                           : "bg-muted"
                       }`}
                     >
-                      <p className="text-sm">{message.content}</p>
+                      <ChatMarkdown content={message.content} />
                     </div>
                   </div>
                 </div>
