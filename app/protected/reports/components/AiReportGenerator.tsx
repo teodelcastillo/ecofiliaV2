@@ -18,7 +18,7 @@ export function AiReportGenerator({ selectedProjectId }: { selectedProjectId?: s
 
   const reportTypes = [
     { value: "overview", label: "Project Overview", icon: <Leaf className="h-4 w-4" /> },
-    { value: "filter", label: "Climate Change and Sustainability Filter", icon: <BarChart className="h-4 w-4" /> },
+    { value: "sustainability", label: "Climate Change and Sustainability Filter", icon: <BarChart className="h-4 w-4" /> },
     { value: "inputs", label: "Inputs for Climate Change and Sustainability Annex", icon: <CheckCircle2 className="h-4 w-4" /> },
   ];
 

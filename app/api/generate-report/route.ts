@@ -13,7 +13,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! })
 const embedder = new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY })
 
 const MAX_TOKENS_BUDGET = 6000
-const ALLOWED_REPORT_TYPES = ['overview', 'inputs', 'filter'] as const
+const ALLOWED_REPORT_TYPES = ['overview', 'inputs', 'sustainability'] as const
 type ReportType = (typeof ALLOWED_REPORT_TYPES)[number]
 
 function estimateTokens(text: string): number {
@@ -35,7 +35,7 @@ function generatePrompt(reportType: ReportType, content: string) {
       system: `Act as a climate and urban development expert. Write an Annex with inputs for a Climate Change and Sustainability report.`,
       user: `Using the following documents:\n\n${content}\n\nWrite a detailed input annex including:\n1. Climate change context in Brazil and the region\n2. Adaptation and mitigation challenges\n3. Project approach (housing, mobility, green infra, governance)\n4. Green finance strategy and NDC justification.`,
     },
-    filter: {
+    sustainability: {
       system: `Act as a sustainability analyst specialized in climate-aligned project evaluation. Generate a Climate Change and Sustainability Filter report.`,
       user: `Generate a Sustainability Filter Report including:\n1. Project title and summary\n2. Mitigation and adaptation analysis\n3. Paris Agreement alignment\n4. Green finance eligibility\n5. Final sustainability remarks\n\nContent:\n\n${content}`,
     },
