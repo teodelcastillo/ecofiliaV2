@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { ChevronLeft, Filter, Search, Grid, List } from "lucide-react"
+import { ChevronLeft, Filter, Search, Grid, List, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -163,6 +163,14 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
           </Button>
           <Button variant="outline" size="sm" onClick={() => setViewMode("list")}>
             <List className={`h-4 w-4 ${viewMode === "list" ? "text-primary" : "text-muted-foreground"}`} />
+          </Button>
+          <Button
+            variant="secondary"
+            className="gap-2"
+            onClick={() => router.push(`/protected/reports/${project.id}`)}
+            >
+            <FileText className="h-4 w-4" />
+            Ver reportes
           </Button>
         </div>
         <LinkDocumentsBadge projectId={project.id} onDocumentsLinked={fetchProjectDocuments} />
