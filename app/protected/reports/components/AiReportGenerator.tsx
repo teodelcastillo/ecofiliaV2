@@ -47,13 +47,21 @@ export function AiReportGenerator({ selectedProjectId }: { selectedProjectId?: s
       setIsGenerating(false);
       setProgress(100);
 
-      if (res.ok && data?.report) {
-        toast({ title: "Report ready", description: "Redirecting to download...", variant: "default" });
-
-        // Esperá 1 segundo y redirigí al visor
+      if (res.ok && data?.file_url) {
+        toast({
+          title: "Report generated",
+          description: (
+            <span>
+              <a href={data.file_url} target="_blank" rel="noopener noreferrer" className="underline text-primary">
+                Click here to view the document
+              </a> or wait to be redirected.
+            </span>
+          ),
+        });
+      
         setTimeout(() => {
-          router.push(`/projects/${selectedProjectId}/reports`);
-        }, 1000);
+          router.push(`/protected/reports/${selectedProjectId}`);
+        }, 3000);      
       } else {
         toast({
           title: "Generation failed",
