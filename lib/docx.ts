@@ -1,3 +1,4 @@
+// lib/docx.ts
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from "docx"
 
 export async function generateDocxFromText(text: string): Promise<Uint8Array> {
@@ -22,10 +23,7 @@ export async function generateDocxFromText(text: string): Promise<Uint8Array> {
       }))
     } else if (line.startsWith("**") && line.endsWith("**")) {
       paragraphs.push(new Paragraph({
-        children: [new TextRun({
-          text: line.replace(/\*\*/g, "").trim(),
-          bold: true,
-        })],
+        children: [new TextRun({ text: line.replace(/\*\*/g, "").trim(), bold: true })],
       }))
     } else {
       paragraphs.push(new Paragraph({
@@ -36,10 +34,6 @@ export async function generateDocxFromText(text: string): Promise<Uint8Array> {
     }
   }
 
-  const doc = new Document({
-    sections: [{ properties: {}, children: paragraphs }],
-  })
-
-  const buffer = await Packer.toBuffer(doc)
-  return buffer
+  const doc = new Document({ sections: [{ properties: {}, children: paragraphs }] })
+  return await Packer.toBuffer(doc)
 }
