@@ -1,8 +1,9 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
@@ -21,14 +22,18 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { motion, AnimatePresence } from "framer-motion"
 import type { Document } from "@/models"
 
-// New interface for Project
+// Interface for Project
 interface Project {
   id: string
   name: string
@@ -36,24 +41,36 @@ interface Project {
   documents: Document[]
 }
 
-interface DocumentSelectorProps {
+interface DocumentSelectorModalProps {
+  isOpen: boolean
+  onClose: () => void
   personalDocuments: Document[]
   publicDocuments: Document[]
-  projects?: Project[] // New prop for projects
+  projects?: Project[]
   onDocumentsSelected: (documents: Document[]) => void
   selectedDocuments: Document[]
 }
 
-export function DocumentSelector({
+export function DocumentSelectorModal({
+  isOpen,
+  onClose,
   personalDocuments,
   publicDocuments,
-  projects = [], // Default to empty array
+  projects = [],
   onDocumentsSelected,
   selectedDocuments,
-}: DocumentSelectorProps) {
+}: DocumentSelectorModalProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState("personal")
   const [expandedProjects, setExpandedProjects] = useState<string[]>([])
+  const [localSelectedDocs, setLocalSelectedDocs] = useState<Document[]>([])
+
+  // Initialize local selection with current selection when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setLocalSelectedDocs(selectedDocuments)
+    }
+  }, [isOpen, selectedDocuments])
 
   // Reset search when changing tabs
   useEffect(() => {
@@ -61,42 +78,42 @@ export function DocumentSelector({
   }, [activeTab])
 
   const toggleDocumentSelection = (document: Document, type: "user" | "public" | "project") => {
-    const isSelected = selectedDocuments.some((doc) => doc.id === document.id)
+    const isSelected = localSelectedDocs.some((doc) => doc.id === document.id)
 
-    const docWithType = { ...document, type } // Explicitly add type here
+    const docWithType = { ...document, type }
 
     if (isSelected) {
-      onDocumentsSelected(selectedDocuments.filter((doc) => doc.id !== document.id))
+      setLocalSelectedDocs(localSelectedDocs.filter((doc) => doc.id !== document.id))
     } else {
-      onDocumentsSelected([...selectedDocuments, docWithType])
+      setLocalSelectedDocs([...localSelectedDocs, docWithType])
     }
   }
 
   const toggleProjectSelection = (project: Project) => {
     const projectDocIds = new Set(project.documents.map((doc) => doc.id))
-    const currentlySelectedFromProject = selectedDocuments.filter((doc) => projectDocIds.has(doc.id))
+    const currentlySelectedFromProject = localSelectedDocs.filter((doc) => projectDocIds.has(doc.id))
 
     // If all project documents are selected, deselect them all
     if (currentlySelectedFromProject.length === project.documents.length) {
-      onDocumentsSelected(selectedDocuments.filter((doc) => !projectDocIds.has(doc.id)))
+      setLocalSelectedDocs(localSelectedDocs.filter((doc) => !projectDocIds.has(doc.id)))
     }
     // Otherwise, select all project documents
     else {
       // Remove any already selected docs from this project
-      const docsWithoutProject = selectedDocuments.filter((doc) => !projectDocIds.has(doc.id))
+      const docsWithoutProject = localSelectedDocs.filter((doc) => !projectDocIds.has(doc.id))
       // Add all project docs with the project type
       const projectDocs = project.documents.map((doc) => ({ ...doc, type: "project" as const }))
-      onDocumentsSelected([...docsWithoutProject, ...projectDocs])
+      setLocalSelectedDocs([...docsWithoutProject, ...projectDocs])
     }
   }
 
   const isProjectFullySelected = (project: Project) => {
-    return project.documents.every((doc) => selectedDocuments.some((selectedDoc) => selectedDoc.id === doc.id))
+    return project.documents.every((doc) => localSelectedDocs.some((selectedDoc) => selectedDoc.id === doc.id))
   }
 
   const isProjectPartiallySelected = (project: Project) => {
     const hasSelected = project.documents.some((doc) =>
-      selectedDocuments.some((selectedDoc) => selectedDoc.id === doc.id),
+      localSelectedDocs.some((selectedDoc) => selectedDoc.id === doc.id),
     )
     return hasSelected && !isProjectFullySelected(project)
   }
@@ -127,29 +144,24 @@ export function DocumentSelector({
   const filteredProjects = filterProjects(projects)
 
   const clearSelection = () => {
-    onDocumentsSelected([])
+    setLocalSelectedDocs([])
+  }
+
+  const handleApply = () => {
+    onDocumentsSelected(localSelectedDocs)
+    onClose()
   }
 
   return (
-    <Card className="h-[calc(100vh-12rem)] shadow-md border-border/50">
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-xl font-semibold flex items-center gap-2">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
             <FolderOpen className="h-5 w-5 text-primary" />
-            <span>Documents</span>
-          </CardTitle>
-          {selectedDocuments.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-            >
-              <Badge variant="secondary" className="font-normal">
-                {selectedDocuments.length} selected
-              </Badge>
-            </motion.div>
-          )}
-        </div>
+            Select Documents
+          </DialogTitle>
+          <DialogDescription>Choose documents or projects to chat with</DialogDescription>
+        </DialogHeader>
 
         <div className="relative mt-2">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -171,7 +183,7 @@ export function DocumentSelector({
           )}
         </div>
 
-        {selectedDocuments.length > 0 && (
+        {localSelectedDocs.length > 0 && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -180,7 +192,7 @@ export function DocumentSelector({
           >
             <div className="flex justify-between items-center py-1.5 px-2 bg-secondary/50 rounded-md">
               <span className="text-xs text-muted-foreground">
-                {selectedDocuments.length} document{selectedDocuments.length !== 1 ? "s" : ""} selected
+                {localSelectedDocs.length} document{localSelectedDocs.length !== 1 ? "s" : ""} selected
               </span>
               <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={clearSelection}>
                 Clear
@@ -188,68 +200,82 @@ export function DocumentSelector({
             </div>
           </motion.div>
         )}
-      </CardHeader>
 
-      <CardContent className="p-0 px-4 pb-4">
-        <Tabs defaultValue="personal" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 mb-4">
-            <TabsTrigger value="personal" className="flex items-center gap-1.5">
-              <FileText className="h-4 w-4" />
-              <span>My Library</span>
-            </TabsTrigger>
-            <TabsTrigger value="projects" className="flex items-center gap-1.5">
-              <Briefcase className="h-4 w-4" />
-              <span>Projects</span>
-            </TabsTrigger>
-            <TabsTrigger value="public" className="flex items-center gap-1.5">
-              <BookOpen className="h-4 w-4" />
-              <span>Public</span>
-            </TabsTrigger>
-          </TabsList>
+        <div className="flex-1 overflow-hidden mt-4">
+          <Tabs defaultValue="personal" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-3 mb-4">
+              <TabsTrigger value="personal" className="flex items-center gap-1.5">
+                <FileText className="h-4 w-4" />
+                <span>My Library</span>
+              </TabsTrigger>
+              <TabsTrigger value="projects" className="flex items-center gap-1.5">
+                <Briefcase className="h-4 w-4" />
+                <span>Projects</span>
+              </TabsTrigger>
+              <TabsTrigger value="public" className="flex items-center gap-1.5">
+                <BookOpen className="h-4 w-4" />
+                <span>Public</span>
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="personal" className="mt-0">
-            <ScrollArea className="h-[calc(100vh-25rem)]">
-              <DocumentList
-                documents={filteredPersonalDocs}
-                selectedDocuments={selectedDocuments}
-                onToggle={(doc) => toggleDocumentSelection(doc, "user")}
-                emptyMessage="No personal documents found"
-                searchQuery={searchQuery}
-              />
-            </ScrollArea>
-          </TabsContent>
+            <TabsContent value="personal" className="mt-0 h-[40vh]">
+              <ScrollArea className="h-full pr-4">
+                <DocumentList
+                  documents={filteredPersonalDocs}
+                  selectedDocuments={localSelectedDocs}
+                  onToggle={(doc) => toggleDocumentSelection(doc, "user")}
+                  emptyMessage="No personal documents found"
+                  searchQuery={searchQuery}
+                />
+              </ScrollArea>
+            </TabsContent>
 
-          <TabsContent value="projects" className="mt-0">
-            <ScrollArea className="h-[calc(100vh-25rem)]">
-              <ProjectList
-                projects={filteredProjects}
-                selectedDocuments={selectedDocuments}
-                onToggleDocument={(doc) => toggleDocumentSelection(doc, "project")}
-                onToggleProject={toggleProjectSelection}
-                isProjectFullySelected={isProjectFullySelected}
-                isProjectPartiallySelected={isProjectPartiallySelected}
-                expandedProjects={expandedProjects}
-                toggleProjectExpand={toggleProjectExpand}
-                emptyMessage="No projects found"
-                searchQuery={searchQuery}
-              />
-            </ScrollArea>
-          </TabsContent>
+            <TabsContent value="projects" className="mt-0 h-[40vh]">
+              <ScrollArea className="h-full pr-4">
+                <ProjectList
+                  projects={filteredProjects}
+                  selectedDocuments={localSelectedDocs}
+                  onToggleDocument={(doc) => toggleDocumentSelection(doc, "project")}
+                  onToggleProject={toggleProjectSelection}
+                  isProjectFullySelected={isProjectFullySelected}
+                  isProjectPartiallySelected={isProjectPartiallySelected}
+                  expandedProjects={expandedProjects}
+                  toggleProjectExpand={toggleProjectExpand}
+                  emptyMessage="No projects found"
+                  searchQuery={searchQuery}
+                />
+              </ScrollArea>
+            </TabsContent>
 
-          <TabsContent value="public" className="mt-0">
-            <ScrollArea className="h-[calc(100vh-25rem)]">
-              <DocumentList
-                documents={filteredPublicDocs}
-                selectedDocuments={selectedDocuments}
-                onToggle={(doc) => toggleDocumentSelection(doc, "public")}
-                emptyMessage="No public documents found"
-                searchQuery={searchQuery}
-              />
-            </ScrollArea>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+            <TabsContent value="public" className="mt-0 h-[40vh]">
+              <ScrollArea className="h-full pr-4">
+                <DocumentList
+                  documents={filteredPublicDocs}
+                  selectedDocuments={localSelectedDocs}
+                  onToggle={(doc) => toggleDocumentSelection(doc, "public")}
+                  emptyMessage="No public documents found"
+                  searchQuery={searchQuery}
+                />
+              </ScrollArea>
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        <DialogFooter className="flex justify-between items-center mt-4 gap-2">
+          <div className="text-sm text-muted-foreground">
+            {localSelectedDocs.length} document{localSelectedDocs.length !== 1 ? "s" : ""} selected
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button onClick={handleApply} disabled={localSelectedDocs.length === 0}>
+              Apply
+            </Button>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
