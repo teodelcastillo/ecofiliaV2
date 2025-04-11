@@ -132,7 +132,6 @@ export default function ForgotPassword() {
           </CardFooter>
         </Card>
       </motion.div>
-      <SmtpMessage />
     </div>
   )
 }

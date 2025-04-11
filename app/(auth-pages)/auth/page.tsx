@@ -198,7 +198,6 @@ export default function AuthPage() {
           </CardFooter>
         </Card>
       </motion.div>
-      <SmtpMessage />
     </div>
   )
 }
