@@ -1,14 +1,19 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, FileText, MoreVertical, Download, Trash2 } from "lucide-react"
-import { formatDate } from "../utils/format-date"
-import { createClient } from "@/utils/supabase/client"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { getFileIcon } from "../utils/file-icons"
+import { Calendar, FileText, MoreVertical, Trash2, Download, Share2, ExternalLink, Edit } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { formatDistanceToNow } from "date-fns"
+import { motion } from "framer-motion"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,153 +24,219 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { getSignedUrl } from "@/lib/getSignedUrl";
-
-
+import { createClient } from "@/utils/supabase/client"
+import { useToast } from "@/hooks/use-toast"
 
 interface DocumentCardProps {
   document: {
     id: string
     name: string
-    description?: string
-    category?: string
+    file_path?: string
     created_at: string
-    file_path: string
-    file_type?: string
-    user_id: string
+    category?: string
+    description?: string
     [key: string]: any
   }
-  isOwner?: boolean
-  onDelete?: (documentId: string) => void
-  onClick?: () => void
+  onDelete?: (id: string) => void
 }
 
-export function DocumentCard({ document, isOwner = false, onDelete }: DocumentCardProps) {
-  const { id, name, description, category, created_at, file_path, file_type } = document
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+export function DocumentCard({ document, onDelete }: DocumentCardProps) {
+  const [isHovered, setIsHovered] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-
-  const FileTypeIcon = getFileIcon(file_type)
-
-  const handleOpenDocument = async (filePath: string) => {
-    const signedUrl = await getSignedUrl("user-documents", filePath);
-    if (signedUrl) {
-      window.open(signedUrl, "_blank");
-    } else {
-      alert("Could not access file. Please try again.");
-    }
-  };
-
-const handleDownload = async () => {
-  if (!file_path) return;
-
-  const signedUrl = await getSignedUrl("user-documents", file_path);
-  if (signedUrl) {
-    const link = document.createElement("a");
-    link.href = signedUrl;
-    link.download = name || "document.pdf"; // fallback filename
-    link.click();
-  } else {
-    alert("Could not download file. Please try again.");
-  }
-};
+  const { toast } = useToast()
+  const supabase = createClient()
 
   const handleDelete = async () => {
-    if (!id) return
+    if (!document.id) return
 
     setIsDeleting(true)
-    const supabase = createClient()
-
     try {
-      // Delete the file from storage if it exists
-      if (file_path) {
-          await supabase.storage.from("user_documents").remove([file_path])
-      }
-
-      // Delete the document record
-      const { error } = await supabase.from("documents").delete().eq("id", id)
+      // Delete the document from the database
+      const { error } = await supabase.from("documents").delete().eq("id", document.id)
 
       if (error) throw error
 
-      // Notify parent component
+      // Delete the file from storage if file_path exists
+      if (document.file_path) {
+        const { error: storageError } = await supabase.storage.from("documents").remove([document.file_path])
+        if (storageError) console.error("Error deleting file:", storageError)
+      }
+
+      toast({
+        title: "Document deleted",
+        description: "The document has been successfully deleted.",
+      })
+
+      // Call the onDelete callback if provided
       if (onDelete) {
-        onDelete(id)
+        onDelete(document.id)
       }
     } catch (error) {
       console.error("Error deleting document:", error)
+      toast({
+        title: "Error",
+        description: "Failed to delete the document. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsDeleting(false)
-      setIsDeleteDialogOpen(false)
+      setShowDeleteDialog(false)
+    }
+  }
+
+  const handleDownload = async () => {
+    if (!document.file_path) return
+
+    try {
+      const { data, error } = await supabase.storage.from("documents").download(document.file_path)
+      if (error) throw error
+
+      // Create a download link
+      const url = URL.createObjectURL(data)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = document.name || "document"
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+
+      toast({
+        title: "Download started",
+        description: "Your document is being downloaded.",
+      })
+    } catch (error) {
+      console.error("Error downloading document:", error)
+      toast({
+        title: "Download failed",
+        description: "Failed to download the document. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleShare = () => {
+    // Implement share functionality
+    // For now, just copy the document name to clipboard
+    navigator.clipboard.writeText(document.name)
+    toast({
+      title: "Link copied",
+      description: "Document link copied to clipboard.",
+    })
+  }
+
+  const getFileUrl = async () => {
+    if (!document.file_path) return null
+
+    try {
+      const { data, error } = await supabase.storage.from("documents").createSignedUrl(document.file_path, 60)
+      if (error) throw error
+      return data.signedUrl
+    } catch (error) {
+      console.error("Error getting file URL:", error)
+      return null
+    }
+  }
+
+  const handleView = async () => {
+    const url = await getFileUrl()
+    if (url) {
+      window.open(url, "_blank")
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to open the document. Please try again.",
+        variant: "destructive",
+      })
     }
   }
 
   return (
     <>
-      <Card className="h-full flex flex-col">
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <div>
-              {category && (
-                <div className="mb-2">
-                  <Badge variant="secondary">{category}</Badge>
+      <motion.div
+        whileHover={{ y: -5 }}
+        transition={{ duration: 0.2 }}
+        onHoverStart={() => setIsHovered(true)}
+        onHoverEnd={() => setIsHovered(false)}
+      >
+        <Card
+          className={`h-full flex flex-col overflow-hidden transition-all duration-200 ${
+            isHovered ? "shadow-md border-primary/30" : "border-border/60"
+          }`}
+        >
+          <CardHeader className="pb-3">
+            <div className="flex justify-between items-start">
+              <div className="flex items-center gap-2">
+                <div className="bg-primary/10 p-1.5 rounded-md">
+                  <FileText className="h-4 w-4 text-primary" />
                 </div>
-              )}
-            </div>
-            {isOwner && (
+                {document.category && <Badge variant="outline">{document.category}</Badge>}
+              </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="-mt-2 -mr-2">
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
                     <MoreVertical className="h-4 w-4" />
-                    <span className="sr-only">Open menu</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleDownload} disabled={!file_path}>
-                    <Download className="h-4 w-4 mr-2" />
-                    Download
+                  <DropdownMenuItem onClick={handleView}>
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    <span>View</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleDownload}>
+                    <Download className="mr-2 h-4 w-4" />
+                    <span>Download</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleShare}>
+                    <Share2 className="mr-2 h-4 w-4" />
+                    <span>Share</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <Edit className="mr-2 h-4 w-4" />
+                    <span>Edit Details</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => setIsDeleteDialogOpen(true)}
+                    onClick={() => setShowDeleteDialog(true)}
                     className="text-destructive focus:text-destructive"
                   >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    <span>Delete</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            )}
-          </div>
-          <CardTitle className="line-clamp-1">{name || "Untitled Document"}</CardTitle>
-          <CardDescription className="line-clamp-2">{description || "No description available"}</CardDescription>
-        </CardHeader>
-        <CardContent className="flex-grow">
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              <span>{formatDate(created_at)}</span>
             </div>
-            {file_type && (
-              <div className="flex items-center gap-2">
-                <FileTypeIcon className="h-4 w-4" />
-                <span className="uppercase">{file_type}</span>
-              </div>
+            <CardTitle className="text-lg mt-2 line-clamp-2">{document.name}</CardTitle>
+            {document.description && (
+              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{document.description}</p>
             )}
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button className="w-full" variant="outline" onClick={() => handleOpenDocument(document.file_path)} disabled={!file_path}>
-            <FileText className="mr-2 h-4 w-4" />
-            View Document
-          </Button>
-        </CardFooter>
-      </Card>
+          </CardHeader>
+          <CardContent className="pb-3 pt-0 flex-grow">
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Calendar className="mr-2 h-4 w-4" />
+              <span>
+                {document.created_at
+                  ? `Added ${formatDistanceToNow(new Date(document.created_at), { addSuffix: true })}`
+                  : "Date unknown"}
+              </span>
+            </div>
+          </CardContent>
+          <CardFooter className="pt-3">
+            <Button className="w-full" variant={isHovered ? "default" : "outline"} onClick={handleView}>
+              <ExternalLink className="mr-2 h-4 w-4" />
+              View Document
+            </Button>
+          </CardFooter>
+        </Card>
+      </motion.div>
 
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure you want to delete this document?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the document "{name}". This action cannot be undone.
+              This action cannot be undone. This will permanently delete the document and remove it from our servers.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -173,7 +244,7 @@ const handleDownload = async () => {
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground"
             >
               {isDeleting ? "Deleting..." : "Delete"}
             </AlertDialogAction>
@@ -183,4 +254,3 @@ const handleDownload = async () => {
     </>
   )
 }
-

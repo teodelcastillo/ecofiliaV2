@@ -1,13 +1,24 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { createClient } from "@/utils/supabase/client"
-import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
+import { Loader2 } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 interface CreateProjectModalProps {
   open: boolean
@@ -17,89 +28,138 @@ interface CreateProjectModalProps {
 export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
-  const [client, setClient] = useState("")
   const [category, setCategory] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [isCreating, setIsCreating] = useState(false)
 
   const supabase = createClient()
-  const router = useRouter()
+  const { toast } = useToast()
 
-  const handleSubmit = async () => {
-    setLoading(true)
-    setError(null)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
 
-    const {
-      data: { user }
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      setError("You must be logged in.")
-      setLoading(false)
+    if (!name.trim()) {
+      toast({
+        title: "Project name required",
+        description: "Please enter a name for your project.",
+        variant: "destructive",
+      })
       return
     }
 
-    const { error: insertError } = await supabase.from("projects").insert({
-      name,
-      description,
-      client,
-      category,
-      user_id: user.id
-    })
+    setIsCreating(true)
 
-    if (insertError) {
-      setError(insertError.message)
-      setLoading(false)
-      return
+    try {
+      // Get user ID
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        throw new Error("User not authenticated")
+      }
+
+      // Create project record in database
+      const { data, error } = await supabase
+        .from("projects")
+        .insert({
+          name,
+          description: description || null,
+          category: category || null,
+          user_id: user.id,
+        })
+        .select()
+
+      if (error) throw error
+
+      toast({
+        title: "Project created",
+        description: "Your project has been successfully created.",
+      })
+
+      // Reset form and close modal
+      setName("")
+      setDescription("")
+      setCategory("")
+      onClose()
+
+      // Refresh the page to show the new project
+      window.location.reload()
+    } catch (error) {
+      console.error("Error creating project:", error)
+      toast({
+        title: "Creation failed",
+        description: "There was an error creating your project. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsCreating(false)
     }
-
-    // Refresh view and close
-    router.refresh()
-    setLoading(false)
-    onClose()
-
-    // Optional: reset fields
-    setName("")
-    setDescription("")
-    setClient("")
-    setCategory("")
   }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Create New Project</DialogTitle>
+          <DialogDescription>Create a new project to organize your documents.</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
             <Label htmlFor="name">Project Name</Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter project name"
+              disabled={isCreating}
+              required
+            />
           </div>
-          <div>
-            <Label htmlFor="description">Description</Label>
-            <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} />
-          </div>
-          <div>
-            <Label htmlFor="client">Client</Label>
-            <Input id="client" value={client} onChange={(e) => setClient(e.target.value)} />
-          </div>
-          <div>
-            <Label htmlFor="category">Category</Label>
-            <Input id="category" value={category} onChange={(e) => setCategory(e.target.value)} />
-          </div>
-          {error && <p className="text-sm text-red-500">{error}</p>}
-        </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={loading}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit} disabled={loading || !name}>
-            {loading ? "Creating..." : "Create Project"}
-          </Button>
-        </DialogFooter>
+          <div className="space-y-2">
+            <Label htmlFor="description">Description (Optional)</Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Enter a brief description"
+              disabled={isCreating}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="category">Category (Optional)</Label>
+            <Select value={category} onValueChange={setCategory} disabled={isCreating}>
+              <SelectTrigger id="category">
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Sustainability">Sustainability</SelectItem>
+                <SelectItem value="Energy">Energy</SelectItem>
+                <SelectItem value="Water">Water</SelectItem>
+                <SelectItem value="Waste">Waste</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <DialogFooter className="pt-2">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isCreating}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isCreating || !name.trim()}>
+              {isCreating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create Project"
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   )

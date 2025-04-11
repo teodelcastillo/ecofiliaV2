@@ -1,54 +1,112 @@
 "use client"
 
-import { formatDistanceToNow } from "date-fns"
+import { useState } from "react"
+import { formatDistanceToNow, format } from "date-fns"
 import {
   FileText,
   FileSpreadsheet,
-  FileIcon as FilePresentation,
+  FileImage,
+  File,
   MoreVertical,
   Download,
-  Share2
+  Share2,
+  Edit,
+  Trash2,
+  FolderIcon as FolderMove,
+  Eye,
+  Loader2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from "@/components/ui/table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Document } from "@/models"
+import { Badge } from "@/components/ui/badge"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { motion } from "framer-motion"
+import { useToast } from "@/hooks/use-toast"
+import type { Document } from "@/models"
 
 interface DocumentListProps {
   documents: Document[]
   onDocumentClick?: (document: Document) => void
+  onDownload?: (document: Document) => Promise<void>
+  onShare?: (document: Document) => void
+  onRename?: (document: Document) => void
+  onMove?: (document: Document) => void
+  onDelete?: (document: Document) => void
+  isLoading?: boolean
 }
 
-export function DocumentList({ documents, onDocumentClick }: DocumentListProps) {
-  const getDocumentIcon = (type: string) => {
-    switch (type) {
+export function DocumentList({
+  documents,
+  onDocumentClick,
+  onDownload,
+  onShare,
+  onRename,
+  onMove,
+  onDelete,
+  isLoading = false,
+}: DocumentListProps) {
+  const [processingDoc, setProcessingDoc] = useState<string | null>(null)
+  const { toast } = useToast()
+
+  const getDocumentIcon = (type: string | undefined) => {
+    if (!type) return <File className="h-5 w-5 text-gray-500" />
+
+    switch (type.toLowerCase()) {
       case "pdf":
         return <FileText className="h-5 w-5 text-red-500" />
       case "docx":
+      case "doc":
         return <FileText className="h-5 w-5 text-blue-500" />
       case "xlsx":
+      case "xls":
+      case "csv":
         return <FileSpreadsheet className="h-5 w-5 text-green-500" />
       case "pptx":
-        return <FilePresentation className="h-5 w-5 text-orange-500" />
+      case "ppt":
+        return <File className="h-5 w-5 text-orange-500" />
+      case "jpg":
+      case "jpeg":
+      case "png":
+      case "gif":
+        return <FileImage className="h-5 w-5 text-purple-500" />
       default:
-        return <FileText className="h-5 w-5 text-gray-500" />
+        return <File className="h-5 w-5 text-gray-500" />
+    }
+  }
+
+  const formatFileSize = (bytes: number | undefined) => {
+    if (bytes === undefined) return "Unknown"
+
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  }
+
+  const handleAction = async (action: (document: Document) => Promise<void> | void, document: Document) => {
+    try {
+      setProcessingDoc(document.id)
+      await action(document)
+    } catch (error) {
+      console.error(`Error performing action:`, error)
+      toast({
+        title: "Action failed",
+        description: "There was an error performing this action. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setProcessingDoc(null)
     }
   }
 
   return (
-    <div className="rounded-md border overflow-x-auto">
+    <div className="rounded-md border overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
@@ -61,10 +119,22 @@ export function DocumentList({ documents, onDocumentClick }: DocumentListProps) 
           </TableRow>
         </TableHeader>
         <TableBody>
-          {documents.length === 0 ? (
+          {isLoading ? (
             <TableRow>
               <TableCell colSpan={6} className="h-24 text-center">
-                No documents found
+                <div className="flex items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary mr-2" />
+                  <span>Loading documents...</span>
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : documents.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={6} className="h-24 text-center">
+                <div className="flex flex-col items-center justify-center gap-2">
+                  <FileText className="h-8 w-8 text-muted-foreground opacity-50" />
+                  <p className="text-muted-foreground">No documents found</p>
+                </div>
               </TableCell>
             </TableRow>
           ) : (
@@ -72,45 +142,173 @@ export function DocumentList({ documents, onDocumentClick }: DocumentListProps) 
               const {
                 id,
                 name = "Untitled",
-                type = "file",
+                file_type: type,
+                created_at,
+                user_id,
+                category,
               } = document
 
+              const isProcessing = processingDoc === id
+              const modifiedDate = created_at
+              const modifiedRelative = modifiedDate
+                ? formatDistanceToNow(new Date(modifiedDate), { addSuffix: true })
+                : "Unknown"
+              const modifiedAbsolute = modifiedDate ? format(new Date(modifiedDate), "MMM d, yyyy") : "Unknown"
+
               return (
-                <TableRow
+                <motion.tr
                   key={id}
-                  className="cursor-pointer"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className={`${onDocumentClick ? "cursor-pointer" : ""} hover:bg-muted/50`}
                   onClick={() => onDocumentClick?.(document)}
                 >
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       {getDocumentIcon(type)}
-                      <span>{name}</span>
+                      <span className="truncate max-w-[300px]">{name}</span>
+                      {category && (
+                        <Badge variant="outline" className="ml-2">
+                          {category}
+                        </Badge>
+                      )}
                     </div>
                   </TableCell>
-                  <TableCell>{type?.toUpperCase()}</TableCell>
+                  <TableCell>{type?.toUpperCase() || "Unknown"}</TableCell>
+                  <TableCell>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span>{modifiedRelative}</span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{modifiedAbsolute}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableCell>
+                  <TableCell>{user_id || "Unknown"}</TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-                      <Button variant="ghost" size="icon" title="Download">
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" title="Share">
-                        <Share2 className="h-4 w-4" />
-                      </Button>
+                    <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              disabled={isProcessing || !onDocumentClick}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                onDocumentClick?.(document)
+                              }}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>View</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+
+                      {onDownload && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                disabled={isProcessing}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleAction(onDownload, document)
+                                }}
+                              >
+                                {isProcessing ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Download className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Download</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+
+                      {onShare && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                disabled={isProcessing}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleAction(onShare, document)
+                                }}
+                              >
+                                <Share2 className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Share</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
+                          <Button variant="ghost" size="icon" disabled={isProcessing}>
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>Rename</DropdownMenuItem>
-                          <DropdownMenuItem>Move</DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
+                          {onRename && (
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleAction(onRename, document)
+                              }}
+                            >
+                              <Edit className="h-4 w-4 mr-2" />
+                              Rename
+                            </DropdownMenuItem>
+                          )}
+                          {onMove && (
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleAction(onMove, document)
+                              }}
+                            >
+                              <FolderMove className="h-4 w-4 mr-2" />
+                              Move
+                            </DropdownMenuItem>
+                          )}
+                          {(onRename || onMove) && onDelete && <DropdownMenuSeparator />}
+                          {onDelete && (
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleAction(onDelete, document)
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
                   </TableCell>
-                </TableRow>
+                </motion.tr>
               )
             })
           )}

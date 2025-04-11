@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
-import { ProjectView } from "../components/project-view"
+import  {ProjectView}  from "../components/project-view"
 import { createClient } from "@/utils/supabase/client"
 import { Project } from "@/models"
 

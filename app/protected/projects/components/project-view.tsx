@@ -2,20 +2,15 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { ChevronLeft, Filter, Search, Grid, List, FileText } from "lucide-react"
+import { ChevronLeft, Filter, Search, Grid, List, FileText, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { DocumentCard } from "../../my-library/components/document-card"
-import { DocumentList } from "../../my-library/components/document-list"
-import { Project } from "@/models"
+import type { Project } from "@/models"
 import { createClient } from "@/utils/supabase/client"
-import { LinkDocumentsBadge } from "./LinkDocumentsBadge"
+import { LinkDocumentsBadge } from "./link-documents-badge"
+import { motion, AnimatePresence } from "framer-motion"
 
 const documentTypes = ["All", "pdf", "docx", "xlsx", "pptx"]
 const sortOptions = ["Name (A-Z)", "Name (Z-A)", "Date (Newest)", "Date (Oldest)"]
@@ -34,33 +29,28 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
   const [selectedType, setSelectedType] = useState("All")
   const [sortBy, setSortBy] = useState("Date (Newest)")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-  const [selectedDocument, setSelectedDocument] = useState<any | null>(null)
   const [loading, setLoading] = useState(false)
-
-  console.log("Project object:", project)
-  console.log("Project ID:", project.id)
-  console.log("Project name:", project.name)
 
   const fetchProjectDocuments = useCallback(async () => {
     console.log("Fetching project documents for:", project.id)
     setLoading(true)
-  
+
     const { data: projectLinks, error } = await supabase
       .from("project_documents")
       .select("*")
       .eq("project_id", project.id)
-  
+
     if (error) {
       console.error("Error fetching project documents:", error.message)
       setLoading(false)
       return
     }
-  
+
     console.log("Project links found:", projectLinks)
-  
-    const userDocIds = projectLinks.filter(link => link.document_id).map(link => link.document_id)
-    const publicDocIds = projectLinks.filter(link => link.public_document_id).map(link => link.public_document_id)
-  
+
+    const userDocIds = projectLinks.filter((link) => link.document_id).map((link) => link.document_id)
+    const publicDocIds = projectLinks.filter((link) => link.public_document_id).map((link) => link.public_document_id)
+
     const [userDocsResp, publicDocsResp] = await Promise.all([
       userDocIds.length > 0
         ? supabase.from("documents").select("*").in("id", userDocIds)
@@ -69,22 +59,18 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
         ? supabase.from("public_documents").select("*").in("id", publicDocIds)
         : Promise.resolve({ data: [] }),
     ])
-  
-    console.log("User docs:", userDocsResp)
-    console.log("Public docs:", publicDocsResp)
-  
+
     // Add fallback just in case
     if (!userDocsResp || !publicDocsResp) {
       console.error("Failed to load documents properly")
       setLoading(false)
       return
     }
-  
+
     // format + set
-    const formatType = (path: string | null | undefined) =>
-      path?.split(".").pop()?.toLowerCase().trim() || "pdf"
-  
-    const formattedUserDocs = (userDocsResp.data ?? []).map(doc => ({
+    const formatType = (path: string | null | undefined) => path?.split(".").pop()?.toLowerCase().trim() || "pdf"
+
+    const formattedUserDocs = (userDocsResp.data ?? []).map((doc) => ({
       id: doc.id,
       name: doc.name || "Untitled Document",
       description: doc.description || "",
@@ -94,8 +80,8 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
       file_type: formatType(doc.file_path),
       user_id: doc.user_id,
     }))
-  
-    const formattedPublicDocs = (publicDocsResp.data ?? []).map(doc => ({
+
+    const formattedPublicDocs = (publicDocsResp.data ?? []).map((doc) => ({
       id: doc.id,
       name: doc.name || "Untitled Document",
       description: doc.description || "",
@@ -105,17 +91,16 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
       file_type: formatType(doc.file_url),
       user_id: "public",
     }))
-  
+
     setDocuments([...formattedUserDocs, ...formattedPublicDocs])
     setLoading(false)
-  }, [project.id])
-  
+  }, [project.id, supabase])
 
   useEffect(() => {
     fetchProjectDocuments()
   }, [fetchProjectDocuments])
 
-  const filteredDocuments = documents.filter(doc => {
+  const filteredDocuments = documents.filter((doc) => {
     const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesType = selectedType === "All" || doc.file_type === selectedType
     return matchesSearch && matchesType
@@ -144,13 +129,13 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={handleBack}>
+        <Button variant="ghost" size="icon" onClick={handleBack} className="h-9 w-9">
           <ChevronLeft className="h-5 w-5" />
         </Button>
         <div>
           <h2 className="text-2xl font-bold tracking-tight">{project.name}</h2>
           <p className="text-sm text-muted-foreground">
-            {project.category} • {project.client}
+            {project.category} {project.client && `• ${project.client}`}
           </p>
         </div>
       </div>
@@ -164,14 +149,16 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
           <Button variant="outline" size="sm" onClick={() => setViewMode("list")}>
             <List className={`h-4 w-4 ${viewMode === "list" ? "text-primary" : "text-muted-foreground"}`} />
           </Button>
-          <Button
-            variant="secondary"
-            className="gap-2"
-            onClick={() => router.push(`/protected/reports/${project.id}`)}
+          {project.id && (
+            <Button
+              variant="secondary"
+              className="gap-2"
+              onClick={() => router.push(`/protected/reports/${project.id}`)}
             >
-            <FileText className="h-4 w-4" />
-            Ver reportes
-          </Button>
+              <FileText className="h-4 w-4" />
+              View Reports
+            </Button>
+          )}
         </div>
         <LinkDocumentsBadge projectId={project.id} onDocumentsLinked={fetchProjectDocuments} />
       </div>
@@ -196,7 +183,7 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            {documentTypes.map(type => (
+            {documentTypes.map((type) => (
               <DropdownMenuItem key={type} onClick={() => setSelectedType(type)}>
                 {type}
               </DropdownMenuItem>
@@ -212,7 +199,7 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            {sortOptions.map(option => (
+            {sortOptions.map((option) => (
               <DropdownMenuItem key={option} onClick={() => setSortBy(option)}>
                 {option}
               </DropdownMenuItem>
@@ -222,28 +209,96 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
       </div>
 
       {/* Content */}
-      {loading ? (
-        <p className="text-muted-foreground">Loading documents...</p>
-      ) : sortedDocuments.length === 0 ? (
-        <div className="flex h-40 items-center justify-center rounded-md border border-dashed">
-          <p className="text-muted-foreground">No documents found</p>
-        </div>
-      ) : viewMode === "grid" ? (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {sortedDocuments.map(doc => (
-            <DocumentCard key={doc.id} document={doc} onClick={() => setSelectedDocument(doc)} />
-          ))}
-        </div>
-      ) : (
-        <DocumentList documents={sortedDocuments} onDocumentClick={setSelectedDocument} />
-      )}
-
-      {selectedDocument && (
-        <div className="rounded-lg border p-4">
-          <h3 className="text-lg font-medium">Selected Document</h3>
-          <p>You selected: {selectedDocument.name}</p>
-        </div>
-      )}
+      <AnimatePresence mode="wait">
+        {loading ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex justify-center py-12"
+          >
+            <p className="text-muted-foreground">Loading documents...</p>
+          </motion.div>
+        ) : sortedDocuments.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col items-center justify-center py-12 border border-dashed rounded-lg"
+          >
+            <div className="bg-muted/50 p-3 rounded-full mb-4">
+              <FileText className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-medium mb-1">No documents found</h3>
+            <p className="text-muted-foreground mb-4">
+              {searchQuery || selectedType !== "All"
+                ? "Try adjusting your search or filters"
+                : "Add documents to this project to get started"}
+            </p>
+            <Button onClick={() => document.getElementById("link-documents-button")?.click()}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Documents
+            </Button>
+          </motion.div>
+        ) : viewMode === "grid" ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <AnimatePresence>
+                {sortedDocuments.map((doc, index) => (
+                  <motion.div
+                    key={doc.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2, delay: index * 0.05 }}
+                  >
+                    <DocumentCard document={doc} />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="border rounded-md divide-y"
+          >
+            {sortedDocuments.map((doc, index) => (
+              <motion.div
+                key={doc.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: index * 0.03 }}
+                className="p-4 hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-primary/10 p-1.5 rounded-md">
+                      <FileText className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium">{doc.name}</h3>
+                      <p className="text-sm text-muted-foreground">{doc.category || "No category"}</p>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href={doc.file_path} target="_blank" rel="noopener noreferrer">
+                      View
+                    </a>
+                  </Button>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -21,4 +21,5 @@ export interface Project {
   client?: string
   user_id: string
   created_at: string
+  Documents?: Document[]
 }
