@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useMemo } from "react"
 import { DocumentCard } from "./document-card"
 import { DocumentFilters } from "./document-filters"
 import { Input } from "@/components/ui/input"
@@ -14,7 +14,11 @@ interface SustainabilityLibraryProps {
   initialCategory?: string | null
 }
 
-export function SustainabilityLibrary({ initialDocuments, categories, initialCategory = null }: SustainabilityLibraryProps) {
+export function SustainabilityLibrary({
+  initialDocuments,
+  categories,
+  initialCategory = null,
+}: SustainabilityLibraryProps) {
   const supabase = createClient()
   const [documents, setDocuments] = useState(initialDocuments)
   const [page, setPage] = useState(1)
@@ -29,26 +33,25 @@ export function SustainabilityLibrary({ initialDocuments, categories, initialCat
     setLoadingMore(true)
     const from = page * PAGE_SIZE
     const to = from + PAGE_SIZE - 1
-  
+
     const { data: moreDocs, error } = await supabase
       .from("public_documents")
       .select("id, name, category, created_at, file_url")
       .range(from, to)
-  
+
     if (error) console.error("Error loading more:", error.message)
-  
+
     if (moreDocs && moreDocs.length > 0) {
       setDocuments((prev) => {
         const allDocs = [...prev, ...moreDocs]
-        const uniqueDocs = Array.from(new Map(allDocs.map(doc => [doc.id, doc])).values())
+        const uniqueDocs = Array.from(new Map(allDocs.map((doc) => [doc.id, doc])).values())
         return uniqueDocs
       })
       setPage((prev) => prev + 1)
     }
-  
+
     setLoadingMore(false)
   }
-  
 
   const filteredDocuments = useMemo(() => {
     return documents.filter((doc) => {

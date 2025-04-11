@@ -26,9 +26,7 @@ export function SustainabilityLibraryWrapper({ documents, categories }: Sustaina
     <div className="container mx-auto py-8 px-4 space-y-6">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold">Sustainability Library</h1>
-        <p className="text-muted-foreground">
-          Explore our collection of sustainability resources and documents.
-        </p>
+        <p className="text-muted-foreground">Explore our collection of sustainability resources and documents.</p>
         {initialCategory && (
           <p className="text-primary">
             Showing results for <strong>{initialCategory}</strong>
@@ -37,11 +35,7 @@ export function SustainabilityLibraryWrapper({ documents, categories }: Sustaina
       </div>
 
       {/* Document List */}
-      <SustainabilityLibrary
-        initialDocuments={documents}
-        categories={categories}
-        initialCategory={initialCategory}
-      />
+      <SustainabilityLibrary initialDocuments={documents} categories={categories} initialCategory={initialCategory} />
     </div>
   )
 }
