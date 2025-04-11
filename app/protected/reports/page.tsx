@@ -1,12 +1,10 @@
-import type { Metadata } from "next"
-import { ReportsOverview } from "./components/ReportsOverview"
+import { ReportsOverview } from "./components/reports-overview"
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Environmental Reports | Ecofilia",
-  description: "Access, manage, and generate environmental impact reports",
+  description: "Generate and manage environmental reports for your sustainability projects",
 }
 
 export default function ReportsPage() {
   return <ReportsOverview />
 }
-

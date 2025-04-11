@@ -6,7 +6,7 @@ import { BarChart, LineChart, PieChart, XAxis, YAxis, Bar, Cell, Line, Pie } fro
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { BarChart2, Droplet, Leaf, Zap } from "lucide-react"
 
-// 1️⃣ Type Definitions
+// Type Definitions
 type MonthlyDataPoint = {
   month: string
   value: number
@@ -17,7 +17,7 @@ type EnergyDataPoint = {
   value: number
 }
 
-// 2️⃣ Sample Data
+// Sample Data
 const carbonData: MonthlyDataPoint[] = [
   { month: "Jan", value: 65 },
   { month: "Feb", value: 59 },
@@ -52,8 +52,7 @@ const biodiversityData: MonthlyDataPoint[] = [
   { month: "Jun", value: 88 },
 ]
 
-// 3️⃣ Reusable Chart Sections
-
+// Reusable Chart Sections
 type BarChartSectionProps = {
   title: string
   data: MonthlyDataPoint[]
@@ -127,15 +126,7 @@ function PieChartSection({ data }: PieChartSectionProps) {
     >
       <PieChart>
         <ChartTooltip content={<ChartTooltipContent />} />
-        <Pie
-          data={data}
-          dataKey="value"
-          nameKey="name"
-          cx="50%"
-          cy="50%"
-          outerRadius={100}
-          label
-        >
+        <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
           {data.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={`var(--color-${entry.name.toLowerCase()})`} />
           ))}
@@ -145,7 +136,7 @@ function PieChartSection({ data }: PieChartSectionProps) {
   )
 }
 
-// 4️⃣ Main Component
+// Main Component
 export function KpiDashboard() {
   return (
     <Card>
