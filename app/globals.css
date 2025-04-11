@@ -4,65 +4,83 @@
 
 @layer base {
   :root {
-    --background: 150 100% 97%;
-    --foreground: 222.2 84% 4.9%;
+    /* Main colors */
+    --background: 150 30% 98%;
+    --foreground: 170 35% 15%;
 
-    --card: 150 100% 97%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Card styles */
+    --card: 0 0% 100%;
+    --card-foreground: 170 35% 15%;
 
-    --popover: 150 100% 97%;
-    --popover-foreground: 222.2 84% 4.9%;
+    /* Popover styles */
+    --popover: 0 0% 100%;
+    --popover-foreground: 170 35% 15%;
 
-    --primary: 142 76% 36%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary brand color - refined green */
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 150 55% 90%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary color - soft sage */
+    --secondary: 150 30% 96%;
+    --secondary-foreground: 170 35% 15%;
 
-    --muted: 150 55% 90%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted elements */
+    --muted: 150 20% 96%;
+    --muted-foreground: 170 15% 45%;
 
-    --accent: 150 55% 90%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent elements */
+    --accent: 142 76% 95%;
+    --accent-foreground: 160 84% 20%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Destructive elements */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 150 30% 85%;
-    --input: 150 30% 85%;
-    --ring: 142 76% 36%;
+    /* Border, input and ring styles */
+    --border: 150 20% 90%;
+    --input: 150 20% 90%;
+    --ring: 160 84% 39%;
 
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Main colors */
+    --background: 170 35% 8%;
+    --foreground: 150 20% 96%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    /* Card styles */
+    --card: 170 35% 12%;
+    --card-foreground: 150 20% 96%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    /* Popover styles */
+    --popover: 170 35% 12%;
+    --popover-foreground: 150 20% 96%;
 
-    --primary: 142 76% 36%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary brand color - vibrant green */
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    /* Secondary color - deep teal */
+    --secondary: 170 35% 18%;
+    --secondary-foreground: 150 20% 96%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    /* Muted elements */
+    --muted: 170 35% 20%;
+    --muted-foreground: 150 20% 70%;
 
-    --accent: 142 76% 36%;
-    --accent-foreground: 210 40% 98%;
+    /* Accent elements */
+    --accent: 160 84% 20%;
+    --accent-foreground: 150 20% 96%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    /* Destructive elements */
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 142 76% 36%;
+    /* Border, input and ring styles */
+    --border: 170 35% 24%;
+    --input: 170 35% 24%;
+    --ring: 160 84% 39%;
   }
 }
 
@@ -72,10 +90,47 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
   html,
   body {
     height: 100%;
+    scroll-behavior: smooth;
+  }
+
+  /* Typography enhancements */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-montserrat font-bold;
+  }
+
+  p,
+  span,
+  div,
+  a,
+  button,
+  input,
+  textarea,
+  select {
+    @apply font-sans;
   }
 }
 
+/* Enhance focus states for better accessibility */
+@layer utilities {
+  .focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  .font-montserrat {
+    font-family: var(--font-montserrat), system-ui, sans-serif;
+  }
+
+  .font-sans {
+    font-family: var(--font-inter), system-ui, sans-serif;
+  }
+}
