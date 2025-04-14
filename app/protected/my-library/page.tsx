@@ -44,7 +44,7 @@ export default async function MyLibraryPage() {
         </div>
         <h1 className="text-3xl font-bold">My Library</h1>
       </div>
-      <p className="text-muted-foreground mb-8">Manage your personal documents and projects</p>
+      <p className="text-muted-foreground mb-8">Your centralized space to organize sustainability initiatives and unlock AI-powered insights, reporting, and collaboration. <br/>Upload and manage your own sustainability documents to power personalized insights and strategies with Ecofilia.</p>
       <IntegratedLibrary documents={userDocuments || []} userId={user.id} initialLimit={INITIAL_PAGE_SIZE} />
     </div>
   )

@@ -1,105 +1,261 @@
 "use client"
 
-import { useState } from "react"
-import { Home, FolderKanban, BarChart, FileText, Compass, Settings, ChevronDown, Zap, Users, Folder } from "lucide-react"
+import type React from "react"
+
+import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
+import { motion, AnimatePresence } from "framer-motion"
+import {
+  FolderKanban,
+  BarChart,
+  Settings,
+  ChevronDown,
+  Zap,
+  Users,
+  Folder,
+  Leaf,
+  LayoutDashboard,
+  MessageSquare,
+} from "lucide-react"
 import {
   Sidebar as ShadcnSidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 
-const menuItems = [
-  { icon: Home, label: "Home", href: "/protected/" },
-  { icon: Zap, label: "Functionalities", dropdown: true },
-  { icon: Users, label: "User management", href: "/protected/users" },
+// Define menu items with proper typing
+interface MenuItem {
+  icon: React.ElementType
+  label: string
+  href?: string
+  badge?: string
+  dropdown?: boolean
+  submenu?: SubMenuItem[]
+}
+
+interface SubMenuItem {
+  icon: React.ElementType
+  label: string
+  href: string
+  badge?: string
+}
+
+// Main menu items
+const menuItems: MenuItem[] = [
+  { icon: LayoutDashboard, label: "Dashboard", href: "/protected/dashboard" },
+  {
+    icon: Zap,
+    label: "Functionalities",
+    dropdown: true,
+    submenu: [
+      { icon: FolderKanban, label: "Sustainability Library", href: "/protected/sustainability-library" },
+      { icon: Folder, label: "My Library", href: "/protected/my-library" },
+      { icon: BarChart, label: "Reports", href: "/protected/reports", badge: "New" },
+      { icon: MessageSquare, label: "Document Chat", href: "/protected/document-chat" },
+      { icon: Folder, label: "Projects", href: "/protected/projects" },
+    ],
+  },
+  { icon: Users, label: "User Management", href: "/protected/users" },
   { icon: Settings, label: "Settings", href: "/protected/settings" },
-]
-
-const functionalitiesItems = [
-  { icon: FolderKanban, label: "Sustainability library", href: "/protected/sustainability-library" },
-  { icon: FolderKanban, label: "My Library", href: "/protected/my-library" },
-  { icon: BarChart, label: "Analytics", href: "/protected/analytics" },
-  { icon: FileText, label: "Reports", href: "/protected/reports" },
-  { icon: Compass, label: "Sustainability Assistant", href: "/protected/document-chat" },
-  { icon: Folder, label: "Projects", href: "/protected/projects" },
 ]
 
 export function Sidebar() {
   const pathname = usePathname()
-  const [isDropdownOpen, setDropdownOpen] = useState(false)
+  const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({
+    functionalities: true, // Default open state
+  })
+  const { state } = useSidebar()
+  const isCollapsed = state === "collapsed"
 
-  if (pathname === "/") return null // Hide sidebar when on homepage
+  // Check if a path is active (exact match or starts with path for nested routes)
+  const isActive = (href: string) => {
+    if (href === "/protected/dashboard" && pathname === "/protected") {
+      return true
+    }
+    return pathname === href || pathname?.startsWith(`${href}/`)
+  }
+
+  // Toggle dropdown state
+  const toggleDropdown = (key: string) => {
+    setOpenDropdowns((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }))
+  }
+
+  // Effect to auto-open dropdown when a child route is active
+  useEffect(() => {
+    menuItems.forEach((item) => {
+      if (item.dropdown && item.submenu) {
+        const hasActiveChild = item.submenu.some((subItem) => isActive(subItem.href))
+        if (hasActiveChild) {
+          setOpenDropdowns((prev) => ({
+            ...prev,
+            [item.label.toLowerCase()]: true,
+          }))
+        }
+      }
+    })
+  }, [pathname])
 
   return (
     <ShadcnSidebar>
-      <SidebarHeader className="flex items-center justify-center h-14 border-b">
-        <h1 className="text-xl font-bold">Ecofilia</h1>
+      <SidebarHeader className="flex items-center gap-2 h-16 px-4 border-b">
+        <Leaf className="h-6 w-6 text-primary" />
+        <span className="font-bold text-xl tracking-tight">Ecofilia</span>
       </SidebarHeader>
+
       <SidebarContent>
-        <SidebarMenu className="flex flex-col space-y-2 mt-2">
+        <SidebarMenu className="px-2 py-4">
           {menuItems.map((item) => {
             if (item.dropdown) {
+              const dropdownKey = item.label.toLowerCase()
+              const isOpen = openDropdowns[dropdownKey]
+
               return (
-                <div key="functionalities" className="w-full">
-                  <SidebarMenuButton
-                    onClick={() => setDropdownOpen(!isDropdownOpen)}
-                    className="flex items-center w-full px-4 py-3 text-left text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded-lg transition-colors"
-                  >
-                    <item.icon />
-                    <span className="font-medium">Functionalities</span>
-                    <ChevronDown className={`h-5 w-5 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} />
-                  </SidebarMenuButton>
-                  {isDropdownOpen && (
-                    <div className="pl-6 mt-1 space-y-1">
-                      {functionalitiesItems.map((subItem) => {
-                        const isActive = pathname === subItem.href
-                        return (
-                          <SidebarMenuItem key={subItem.href} className="w-full">
-                            <SidebarMenuButton asChild className="w-full">
-                              <Link
-                                href={subItem.href}
-                                className={`flex items-center gap-3 py-2 w-full rounded-lg transition-colors
-                                  ${isActive ? "bg-accent text-accent-foreground font-semibold" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}
-                                `}
-                              >
-                                <subItem.icon className="h-5 w-5" />
-                                <span className="text-sm font-medium">{subItem.label}</span>
-                              </Link>
-                            </SidebarMenuButton>
-                          </SidebarMenuItem>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
+                <Collapsible
+                  key={dropdownKey}
+                  open={isOpen}
+                  onOpenChange={() => toggleDropdown(dropdownKey)}
+                  className="w-full mb-1"
+                >
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton
+                        className={`flex items-center justify-between w-full px-3 py-2 rounded-md transition-colors ${
+                          isOpen ? "bg-primary/10 text-primary" : "hover:bg-muted"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <item.icon className="h-5 w-5" />
+                          <span className="font-medium">{item.label}</span>
+                        </div>
+                        <ChevronDown
+                          className={`h-4 w-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                        />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                  </SidebarMenuItem>
+
+                  <CollapsibleContent>
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="pl-4 mt-1 space-y-1"
+                        >
+                          {item.submenu?.map((subItem) => {
+                            const subActive = isActive(subItem.href)
+                            return (
+                              <SidebarMenuItem key={subItem.href}>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <SidebarMenuButton asChild>
+                                        <Link
+                                          href={subItem.href}
+                                          className={`flex items-center justify-between gap-3 px-3 py-2 rounded-md transition-colors ${
+                                            subActive
+                                              ? "bg-primary/10 text-primary font-medium"
+                                              : "hover:bg-muted text-muted-foreground"
+                                          }`}
+                                        >
+                                          <div className="flex items-center gap-3">
+                                            <subItem.icon className="h-4 w-4" />
+                                            <span>{subItem.label}</span>
+                                          </div>
+                                          {subItem.badge && (
+                                            <Badge
+                                              variant="outline"
+                                              className="ml-auto bg-primary/10 text-primary text-xs"
+                                            >
+                                              {subItem.badge}
+                                            </Badge>
+                                          )}
+                                        </Link>
+                                      </SidebarMenuButton>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="right" className={isCollapsed ? "" : "hidden"}>
+                                      {subItem.label}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </SidebarMenuItem>
+                            )
+                          })}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </CollapsibleContent>
+                </Collapsible>
               )
             }
 
-            const isActive = pathname === item.href
+            const active = item.href ? isActive(item.href) : false
+
             return (
-              <SidebarMenuItem key={item.href} className="w-full">
-                <SidebarMenuButton asChild className="w-full">
-                  <Link
-                    href={item.href ? item.href : "#"}
-                    className={`flex items-center gap-3 py-3 pl-4 w-full rounded-lg transition-colors
-                      ${isActive ? "bg-accent text-accent-foreground font-semibold" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}
-                    `}
-                  >
-                    {item.icon && <item.icon className="h-5 w-5" />}
-                    <span className="text-sm font-medium">{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
+              <SidebarMenuItem key={item.label} className="mb-1">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <SidebarMenuButton asChild>
+                        <Link
+                          href={item.href || "#"}
+                          className={`flex items-center justify-between gap-3 px-3 py-2 rounded-md transition-colors ${
+                            active ? "bg-primary/10 text-primary font-medium" : "hover:bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <item.icon className="h-5 w-5" />
+                            <span>{item.label}</span>
+                          </div>
+                          {item.badge && (
+                            <Badge variant="outline" className="ml-auto bg-primary/10 text-primary text-xs">
+                              {item.badge}
+                            </Badge>
+                          )}
+                        </Link>
+                      </SidebarMenuButton>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className={isCollapsed ? "" : "hidden"}>
+                      {item.label}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </SidebarMenuItem>
             )
           })}
         </SidebarMenu>
       </SidebarContent>
+
+      <SidebarFooter className="p-4 border-t">
+        <SidebarTrigger>
+          <Button variant="outline" size="sm" className="w-full">
+            <div className="flex items-center justify-center w-full">
+              <ChevronDown
+                className={`h-4 w-4 mr-2 transition-transform duration-200 ${isCollapsed ? "rotate-180" : ""}`}
+              />
+              <span>{isCollapsed ? "Expand" : "Collapse"}</span>
+            </div>
+          </Button>
+        </SidebarTrigger>
+      </SidebarFooter>
+
       <SidebarRail />
     </ShadcnSidebar>
   )

@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { FileText, Map, Target, PieChart, Thermometer, Leaf, HelpCircle } from "lucide-react"
+import { FileText, Map, Target, PieChart, Thermometer, Leaf } from "lucide-react"
 import Link from "next/link"
 
 const resources = [
@@ -55,7 +55,7 @@ export default function SustainabilityOverview() {
       <div className="space-y-2">
         <h1 className="text-3xl font-bold">Sustainability Library</h1>
         <p className="text-muted-foreground">
-          Explore a curated selection of global sustainability documents to guide your environmental strategies.
+        Explore a curated selection of global sustainability documents to guide your environmental strategies.
         </p>
       </div>
 

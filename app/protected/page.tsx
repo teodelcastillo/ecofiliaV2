@@ -12,8 +12,7 @@ export default function Home() {
         <div className="space-y-4">
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Welcome to Ecofilia {}</h1>
           <p className="text-muted-foreground">
-            Your AI environment for sustainability solutions.
-          </p>
+          Accelerating sustainability with intelligence and purpose          </p>
           <div className="flex flex-wrap gap-2">
             <Button asChild>
               <Link href="/protected/document-chat">

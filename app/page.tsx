@@ -39,12 +39,12 @@ export default function LandingPage() {
         <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-gradient-to-b from-secondary/50 to-background">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-8 text-center">
-              <div className="space-y-4 max-w-3xl">
-                <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
-                  Ready to start building?
+              <div className="space-y-4 max-w-4xl">
+                <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70 pb-2">
+                  Empowering Sustainability. Together.
                 </h1>
                 <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl lg:text-2xl">
-                  Join our community of innovators. Start your journey today.
+                  Join our community of sustainability enthusiasts and start making a difference today. 
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4 min-w-[200px]">
