@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label"
 import { Mail, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { SmtpMessage } from "../smtp-message"
 import { motion } from "framer-motion"
 
 export default function ForgotPassword() {
