@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import {
-  FolderKanban,
   BarChart,
   Settings,
   ChevronDown,
@@ -15,8 +14,9 @@ import {
   Users,
   Folder,
   Leaf,
-  LayoutDashboard,
+  Clipboard,
   MessageSquare,
+  LibraryBig
 } from "lucide-react"
 import {
   Sidebar as ShadcnSidebar,
@@ -54,17 +54,18 @@ interface SubMenuItem {
 
 // Main menu items
 const menuItems: MenuItem[] = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/protected/dashboard" },
+
   {
     icon: Zap,
     label: "Functionalities",
     dropdown: true,
     submenu: [
-      { icon: FolderKanban, label: "Sustainability Library", href: "/protected/sustainability-library" },
-      { icon: Folder, label: "My Library", href: "/protected/my-library" },
-      { icon: BarChart, label: "Reports", href: "/protected/reports", badge: "New" },
-      { icon: MessageSquare, label: "Document Chat", href: "/protected/document-chat" },
+      { icon: Leaf, label: "Sustainability Library", href: "/protected/sustainability-library" },
+      { icon: LibraryBig, label: "My Library", href: "/protected/my-library" },
       { icon: Folder, label: "Projects", href: "/protected/projects" },
+      { icon: MessageSquare, label: "Document Chat", href: "/protected/document-chat" },
+      { icon: Clipboard, label: "Reports", href: "/protected/reports", badge: "SOON" },
+      { icon: BarChart, label: "Analytics", href: "/protected/analytics", badge: "SOON" },
     ],
   },
   { icon: Users, label: "User Management", href: "/protected/users" },
@@ -81,7 +82,7 @@ export function Sidebar() {
 
   // Check if a path is active (exact match or starts with path for nested routes)
   const isActive = (href: string) => {
-    if (href === "/protected/dashboard" && pathname === "/protected") {
+    if (href === "/protected/" && pathname === "/protected") {
       return true
     }
     return pathname === href || pathname?.startsWith(`${href}/`)
