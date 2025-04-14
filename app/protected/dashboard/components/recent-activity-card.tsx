@@ -62,18 +62,21 @@ export function RecentActivityCard({
       </CardHeader>
       <CardContent className="pb-1">
         <Tabs defaultValue="documents">
-          <TabsList className="mb-4">
-            <TabsTrigger value="documents" className="text-xs">
+          <TabsList className="mb-4 w-full flex justify-spacebetween overflow-x-auto">
+            <TabsTrigger value="documents" className="text-xs flex-1 max-w-[120px]">
               <FileText className="mr-1 h-3.5 w-3.5" />
-              Documents
+              <span className="hidden sm:inline">Documents</span>
+              <span className="sm:hidden">Docs</span>
             </TabsTrigger>
-            <TabsTrigger value="projects" className="text-xs">
+            <TabsTrigger value="projects" className="text-xs flex-1 max-w-[120px]">
               <FolderKanban className="mr-1 h-3.5 w-3.5" />
-              Projects
+              <span className="hidden sm:inline">Projects</span>
+              <span className="sm:hidden">Proj</span>
             </TabsTrigger>
-            <TabsTrigger value="reports" className="text-xs">
+            <TabsTrigger value="reports" className="text-xs flex-1 max-w-[120px]">
               <BarChart className="mr-1 h-3.5 w-3.5" />
-              Reports
+              <span className="hidden sm:inline">Reports</span>
+              <span className="sm:hidden">Rep</span>
             </TabsTrigger>
           </TabsList>
 
@@ -113,7 +116,11 @@ export function RecentActivityCard({
                           </p>
                         </div>
                       </div>
-                      {doc.category && <Badge variant="outline">{doc.category}</Badge>}
+                      {doc.category && (
+                        <Badge variant="outline" className="hidden sm:inline-flex">
+                          {doc.category}
+                        </Badge>
+                      )}
                     </Link>
                   </motion.div>
                 ))}
@@ -157,7 +164,11 @@ export function RecentActivityCard({
                           </p>
                         </div>
                       </div>
-                      {project.category && <Badge variant="outline">{project.category}</Badge>}
+                      {project.category && (
+                        <Badge variant="outline" className="hidden sm:inline-flex">
+                          {project.category}
+                        </Badge>
+                      )}
                     </Link>
                   </motion.div>
                 ))}
@@ -206,7 +217,7 @@ export function RecentActivityCard({
                           </p>
                         </div>
                       </div>
-                      <Badge variant="outline" className="capitalize">
+                      <Badge variant="outline" className="hidden sm:inline-flex capitalize">
                         {report.type}
                       </Badge>
                     </Link>

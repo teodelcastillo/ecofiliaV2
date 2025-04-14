@@ -109,14 +109,13 @@ export function HomePage({ user, recentDocuments, projects, reports }: HomePageP
       </section>
 
       {/* Main content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column (2/3 width) */}
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+        {/* Left column (2/3 width on large screens) */}
+        <div className="md:col-span-1 lg:col-span-2 space-y-6">
           {/* Quick Access Section */}
           <section className="w-full">
             <div className="space-y-6">
-              <h2 className="text-2xl font-semibold tracking-tight">Quick Access</h2>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                 <Card>
                   <CardHeader className="pb-2">
                     <Globe className="h-6 w-6 text-primary mb-2" />
@@ -215,41 +214,44 @@ export function HomePage({ user, recentDocuments, projects, reports }: HomePageP
           />
         </div>
 
-        {/* Right column (1/3 width) */}
-        <div className="space-y-6 mt-14">
-
-        {/* About Ecofilia */}
-        <Card className="h-[364px]">
-        <CardHeader>
-              <CardTitle>About Ecofilia</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-              Ecofilia is your comprehensive platform for sustainability management—designed for organizations aiming to streamline environmental workflows, ensure compliance, and accelerate climate action.
-              </p>
-              <p className="text-sm text-muted-foreground">
-              We combine modern document intelligence with actionable insights to help you analyze, track, and improve your environmental impact—at scale.
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-primary" />
-                  <span className="text-sm">AI-powered document analysis</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Leaf className="h-4 w-4 text-primary" />
-                  <span className="text-sm">Sustainability reporting</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Recycle className="h-4 w-4 text-primary" />
-                  <span className="text-sm">Environmental impact tracking</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Puzzle className="h-4 w-4 text-primary" />
-                  <span className="text-sm">Project-based knowledge management</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Right column (1/3 width on large screens) */}
+        <div className="md:col-span-1 space-y-6 self-start">
+          {/* About Ecofilia */}
+          <section className="w-full">
+            <div className="space-y-6">
+              <Card className="min-h-[300px] h-full">
+                <CardContent className="space-y-3 pt-6">
+                  <h2>About Ecofilia</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Ecofilia is your comprehensive platform for sustainability management—designed for organizations
+                    aiming to streamline environmental workflows, ensure compliance, and accelerate climate action.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    We combine modern document intelligence with actionable insights to help you analyze, track, and
+                    improve your environmental impact—at scale.
+                  </p>
+                  <div className="space-y-2 mt-4">
+                    <div className="flex items-start gap-2">
+                      <Globe className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span className="text-sm">AI-powered document analysis</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Leaf className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span className="text-sm">Sustainability reporting</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Recycle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span className="text-sm">Environmental impact tracking</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Puzzle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span className="text-sm">Project-based knowledge management</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
 
           {/* Quick Actions */}
           <Card>
@@ -279,8 +281,6 @@ export function HomePage({ user, recentDocuments, projects, reports }: HomePageP
               </Button>
             </CardContent>
           </Card>
-
-
         </div>
       </div>
 
