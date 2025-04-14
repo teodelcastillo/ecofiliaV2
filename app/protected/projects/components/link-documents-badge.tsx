@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
-import { DocumentSelectorModal } from "../../document-chat/components/document-selector-modal"
+import { DocumentSelectorModal } from "../../ecofilia-expert/components/document-selector-modal"
 import { createClient } from "@/utils/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import type { Document } from "@/models"

@@ -131,7 +131,7 @@ export function Dashboard({ user, recentDocuments, projects, reports }: Dashboar
               <Button className="w-full justify-start" variant="outline" asChild>
                 <Link href="/protected/document-chat">
                   <FileText className="mr-2 h-4 w-4" />
-                  Document Chat
+                  Ecofilia Epert
                 </Link>
               </Button>
             </CardContent>

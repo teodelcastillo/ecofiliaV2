@@ -63,7 +63,7 @@ const menuItems: MenuItem[] = [
       { icon: Leaf, label: "Sustainability Library", href: "/protected/sustainability-library" },
       { icon: LibraryBig, label: "My Library", href: "/protected/my-library" },
       { icon: Folder, label: "Projects", href: "/protected/projects" },
-      { icon: MessageSquare, label: "Document Chat", href: "/protected/document-chat" },
+      { icon: MessageSquare, label: "Ecofilia Expert", href: "/protected/document-chat" },
       { icon: Clipboard, label: "Reports", href: "/protected/reports", badge: "SOON" },
       { icon: BarChart, label: "Analytics", href: "/protected/analytics", badge: "SOON" },
     ],
