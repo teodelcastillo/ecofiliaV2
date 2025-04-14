@@ -215,7 +215,35 @@ export function HomePage({ user, recentDocuments, projects, reports }: HomePageP
         </div>
 
         {/* Right column (1/3 width) */}
-        <div className="space-y-6">
+        <div className="space-y-6 mt-14">
+
+        {/* About Ecofilia */}
+        <Card className="h-[364px]">
+        <CardHeader>
+              <CardTitle>About Ecofilia</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Ecofilia is your comprehensive platform for sustainability management, providing tools to analyze,
+                track, and improve your environmental impact.
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-primary" />
+                  <span className="text-sm">AI-powered document analysis</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Leaf className="h-4 w-4 text-primary" />
+                  <span className="text-sm">Sustainability reporting</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Recycle className="h-4 w-4 text-primary" />
+                  <span className="text-sm">Environmental impact tracking</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Quick Actions */}
           <Card>
             <CardHeader>
@@ -245,32 +273,7 @@ export function HomePage({ user, recentDocuments, projects, reports }: HomePageP
             </CardContent>
           </Card>
 
-          {/* About Ecofilia */}
-          <Card>
-            <CardHeader>
-              <CardTitle>About Ecofilia</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Ecofilia is your comprehensive platform for sustainability management, providing tools to analyze,
-                track, and improve your environmental impact.
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-primary" />
-                  <span className="text-sm">AI-powered document analysis</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Leaf className="h-4 w-4 text-primary" />
-                  <span className="text-sm">Sustainability reporting</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Recycle className="h-4 w-4 text-primary" />
-                  <span className="text-sm">Environmental impact tracking</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+
         </div>
       </div>
 
