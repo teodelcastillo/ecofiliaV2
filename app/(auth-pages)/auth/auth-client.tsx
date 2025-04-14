@@ -89,7 +89,7 @@ export function AuthClient() {
                 <TabsTrigger value="sign-up">Sign Up</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="auth" className="mt-0">
+              <TabsContent value="sign-in" className="mt-0">
                 <CardTitle className="text-2xl font-bold tracking-tight">Welcome back</CardTitle>
                 <CardDescription>Enter your credentials to access your account</CardDescription>
                 <motion.form

@@ -23,12 +23,12 @@ export default function LandingPage() {
             </Link>
           </nav>
           <div className="hidden md:flex gap-4">
-            <Link href="//auth?tab=sign-in">
+            <Link href="/auth?tab=sign-in">
               <Button variant="ghost" size="sm">
                 Sign In
               </Button>
             </Link>
-            <Link href="//auth?tab=sign-up">
+            <Link href="/auth?tab=sign-up">
               <Button size="sm">Join Us</Button>
             </Link>
           </div>
