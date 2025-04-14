@@ -16,7 +16,8 @@ import {
   Leaf,
   Clipboard,
   MessageSquare,
-  LibraryBig
+  LibraryBig,
+  Home
 } from "lucide-react"
 import {
   Sidebar as ShadcnSidebar,
@@ -60,6 +61,7 @@ const menuItems: MenuItem[] = [
     label: "Functionalities",
     dropdown: true,
     submenu: [
+      {icon: Home, label: "Home", href: "/protected"},
       { icon: Leaf, label: "Sustainability Library", href: "/protected/sustainability-library" },
       { icon: LibraryBig, label: "My Library", href: "/protected/my-library" },
       { icon: Folder, label: "Projects", href: "/protected/projects" },
@@ -113,9 +115,9 @@ export function Sidebar() {
 
   return (
     <ShadcnSidebar>
-      <SidebarHeader className="flex items-center gap-2 h-16 px-4 border-b" onClick={() => redirect("/protected")}>
+      <SidebarHeader className="flex items-center gap-2 h-16 px-4 border-b" >
         <Leaf className="h-6 w-6 text-primary" />
-        <span className="font-bold text-xl tracking-tight">Ecofilia</span>
+        <span onClick={() => redirect("/protected")} className="font-bold text-xl tracking-tight">Ecofilia</span>
       </SidebarHeader>
 
       <SidebarContent>
