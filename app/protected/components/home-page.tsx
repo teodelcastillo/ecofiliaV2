@@ -14,6 +14,7 @@ import {
   BarChart,
   FileUp,
   FolderPlus,
+  Puzzle,
 } from "lucide-react"
 import type { User } from "@supabase/supabase-js"
 
@@ -224,8 +225,10 @@ export function HomePage({ user, recentDocuments, projects, reports }: HomePageP
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Ecofilia is your comprehensive platform for sustainability management, providing tools to analyze,
-                track, and improve your environmental impact.
+              Ecofilia is your comprehensive platform for sustainability management—designed for organizations aiming to streamline environmental workflows, ensure compliance, and accelerate climate action.
+              </p>
+              <p className="text-sm text-muted-foreground">
+              We combine modern document intelligence with actionable insights to help you analyze, track, and improve your environmental impact—at scale.
               </p>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
@@ -239,6 +242,10 @@ export function HomePage({ user, recentDocuments, projects, reports }: HomePageP
                 <div className="flex items-center gap-2">
                   <Recycle className="h-4 w-4 text-primary" />
                   <span className="text-sm">Environmental impact tracking</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Puzzle className="h-4 w-4 text-primary" />
+                  <span className="text-sm">Project-based knowledge management</span>
                 </div>
               </div>
             </CardContent>
