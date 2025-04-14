@@ -11,7 +11,7 @@ export default async function DocumentChatPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/sign-in");
+    redirect("/auth");
   }
 
   // Fetch user's personal documents

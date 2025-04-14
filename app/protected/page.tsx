@@ -12,7 +12,7 @@ export default async function ProtectedPage() {
 
   // If no user is logged in, redirect to login page
   if (!user) {
-    redirect("/sign-in")
+    redirect("/auth")
   }
   // Fetch recent documents (limit to 5)
   const { data: recentDocuments } = await supabase

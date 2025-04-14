@@ -23,12 +23,12 @@ export default function LandingPage() {
             </Link>
           </nav>
           <div className="hidden md:flex gap-4">
-            <Link href="/sign-in">
+            <Link href="/auth">
               <Button variant="ghost" size="sm">
                 Sign In
               </Button>
             </Link>
-            <Link href="/sign-up">
+            <Link href="/auth">
               <Button size="sm">Join Us</Button>
             </Link>
           </div>
@@ -48,7 +48,7 @@ export default function LandingPage() {
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4 min-w-[200px]">
-                <Link href="/sign-in" className="w-full sm:w-auto">
+                <Link href="/auth" className="w-full sm:w-auto">
                   <Button size="lg" className="w-full sm:w-auto px-8 py-6 text-base rounded-full">
                     Sign In
                     <ArrowRight className="ml-2 h-4 w-4" />

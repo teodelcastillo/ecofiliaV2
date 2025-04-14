@@ -85,11 +85,11 @@ export function AuthClient() {
           <CardHeader className="space-y-1">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="sign-in">Sign In</TabsTrigger>
-                <TabsTrigger value="sign-up">Sign Up</TabsTrigger>
+                <TabsTrigger value="auth">Sign In</TabsTrigger>
+                <TabsTrigger value="auth">Sign Up</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="sign-in" className="mt-0">
+              <TabsContent value="auth" className="mt-0">
                 <CardTitle className="text-2xl font-bold tracking-tight">Welcome back</CardTitle>
                 <CardDescription>Enter your credentials to access your account</CardDescription>
                 <motion.form

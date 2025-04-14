@@ -18,7 +18,7 @@ export default async function ProtectedLayout({
 
   // If no user is logged in, redirect to login page
   if (!user) {
-    redirect("/sign-in")
+    redirect("/auth")
   }
 
   return (
