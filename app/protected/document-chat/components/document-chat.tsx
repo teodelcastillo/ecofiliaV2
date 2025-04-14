@@ -81,15 +81,6 @@ export function DocumentChat({ personalDocuments, publicDocuments, userId, proje
   const handleSafeSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    if (selectedDocuments.length === 0 || !input.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Cannot send message",
-        description: "Please enter a question and select at least one document.",
-      })
-      return
-    }
-
     setIsLoading(true)
     const userQuestion = input
     setInput("") // Clear the input
