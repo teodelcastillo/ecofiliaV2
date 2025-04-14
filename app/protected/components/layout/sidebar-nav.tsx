@@ -56,12 +56,12 @@ interface SubMenuItem {
 // Main menu items
 const menuItems: MenuItem[] = [
 
+  {icon: Home, label: "Home", href: "/protected"},
   {
     icon: Zap,
     label: "Functionalities",
     dropdown: true,
     submenu: [
-      {icon: Home, label: "Home", href: "/protected"},
       { icon: Leaf, label: "Sustainability Library", href: "/protected/sustainability-library" },
       { icon: LibraryBig, label: "My Library", href: "/protected/my-library" },
       { icon: Folder, label: "Projects", href: "/protected/projects" },
