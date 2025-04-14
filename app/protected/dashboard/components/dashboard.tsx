@@ -129,7 +129,7 @@ export function Dashboard({ user, recentDocuments, projects, reports }: Dashboar
                 </Link>
               </Button>
               <Button className="w-full justify-start" variant="outline" asChild>
-                <Link href="/protected/document-chat">
+                <Link href="/protected/ecofilia-expert">
                   <FileText className="mr-2 h-4 w-4" />
                   Ecofilia Epert
                 </Link>

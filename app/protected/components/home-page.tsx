@@ -98,7 +98,7 @@ export function HomePage({ user, recentDocuments, projects, reports }: HomePageP
       <section className="w-full py-6 mb-8">
         <div className="flex flex-wrap gap-4">
           <Button asChild size="lg">
-            <Link href="/protected/document-chat">
+            <Link href="/protected/ecofilia-expert">
               AI Assistant <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
@@ -125,7 +125,7 @@ export function HomePage({ user, recentDocuments, projects, reports }: HomePageP
                   </CardHeader>
                   <CardFooter>
                     <Button variant="ghost" asChild className="w-full justify-start">
-                      <Link href="/protected/document-chat" className="flex items-center">
+                      <Link href="/protected/ecofilia-expert" className="flex items-center">
                         View <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>

@@ -1,4 +1,4 @@
-import { DocumentChat } from "./components/document-chat";
+import { DocumentChat } from "./components/ecofilia-expert";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 
