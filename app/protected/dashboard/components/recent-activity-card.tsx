@@ -1,26 +1,21 @@
 "use client"
 
-import Link from "next/link"
-import { motion } from "framer-motion"
-import { formatDistanceToNow } from "date-fns"
-import {
-  FileText,
-  FolderKanban,
-  BarChart,
-  FileUp,
-  FolderPlus,
-  Clock,
-  ArrowRight,
-} from "lucide-react"
+import type React from "react"
 
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
+import { motion } from "framer-motion"
+import Link from "next/link"
+import { formatDistanceToNow } from "date-fns"
+import { FileText, FolderKanban, BarChart, Clock, ArrowRight, FileUp, FolderPlus } from "lucide-react"
+
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 
 interface Document {
   id: string
   name: string
+  file_path?: string
   created_at: string
   category?: string
 }
@@ -28,8 +23,9 @@ interface Document {
 interface Project {
   id: string
   name: string
-  created_at: string
+  description?: string
   category?: string
+  created_at: string
 }
 
 interface Report {
@@ -57,32 +53,30 @@ export function RecentActivityCard({
   onOpenProjectModal,
 }: RecentActivityCardProps) {
   return (
-    <Tabs defaultValue="documents" className="w-full">
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Clock className="mr-2 h-5 w-5 text-primary" />
-              Recent Activity
-            </div>
-            <TabsList>
-              <TabsTrigger value="documents" className="text-xs">
-                <FileText className="mr-1 h-3.5 w-3.5" />
-                Documents
-              </TabsTrigger>
-              <TabsTrigger value="projects" className="text-xs">
-                <FolderKanban className="mr-1 h-3.5 w-3.5" />
-                Projects
-              </TabsTrigger>
-              <TabsTrigger value="reports" className="text-xs">
-                <BarChart className="mr-1 h-3.5 w-3.5" />
-                Reports
-              </TabsTrigger>
-            </TabsList>
-          </CardTitle>
-        </CardHeader>
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center">
+          <Clock className="mr-2 h-5 w-5 text-primary" />
+          Recent Activity
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pb-1">
+        <Tabs defaultValue="documents">
+          <TabsList className="mb-4">
+            <TabsTrigger value="documents" className="text-xs">
+              <FileText className="mr-1 h-3.5 w-3.5" />
+              Documents
+            </TabsTrigger>
+            <TabsTrigger value="projects" className="text-xs">
+              <FolderKanban className="mr-1 h-3.5 w-3.5" />
+              Projects
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="text-xs">
+              <BarChart className="mr-1 h-3.5 w-3.5" />
+              Reports
+            </TabsTrigger>
+          </TabsList>
 
-        <CardContent className="pb-1">
           <TabsContent value="documents" className="mt-0 space-y-4">
             {documents.length === 0 ? (
               <EmptyState
@@ -221,18 +215,17 @@ export function RecentActivityCard({
               </div>
             )}
           </TabsContent>
-        </CardContent>
-
-        <CardFooter className="pt-0">
-          <Button variant="ghost" size="sm" className="ml-auto" asChild>
-            <Link href="/protected/my-library">
-              View All
-              <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
-          </Button>
-        </CardFooter>
-      </Card>
-    </Tabs>
+        </Tabs>
+      </CardContent>
+      <CardFooter className="pt-0">
+        <Button variant="ghost" size="sm" className="ml-auto" asChild>
+          <Link href="/protected/my-library">
+            View All
+            <ArrowRight className="ml-1 h-4 w-4" />
+          </Link>
+        </Button>
+      </CardFooter>
+    </Card>
   )
 }
 
@@ -240,11 +233,7 @@ function EmptyState({
   message,
   description,
   action,
-}: {
-  message: string
-  description: string
-  action?: React.ReactNode
-}) {
+}: { message: string; description: string; action?: React.ReactNode }) {
   return (
     <div className="flex flex-col items-center justify-center py-8 text-center">
       <p className="font-medium">{message}</p>
