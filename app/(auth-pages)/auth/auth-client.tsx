@@ -85,8 +85,8 @@ export function AuthClient() {
           <CardHeader className="space-y-1">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="auth">Sign In</TabsTrigger>
-                <TabsTrigger value="auth">Sign Up</TabsTrigger>
+                <TabsTrigger value="sign-in">Sign In</TabsTrigger>
+                <TabsTrigger value="sign-up">Sign Up</TabsTrigger>
               </TabsList>
 
               <TabsContent value="auth" className="mt-0">
