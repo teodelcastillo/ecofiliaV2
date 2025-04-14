@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { usePathname } from "next/navigation"
+import { redirect, usePathname } from "next/navigation"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -113,7 +113,7 @@ export function Sidebar() {
 
   return (
     <ShadcnSidebar>
-      <SidebarHeader className="flex items-center gap-2 h-16 px-4 border-b">
+      <SidebarHeader className="flex items-center gap-2 h-16 px-4 border-b" onClick={() => redirect("/protected")}>
         <Leaf className="h-6 w-6 text-primary" />
         <span className="font-bold text-xl tracking-tight">Ecofilia</span>
       </SidebarHeader>
