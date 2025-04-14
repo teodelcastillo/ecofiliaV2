@@ -42,7 +42,7 @@ export function ChatInterface({
     }
   }, [messages])
 
-  const isSubmitDisabled = isLoading || !input.trim() || selectedDocuments.length === 0
+  const isSubmitDisabled = isLoading || !input.trim(); // remove document requirement
 
   return (
     <Card className="h-full shadow-md border-border/50 flex flex-col">
@@ -182,16 +182,16 @@ export function ChatInterface({
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </div>
-          {selectedDocuments.length === 0 && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-xs text-muted-foreground flex items-center gap-1.5 pl-1"
-            >
-              <FileText className="h-3 w-3" />
-              Please select at least one document to start chatting
-            </motion.p>
-          )}
+            {selectedDocuments.length === 0 && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-xs text-muted-foreground flex items-center gap-1.5 pl-1"
+              >
+                <FileText className="h-3 w-3" />
+                You can ask general sustainability or environmental questions without selecting documents.
+              </motion.p>
+            )}
         </form>
       </CardFooter>
     </Card>

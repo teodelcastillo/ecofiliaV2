@@ -27,9 +27,9 @@
 
         const { documents, question, userId } = body;
 
-        if (!documents?.length || !question?.trim() || !userId) {
-          return NextResponse.json({ error: 'Missing question, documents, or userId' }, { status: 400 });
-        }
+        if (!question?.trim() || !userId) {
+          return NextResponse.json({ error: 'Missing question or userId' }, { status: 400 });
+        }        
 
         const documentIds = documents.map((doc: { id: string }) => doc.id);
 
@@ -71,22 +71,56 @@
         // 🔹 Build token-aware context block
         let combinedText = '';
         let totalTokens = 0;
-
-        for (const match of matches) {
-          const chunkText = match.content?.trim();
-          if (!chunkText) continue;
-
-          const chunkTokens = estimateTokens(chunkText);
-          if (totalTokens + chunkTokens > MAX_TOKENS_BUDGET) break;
-
-          const title = titleMap[match.document_id] || `Document ${match.document_id}`;
-          combinedText += `\n--- Document: ${title} (${match.document_type}) ---\n${chunkText}\n`;
-          totalTokens += chunkTokens;
+        
+        if (documents?.length) {
+          const documentIds = documents.map((doc: { id: string }) => doc.id);
+        
+          // Fetch titles
+          const { data: docMetadata, error: metaError } = await supabase
+            .from('documents')
+            .select('id, name')
+            .in('id', documentIds);
+        
+          if (metaError || !docMetadata) {
+            console.error('❌ Failed to fetch document titles:', metaError);
+            return NextResponse.json({ error: 'Failed to fetch document titles' }, { status: 500 });
+          }
+        
+          const titleMap = Object.fromEntries(docMetadata.map(doc => [doc.id, doc.name]));
+        
+          // Embed and match chunks
+          const questionEmbedding = await embedder.embedQuery(question);
+        
+          const { data: matches, error } = await supabase.rpc('match_document_chunks', {
+            query_embedding: questionEmbedding,
+            match_count: 20,
+            match_user_id: userId,
+            filter_document_ids: documentIds,
+          });
+        
+          if (error) {
+            console.error('❌ match_document_chunks error:', error);
+            return NextResponse.json({ error: 'Failed to match document chunks' }, { status: 500 });
+          }
+        
+          for (const match of matches || []) {
+            const chunkText = match.content?.trim();
+            if (!chunkText) continue;
+        
+            const chunkTokens = estimateTokens(chunkText);
+            if (totalTokens + chunkTokens > MAX_TOKENS_BUDGET) break;
+        
+            const title = titleMap[match.document_id] || `Document ${match.document_id}`;
+            combinedText += `\n--- Document: ${title} (${match.document_type}) ---\n${chunkText}\n`;
+            totalTokens += chunkTokens;
+          }
         }
-
-        if (!combinedText.trim()) {
-          return NextResponse.json({ error: 'No usable content from matched chunks' }, { status: 400 });
-        }
+        
+        // If no documents selected or nothing matched, still allow a generic assistant
+        const context = combinedText.trim()
+          ? `Answer the following question using only the provided excerpts:\n${combinedText}\n\nQuestion: ${question}`
+          : `The user asked a general sustainability or environmental question. Answer with your best knowledge and use a professional tone.\n\nQuestion: ${question}`;
+        
 
         // 🔹 Prompt setup
         const systemPrompt = `
