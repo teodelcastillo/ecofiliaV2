@@ -4,7 +4,16 @@ import { useState } from "react"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, FileText, MoreVertical, Trash2, Download, Share2, ExternalLink, Edit } from "lucide-react"
+import {
+  Calendar,
+  FileText,
+  MoreVertical,
+  Trash2,
+  Download,
+  Share2,
+  ExternalLink,
+  Edit,
+} from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,17 +35,10 @@ import {
 } from "@/components/ui/alert-dialog"
 import { createClient } from "@/utils/supabase/client"
 import { useToast } from "@/hooks/use-toast"
+import type { Document } from "@/models"
 
 interface DocumentCardProps {
-  document: {
-    id: string
-    name: string
-    file_path?: string
-    created_at: string
-    category?: string
-    description?: string
-    [key: string]: any
-  }
+  document: Document
   onDelete?: (id: string) => void
 }
 
@@ -52,33 +54,19 @@ export function DocumentCard({ document, onDelete }: DocumentCardProps) {
 
     setIsDeleting(true)
     try {
-      // Delete the document from the database
       const { error } = await supabase.from("documents").delete().eq("id", document.id)
-
       if (error) throw error
 
-      // Delete the file from storage if file_path exists
       if (document.file_path) {
         const { error: storageError } = await supabase.storage.from("documents").remove([document.file_path])
-        if (storageError) console.error("Error deleting file:", storageError)
+        if (storageError) console.error("Storage deletion error:", storageError)
       }
 
-      toast({
-        title: "Document deleted",
-        description: "The document has been successfully deleted.",
-      })
-
-      // Call the onDelete callback if provided
-      if (onDelete) {
-        onDelete(document.id)
-      }
+      toast({ title: "Document deleted", description: "The document has been successfully deleted." })
+      onDelete?.(document.id)
     } catch (error) {
-      console.error("Error deleting document:", error)
-      toast({
-        title: "Error",
-        description: "Failed to delete the document. Please try again.",
-        variant: "destructive",
-      })
+      console.error("Delete error:", error)
+      toast({ title: "Error", description: "Failed to delete the document.", variant: "destructive" })
     } finally {
       setIsDeleting(false)
       setShowDeleteDialog(false)
@@ -92,49 +80,35 @@ export function DocumentCard({ document, onDelete }: DocumentCardProps) {
       const { data, error } = await supabase.storage.from("documents").download(document.file_path)
       if (error) throw error
 
-      // Create a download link
       const url = URL.createObjectURL(data)
-      const a = document.createElement("a")
+      const a = window.document.createElement("a")
       a.href = url
       a.download = document.name || "document"
-      document.body.appendChild(a)
+      window.document.body.appendChild(a)
       a.click()
-      document.body.removeChild(a)
+      window.document.body.removeChild(a)
       URL.revokeObjectURL(url)
 
-      toast({
-        title: "Download started",
-        description: "Your document is being downloaded.",
-      })
+      toast({ title: "Download started", description: "Your document is being downloaded." })
     } catch (error) {
-      console.error("Error downloading document:", error)
-      toast({
-        title: "Download failed",
-        description: "Failed to download the document. Please try again.",
-        variant: "destructive",
-      })
+      console.error("Download error:", error)
+      toast({ title: "Download failed", description: "Try again later.", variant: "destructive" })
     }
   }
 
   const handleShare = () => {
-    // Implement share functionality
-    // For now, just copy the document name to clipboard
-    navigator.clipboard.writeText(document.name)
-    toast({
-      title: "Link copied",
-      description: "Document link copied to clipboard.",
-    })
+    navigator.clipboard.writeText(document.name || "")
+    toast({ title: "Link copied", description: "Document name copied to clipboard." })
   }
 
   const getFileUrl = async () => {
     if (!document.file_path) return null
-
     try {
       const { data, error } = await supabase.storage.from("documents").createSignedUrl(document.file_path, 60)
       if (error) throw error
       return data.signedUrl
     } catch (error) {
-      console.error("Error getting file URL:", error)
+      console.error("Signed URL error:", error)
       return null
     }
   }
@@ -144,11 +118,7 @@ export function DocumentCard({ document, onDelete }: DocumentCardProps) {
     if (url) {
       window.open(url, "_blank")
     } else {
-      toast({
-        title: "Error",
-        description: "Failed to open the document. Please try again.",
-        variant: "destructive",
-      })
+      toast({ title: "Error", description: "Failed to open the document.", variant: "destructive" })
     }
   }
 
@@ -160,11 +130,9 @@ export function DocumentCard({ document, onDelete }: DocumentCardProps) {
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
       >
-        <Card
-          className={`h-full flex flex-col overflow-hidden transition-all duration-200 ${
-            isHovered ? "shadow-md border-primary/30" : "border-border/60"
-          }`}
-        >
+        <Card className={`h-full flex flex-col overflow-hidden transition-all duration-200 ${
+          isHovered ? "shadow-md border-primary/30" : "border-border/60"
+        }`}>
           <CardHeader className="pb-3">
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-2">
@@ -180,36 +148,25 @@ export function DocumentCard({ document, onDelete }: DocumentCardProps) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleView}>
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    <span>View</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleDownload}>
-                    <Download className="mr-2 h-4 w-4" />
-                    <span>Download</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleShare}>
-                    <Share2 className="mr-2 h-4 w-4" />
-                    <span>Share</span>
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleView}><ExternalLink className="mr-2 h-4 w-4" />View</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleDownload}><Download className="mr-2 h-4 w-4" />Download</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleShare}><Share2 className="mr-2 h-4 w-4" />Share</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <Edit className="mr-2 h-4 w-4" />
-                    <span>Edit Details</span>
-                  </DropdownMenuItem>
+                  <DropdownMenuItem><Edit className="mr-2 h-4 w-4" />Edit Details</DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => setShowDeleteDialog(true)}
                     className="text-destructive focus:text-destructive"
                   >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    <span>Delete</span>
+                    <Trash2 className="mr-2 h-4 w-4" />Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <CardTitle className="text-lg mt-2 line-clamp-2">{document.name}</CardTitle>
+            <CardTitle className="text-lg mt-2 line-clamp-2">{document.name || "Untitled"}</CardTitle>
             {document.description && (
-              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{document.description}</p>
+              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                {document.description}
+              </p>
             )}
           </CardHeader>
           <CardContent className="pb-3 pt-0 flex-grow">
@@ -224,8 +181,7 @@ export function DocumentCard({ document, onDelete }: DocumentCardProps) {
           </CardContent>
           <CardFooter className="pt-3">
             <Button className="w-full" variant={isHovered ? "default" : "outline"} onClick={handleView}>
-              <ExternalLink className="mr-2 h-4 w-4" />
-              View Document
+              <ExternalLink className="mr-2 h-4 w-4" />View Document
             </Button>
           </CardFooter>
         </Card>
@@ -235,9 +191,7 @@ export function DocumentCard({ document, onDelete }: DocumentCardProps) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure you want to delete this document?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the document and remove it from our servers.
-            </AlertDialogDescription>
+            <AlertDialogDescription>This action cannot be undone. This will permanently delete the document.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>

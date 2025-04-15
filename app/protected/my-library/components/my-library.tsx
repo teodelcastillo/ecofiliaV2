@@ -46,7 +46,7 @@ export function MyLibrary({ documents: initialDocuments, userId, initialLimit }:
     if (searchQuery) {
       filtered = filtered.filter(
         (doc) =>
-          doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          doc.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           (doc.description && doc.description.toLowerCase().includes(searchQuery.toLowerCase())),
       )
     }

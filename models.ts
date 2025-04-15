@@ -9,7 +9,8 @@ export interface Document {
   file_type?: string | null;
   user_id?: string | null;
   type?: string | null;      
-  dateAdded?: string | null;  
+  dateAdded?: string | null;
+  body?: string | null;  
   source?: "user" | "public";
 }
 
