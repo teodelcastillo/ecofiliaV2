@@ -42,10 +42,13 @@ export function usePublicDocuments({
       }
 
       if (search) {
-        query = query.or(
-          `name.ilike.%${search}%,description.ilike.%${search}%`
-        )
+        // When searching, ignore category
+        query = query.or(`name.ilike.%${search}%`)
+      } else if (category) {
+        // Only apply category if no search is active
+        query = query.eq("category", category)
       }
+      
 
       const from = page * pageSize
       const to = from + pageSize - 1

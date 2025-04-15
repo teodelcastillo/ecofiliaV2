@@ -15,7 +15,7 @@ interface SustainabilityLibraryProps {
   initialCategory?: PublicDocumentCategory | null
 }
 
-export function SustainabilityLibrary({ categories, initialCategory = null }: SustainabilityLibraryProps) {
+export function SustainabilityLibrary({ initialCategory = null }: SustainabilityLibraryProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<PublicDocumentCategory | null>(initialCategory as PublicDocumentCategory | null)
   const [page, setPage] = useState(0)
