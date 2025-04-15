@@ -14,6 +14,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import ChatMarkdown from "../../components/chat-markdown"
 import { motion } from "framer-motion"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { MonstiaAvatar } from "../../components/monstia-avatar"
+import { UserAvatar } from "../../components/user-avatar"
 
 interface ChatInterfaceProps {
   messages: Message[]
@@ -129,21 +131,12 @@ export function ChatInterface({
                   className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div className={`flex gap-3 max-w-[85%] ${message.role === "user" ? "flex-row-reverse" : ""}`}>
-                    <Avatar
-                      className={`h-8 w-8 ${message.role === "user" ? "border-2 border-primary/20" : "border-2 border-secondary/50"}`}
-                    >
-                      {message.role === "user" ? (
-                        <>
-                          <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                          <AvatarFallback className="bg-primary/10 text-primary font-medium">U</AvatarFallback>
-                        </>
-                      ) : (
-                        <>
-                          <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                          <AvatarFallback className="bg-secondary/30 text-foreground font-medium">AI</AvatarFallback>
-                        </>
-                      )}
-                    </Avatar>
+                  {message.role === "user" ? (
+                      <UserAvatar userId="current" size="sm" />
+                    ) : (
+                      <MonstiaAvatar size="sm" showFallback />
+                    )}
+
                     <div
                       className={`rounded-lg px-4 py-3 ${
                         message.role === "user"

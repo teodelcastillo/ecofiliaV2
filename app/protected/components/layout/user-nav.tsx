@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/utils/supabase/client"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserAvatar } from "../../components/user-avatar"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -138,23 +138,25 @@ export function UserNav({
 
     return (
       <Button variant="ghost" className={`relative ${showFullInfo ? "pl-2 pr-3 py-1 h-10" : "h-10 w-10 rounded-full"}`}>
-        <Avatar className="h-8 w-8">
-          <AvatarImage src={userData?.avatar_url || ""} alt={getUserDisplayName()} />
-          <AvatarFallback className="bg-primary/10 text-primary">{getUserInitials()}</AvatarFallback>
-        </Avatar>
-
+        <UserAvatar
+          userId={userData?.id ?? ""}
+          fallbackName={getUserDisplayName()}
+          size="sm"
+        />
+    
         {showFullInfo && (
           <>
             <span className="ml-2 mr-1 hidden sm:inline-block">{getUserDisplayName()}</span>
             <ChevronDown className="h-4 w-4 text-muted-foreground hidden sm:block" />
           </>
         )}
-
+    
         {showNotifications && hasNotifications && (
           <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
         )}
       </Button>
     )
+    
   }
 
   const navContent = (
