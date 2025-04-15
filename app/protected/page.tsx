@@ -14,6 +14,9 @@ export default async function ProtectedPage() {
   if (!user) {
     redirect("/auth")
   }
+
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
+
   // Fetch recent documents (limit to 5)
   const { data: recentDocuments } = await supabase
     .from("documents")
@@ -51,6 +54,7 @@ export default async function ProtectedPage() {
       recentDocuments={recentDocuments || []}
       projects={projects || []}
       reports={transformedReports}
+      profile={profile}
     />
   )
 }

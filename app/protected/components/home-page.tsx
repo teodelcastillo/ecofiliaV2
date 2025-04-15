@@ -53,18 +53,25 @@ interface Report {
 
 interface HomePageProps {
   user: User
+  profile: {
+    full_name?: string
+    avatar_url?: string
+    role?: string
+  }
   recentDocuments: Document[]
   projects: Project[]
   reports: Report[]
 }
 
-export function HomePage({ user, recentDocuments, projects, reports }: HomePageProps) {
+
+export function HomePage({ user, profile, recentDocuments, projects, reports }: HomePageProps) {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false)
 
   // Get user's first name for greeting
-  const firstName = user.email?.split("@")[0] || "User"
-  const capitalizedName = firstName.charAt(0).toUpperCase() + firstName.slice(1)
+  const displayName = profile?.full_name || "User"
+  const capitalizedName = displayName.charAt(0).toUpperCase() + displayName.slice(1)
+  
 
   // Get time of day for greeting
   const getGreeting = () => {
