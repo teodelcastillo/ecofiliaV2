@@ -61,23 +61,6 @@ export function DocumentList({
     switch (type.toLowerCase()) {
       case "pdf":
         return <FileText className="h-5 w-5 text-red-500" />
-      case "docx":
-      case "doc":
-        return <FileText className="h-5 w-5 text-blue-500" />
-      case "xlsx":
-      case "xls":
-      case "csv":
-        return <FileSpreadsheet className="h-5 w-5 text-green-500" />
-      case "pptx":
-      case "ppt":
-        return <File className="h-5 w-5 text-orange-500" />
-      case "jpg":
-      case "jpeg":
-      case "png":
-      case "gif":
-        return <FileImage className="h-5 w-5 text-purple-500" />
-      default:
-        return <File className="h-5 w-5 text-gray-500" />
     }
   }
 
@@ -166,7 +149,7 @@ export function DocumentList({
                 >
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
-                      {getDocumentIcon(type)}
+                      {getDocumentIcon("pdf")}
                       <span className="truncate max-w-[300px]">{name}</span>
                       {category && (
                         <Badge variant="outline" className="ml-2">
