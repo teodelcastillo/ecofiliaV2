@@ -1,6 +1,5 @@
 "use client"
 
-import Image from "next/image"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface MonstiaAvatarProps {
@@ -11,21 +10,13 @@ interface MonstiaAvatarProps {
 export function MonstiaAvatar({ size = "md", showFallback = false }: MonstiaAvatarProps) {
   const sizeClass = {
     sm: "h-6 w-6",
-    md: "h-10 w-10",
-    lg: "h-14 w-14",
+    md: "h-12 w-12",
+    lg: "h-16 w-16",
   }[size]
 
   return (
     <Avatar className={sizeClass}>
-      <AvatarImage asChild>
-        <Image
-          src="/monstia.png"
-          alt="Monstia"
-          width={64}
-          height={64}
-          className="object-cover"
-        />
-      </AvatarImage>
+      <AvatarImage src="/monstia.png" alt="Monstia" />
       {showFallback && (
         <AvatarFallback className="bg-primary/10 text-primary">M</AvatarFallback>
       )}

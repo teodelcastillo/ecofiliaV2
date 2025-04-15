@@ -20,8 +20,7 @@ import type { User } from "@supabase/supabase-js"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { UserAvatar } from "../components/user-avatar"
-
+import { MonstiaAvatar } from "./monstia-avatar"
 import { DocumentUploadModal } from "../dashboard/components/document-upload-modal"
 import { CreateProjectModal } from "../projects/components/create-project"
 import { RecentActivityCard } from "../dashboard/components/recent-activity-card"
@@ -86,8 +85,7 @@ export function HomePage({ user, profile, recentDocuments, projects, reports }: 
     <div className="container mx-auto py-8 px-4">
       {/* Header with greeting */}
       <div className="flex items-center gap-4 mb-8">
-      <UserAvatar userId={user.id} fallbackName={capitalizedName} size="lg" />
-
+      <MonstiaAvatar size="md" showFallback />
 
         <div >
           <h1 className="text-2xl font-bold">
