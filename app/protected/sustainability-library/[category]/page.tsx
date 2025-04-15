@@ -13,8 +13,9 @@ function isValidCategory(value: string | null): value is PublicDocumentCategory 
   return PUBLIC_DOCUMENT_CATEGORIES.includes(value as PublicDocumentCategory)
 }
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
-  const selectedCategory = isValidCategory(params.category) ? params.category : null
+export default async function CategoryPage({ params }: { params: Promise<CategoryPageProps["params"]> }) {
+  const { category } = await params
+  const selectedCategory = isValidCategory(category) ? category : null
 
   const supabase = await createClient()
 
