@@ -20,11 +20,12 @@ import type { User } from "@supabase/supabase-js"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserAvatar } from "../components/user-avatar"
 
 import { DocumentUploadModal } from "../dashboard/components/document-upload-modal"
 import { CreateProjectModal } from "../projects/components/create-project"
 import { RecentActivityCard } from "../dashboard/components/recent-activity-card"
+import { Separator } from "@/components/ui/separator"
 
 interface Document {
   id: string
@@ -85,38 +86,23 @@ export function HomePage({ user, profile, recentDocuments, projects, reports }: 
     <div className="container mx-auto py-8 px-4">
       {/* Header with greeting */}
       <div className="flex items-center gap-4 mb-8">
-        <Avatar className="h-12 w-12 border-2 border-primary">
-          <AvatarImage src={user.user_metadata?.avatar_url || "/placeholder.svg"} />
-          <AvatarFallback className="bg-primary/10 text-primary font-medium">
-            {capitalizedName.charAt(0)}
-          </AvatarFallback>
-        </Avatar>
-        <div>
+      <UserAvatar userId={user.id} fallbackName={capitalizedName} size="lg" />
+
+
+        <div >
           <h1 className="text-2xl font-bold">
-            {getGreeting()}, {capitalizedName}
+            {getGreeting()}, {capitalizedName}!
           </h1>
           <p className="text-muted-foreground">
-            Welcome to Ecofilia - Accelerating sustainability with intelligence and purpose
+            Welcome to <b>Ecofilia</b> - Accelerating sustainability with <b>intelligence and purpose</b>
           </p>
         </div>
       </div>
 
-      {/* Hero Section */}
-      <section className="w-full py-6 mb-8">
-        <div className="flex flex-wrap gap-4">
-          <Button asChild size="lg">
-            <Link href="/protected/ecofilia-expert">
-              AI Assistant <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-          <Button variant="outline" size="lg" asChild>
-            <Link href="/protected/sustainability-library">Sustainability Library</Link>
-          </Button>
-        </div>
-      </section>
+      <Separator className="my-6" />
 
       {/* Main content */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start mt-4">
         {/* Left column (2/3 width on large screens) */}
         <div className="md:col-span-1 lg:col-span-2 space-y-6">
           {/* Quick Access Section */}
