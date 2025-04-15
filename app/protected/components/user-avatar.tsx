@@ -1,3 +1,4 @@
+// components/user-avatar.tsx
 "use client"
 
 import { useEffect, useState } from "react"
@@ -6,61 +7,50 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import clsx from "clsx"
 
 interface UserAvatarProps {
-  userId: string
   fallbackName?: string
   size?: "sm" | "md" | "lg"
   className?: string
-  avatarUrl?: string // optional: directly pass raw Supabase storage path
 }
 
 export function UserAvatar({
-  userId,
   fallbackName = "User",
   size = "md",
   className,
-  avatarUrl,
 }: UserAvatarProps) {
   const [signedUrl, setSignedUrl] = useState<string | null>(null)
+  const [initials, setInitials] = useState("U")
   const supabase = createClient()
 
   useEffect(() => {
-    if (avatarUrl) {
-      generateSignedUrl(avatarUrl)
-    } else {
-      fetchAvatarPath()
-    }
+    const loadAvatar = async () => {
+      const { data: auth, error: authError } = await supabase.auth.getUser()
+      const userId = auth?.user?.id
+      if (!userId || authError) return
 
-    async function fetchAvatarPath() {
-      const { data, error } = await supabase
+      const { data: profile, error } = await supabase
         .from("profiles")
-        .select("avatar_url")
+        .select("avatar_url, full_name")
         .eq("id", userId)
         .single()
 
-      if (error) {
-        console.warn("No avatar in profile:", error.message)
-        return
-      }
+      if (error || !profile) return
 
-      if (data?.avatar_url) {
-        generateSignedUrl(data.avatar_url)
-      }
-    }
+      if (profile.full_name) setInitials(profile.full_name.charAt(0).toUpperCase())
 
-    async function generateSignedUrl(path: string) {
-      const { data, error } = await supabase.storage
-        .from("avatars")
-        .createSignedUrl(path, 3600)
+      if (profile.avatar_url) {
+        const { data: signed, error: signedError } = await supabase.storage
+          .from("avatars")
+          .createSignedUrl(profile.avatar_url, 3600)
 
-      if (error) {
-        console.error("Failed to generate signed avatar URL:", error.message)
-      } else {
-        setSignedUrl(data?.signedUrl || null)
+        if (!signedError && signed?.signedUrl) {
+          setSignedUrl(signed.signedUrl)
+        }
       }
     }
-  }, [userId, avatarUrl, supabase])
 
-  const initials = fallbackName.charAt(0).toUpperCase()
+    loadAvatar()
+  }, [])
+
   const sizeClass = {
     sm: "h-6 w-6",
     md: "h-10 w-10",
@@ -69,7 +59,7 @@ export function UserAvatar({
 
   return (
     <Avatar className={clsx(sizeClass, className)}>
-      <AvatarImage src={signedUrl || ""} alt={fallbackName} />
+      <AvatarImage src={signedUrl || ""} alt="User Avatar" />
       <AvatarFallback className="bg-primary/10 text-primary">{initials}</AvatarFallback>
     </Avatar>
   )

@@ -10,7 +10,6 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Send, Loader2, FileText, FolderOpen } from "lucide-react"
 import type { Document } from "@/models"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import ChatMarkdown from "../../components/chat-markdown"
 import { motion } from "framer-motion"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -132,9 +131,9 @@ export function ChatInterface({
                 >
                   <div className={`flex gap-3 max-w-[85%] ${message.role === "user" ? "flex-row-reverse" : ""}`}>
                   {message.role === "user" ? (
-                      <UserAvatar userId="current" size="sm" />
+                      <UserAvatar size="md" />
                     ) : (
-                      <MonstiaAvatar size="sm" showFallback />
+                      <MonstiaAvatar size="md" showFallback />
                     )}
 
                     <div
