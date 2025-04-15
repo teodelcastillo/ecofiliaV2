@@ -4,12 +4,33 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { CalendarIcon, MessageSquare, ThumbsUp, BookMarked, Sparkles, Users } from "lucide-react"
+import { CalendarIcon, MessageSquare, ThumbsUp, BookMarked, Sparkles, Users, BookOpen, UsersRound } from "lucide-react"
 import { WaitlistModal } from "./components/waitlist-modal"
 
 export default function CommunityPage() {
   return (
     <div className="container py-10">
+    <div className="container mx-auto py-8 px-4">
+      <div className="flex items-center gap-3 mb-2">
+        <div className="bg-primary/10 p-2 rounded-full">
+          <UsersRound className="h-5 w-5 text-primary" />
+        </div>
+        <h1 className="text-3xl font-bold">Community</h1>
+      </div>
+      <p className="text-muted-foreground mb-8 leading-relaxed">
+        <span className="block mb-4">
+          Welcome to the <b>Ecofilia Community</b> — a space designed for connection, collaboration, and knowledge-sharing.
+        </span>
+        <span className="block mb-4">
+          Here, members can spark discussions, ask questions, share ideas, and support each other’s work. You’ll be able to collaborate on projects, and showcase your own document libraries — whether you choose to make them public or offer exclusive access through subscriptions.
+        </span>
+        <span className="block">
+          Let’s build a <b>smarter, and greener future together</b>.
+        </span>
+      </p>
+
+    </div>
+      
 
       {/* Stats Section 
       <div className="mb-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
