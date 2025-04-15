@@ -1,26 +1,13 @@
-import { createClient } from "@/utils/supabase/server"
-import { redirect } from "next/navigation"
+
 import { IntegratedLibrary } from "./components/integrated-library"
 import { BookOpen } from "lucide-react"
-
+import { requireUser } from "@/lib/require-user"
 export const dynamic = "force-dynamic"
 
 export default async function MyLibraryPage() {
-  const supabase = await createClient()
-
-  // Get the current user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  // If no user is logged in, redirect to login page
-  if (!user) {
-    redirect("/auth")
-  }
+  const { user, supabase } = await requireUser()
 
   // Fetch user's documents
-  console.log("📁 Fetching documents for user:", user.id)
-
   const INITIAL_PAGE_SIZE = 10
 
   const { data: userDocuments, error } = await supabase

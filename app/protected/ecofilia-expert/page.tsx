@@ -1,31 +1,19 @@
-import { DocumentChat } from "./components/document-chat";
-import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
+import { DocumentChat } from "./components/document-chat"
+import { requireUser } from "@/lib/require-user"
 
 export default async function DocumentChatPage() {
-  const supabase = await createClient();
+  const { user, supabase } = await requireUser()
 
-  // Get the current user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/auth");
-  }
-
-  // Fetch user's personal documents
   const { data: personalDocs } = await supabase
     .from("documents")
     .select("id, name, description, category, created_at, file_path, user_id")
     .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
 
-  // Fetch public documents
   const { data: publicDocs } = await supabase
     .from("public_documents")
     .select("id, name, category, created_at, file_url")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
 
   return (
     <div className="container mx-auto py-8">
@@ -39,5 +27,5 @@ export default async function DocumentChatPage() {
         userId={user.id}
       />
     </div>
-  );
+  )
 }
