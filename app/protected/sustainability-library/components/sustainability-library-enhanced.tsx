@@ -11,10 +11,12 @@ import { Button } from "@/components/ui/button"
 import { createClient } from "@/utils/supabase/client"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { motion, AnimatePresence } from "framer-motion"
+import { PublicDocumentCategory } from "../../../../types/categories"
+
 
 interface SustainabilityLibraryProps {
   initialDocuments: any[]
-  categories: string[]
+  categories: PublicDocumentCategory
   initialCategory?: string | null
 }
 
@@ -29,7 +31,7 @@ export function SustainabilityLibraryEnhanced({
   const [loadingMore, setLoadingMore] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory)
+  const [selectedCategory, setSelectedCategory] = useState<PublicDocumentCategory | null>(initialCategory as PublicDocumentCategory | null)
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState<string>("newest")
   const [showFilters, setShowFilters] = useState(false)
@@ -50,7 +52,7 @@ export function SustainabilityLibraryEnhanced({
       .select("id, name, description, category, created_at, file_url, author")
 
     if (selectedCategory) {
-      query = query.eq("category", selectedCategory)
+      query = query.eq("category", selectedCategory as NonNullable<"NDCs" | "NAPs" | "LTS" | "ESG" | "IPCC" | "IPBES" | null>)
     }
 
     // Apply sorting
@@ -89,7 +91,7 @@ export function SustainabilityLibraryEnhanced({
       .select("id, name, description, category, created_at, file_url, author")
 
     if (selectedCategory) {
-      query = query.eq("category", selectedCategory)
+      query = query.eq("category", selectedCategory as NonNullable<"NDCs" | "NAPs" | "LTS" | "ESG" | "IPCC" | "IPBES" | null>)
     }
 
     // Apply sorting
@@ -170,7 +172,7 @@ export function SustainabilityLibraryEnhanced({
             >
               <div className="flex flex-col md:flex-row gap-4 pt-2 md:pt-0">
                 <DocumentFilters
-                  categories={categories}
+                  categories={Array.isArray(categories) ? categories : []}
                   selectedCategory={selectedCategory}
                   onSelectCategory={setSelectedCategory}
                 />

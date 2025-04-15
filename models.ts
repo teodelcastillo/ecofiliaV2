@@ -21,7 +21,7 @@ export interface Project {
   client?: string | null
   user_id: string | null
   created_at: string | null
-  Documents?: Document[]
+  documents?: Document[]
 }
 
 export interface Report {

@@ -82,7 +82,7 @@ export function UserNav({
         setUserData({
           id: user.id,
           email: user.email,
-          full_name: profile.full_name,
+          full_name: profile.full_name ?? undefined,
           avatar_url: signedUrl ?? undefined,
         })
 

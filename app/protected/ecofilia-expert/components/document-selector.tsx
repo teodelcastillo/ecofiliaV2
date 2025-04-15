@@ -109,7 +109,7 @@ export function DocumentSelector({
 
   const filterDocuments = (documents: Document[]) => {
     if (!searchQuery) return documents
-    return documents.filter((doc) => doc.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    return documents.filter((doc) => doc.name?.toLowerCase().includes(searchQuery.toLowerCase()))
   }
 
   const filterProjects = (projects: Project[]) => {
@@ -118,7 +118,7 @@ export function DocumentSelector({
     return projects.filter(
       (project) =>
         project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.documents.some((doc) => doc.name.toLowerCase().includes(searchQuery.toLowerCase())),
+        project.documents.some((doc) => doc.name?.toLowerCase().includes(searchQuery.toLowerCase())),
     )
   }
 

@@ -12,7 +12,7 @@ import { PUBLIC_DOCUMENT_CATEGORIES, PublicDocumentCategory } from "../../../../
 
 interface SustainabilityLibraryProps {
   categories: PublicDocumentCategory[]
-  initialCategory?: PublicDocumentCategory | null
+  initialCategory?: PublicDocumentCategory
 }
 
 export function SustainabilityLibrary({ initialCategory = null }: SustainabilityLibraryProps) {

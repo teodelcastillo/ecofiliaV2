@@ -2,25 +2,29 @@
 
 import { useSearchParams } from "next/navigation"
 import { useState, useEffect } from "react"
-import { SustainabilityLibraryEnhanced } from "./sustainability-library-enhanced"
 import { motion } from "framer-motion"
 import { BookOpen, Leaf } from "lucide-react"
 
+import { SustainabilityLibraryEnhanced } from "./sustainability-library-enhanced"
+import type { PublicDocumentCategory } from "@/types/categories"
+
 interface SustainabilityLibraryWrapperProps {
   documents: any[]
-  categories: string[]
+  categories: PublicDocumentCategory
 }
 
-export function SustainabilityLibraryWrapperEnhanced({ documents, categories }: SustainabilityLibraryWrapperProps) {
+export function SustainabilityLibraryWrapperEnhanced({
+  documents,
+  categories,
+}: SustainabilityLibraryWrapperProps) {
   const searchParams = useSearchParams()
   const categoryParam = searchParams.get("category")
 
-  const [initialCategory, setInitialCategory] = useState<string | null>(null)
+  const [initialCategory, setInitialCategory] = useState<PublicDocumentCategory | null>(null)
 
-  // Set category filter from URL if valid
   useEffect(() => {
-    if (categoryParam && categories.includes(categoryParam)) {
-      setInitialCategory(categoryParam)
+    if (categoryParam && typeof categoryParam === "string" && categories?.includes(categoryParam)) {
+      setInitialCategory(categoryParam as PublicDocumentCategory)
     }
   }, [categoryParam, categories])
 
@@ -58,7 +62,6 @@ export function SustainabilityLibraryWrapperEnhanced({ documents, categories }: 
         )}
       </motion.div>
 
-      {/* Document List */}
       <SustainabilityLibraryEnhanced
         initialDocuments={documents}
         categories={categories}

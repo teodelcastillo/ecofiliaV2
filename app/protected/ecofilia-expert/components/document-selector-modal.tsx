@@ -31,15 +31,7 @@ import {
 } from "@/components/ui/dialog"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { motion, AnimatePresence } from "framer-motion"
-import type { Document } from "@/models"
-
-// Interface for Project
-interface Project {
-  id: string
-  name: string
-  description?: string
-  documents: Document[]
-}
+import type { Document, Project } from "@/models"
 
 interface DocumentSelectorModalProps {
   isOpen: boolean
@@ -90,11 +82,11 @@ export function DocumentSelectorModal({
   }
 
   const toggleProjectSelection = (project: Project) => {
-    const projectDocIds = new Set(project.documents.map((doc) => doc.id))
+    const projectDocIds = new Set(project.documents?.map((doc) => doc.id))
     const currentlySelectedFromProject = localSelectedDocs.filter((doc) => projectDocIds.has(doc.id))
 
     // If all project documents are selected, deselect them all
-    if (currentlySelectedFromProject.length === project.documents.length) {
+    if (currentlySelectedFromProject.length === project.documents?.length) {
       setLocalSelectedDocs(localSelectedDocs.filter((doc) => !projectDocIds.has(doc.id)))
     }
     // Otherwise, select all project documents
@@ -102,19 +94,19 @@ export function DocumentSelectorModal({
       // Remove any already selected docs from this project
       const docsWithoutProject = localSelectedDocs.filter((doc) => !projectDocIds.has(doc.id))
       // Add all project docs with the project type
-      const projectDocs = project.documents.map((doc) => ({ ...doc, type: "project" as const }))
-      setLocalSelectedDocs([...docsWithoutProject, ...projectDocs])
+      const projectDocs = project.documents?.map((doc) => ({ ...doc, type: "project" as const }))
+      setLocalSelectedDocs([...docsWithoutProject, ...(projectDocs || [])])
     }
   }
 
   const isProjectFullySelected = (project: Project) => {
-    return project.documents.every((doc) => localSelectedDocs.some((selectedDoc) => selectedDoc.id === doc.id))
+    return project.documents ? project.documents.every((doc) => localSelectedDocs.some((selectedDoc) => selectedDoc.id === doc.id)) : false
   }
 
-  const isProjectPartiallySelected = (project: Project) => {
-    const hasSelected = project.documents.some((doc) =>
+  const isProjectPartiallySelected = (project: Project): boolean => {
+    const hasSelected = project.documents?.some((doc) =>
       localSelectedDocs.some((selectedDoc) => selectedDoc.id === doc.id),
-    )
+    ) || false
     return hasSelected && !isProjectFullySelected(project)
   }
 
@@ -126,7 +118,7 @@ export function DocumentSelectorModal({
 
   const filterDocuments = (documents: Document[]) => {
     if (!searchQuery) return documents
-    return documents.filter((doc) => doc.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    return documents.filter((doc) => doc.name?.toLowerCase().includes(searchQuery.toLowerCase()))
   }
 
   const filterProjects = (projects: Project[]) => {
@@ -134,8 +126,8 @@ export function DocumentSelectorModal({
 
     return projects.filter(
       (project) =>
-        project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.documents.some((doc) => doc.name.toLowerCase().includes(searchQuery.toLowerCase())),
+        project.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        project.documents?.some((doc) => doc.name?.toLowerCase().includes(searchQuery.toLowerCase())),
     )
   }
 
@@ -391,7 +383,7 @@ function ProjectList({
         {projects.map((project) => {
           const isFullySelected = isProjectFullySelected(project)
           const isPartiallySelected = isProjectPartiallySelected(project)
-          const isExpanded = expandedProjects.includes(project.id)
+          const isExpanded = project.id ? expandedProjects.includes(project.id) : false
 
           return (
             <motion.div
@@ -402,7 +394,7 @@ function ProjectList({
               transition={{ duration: 0.2 }}
               className="border rounded-md overflow-hidden"
             >
-              <Collapsible open={isExpanded} onOpenChange={() => toggleProjectExpand(project.id)}>
+              <Collapsible open={isExpanded} onOpenChange={() => project.id && toggleProjectExpand(project.id)}>
                 <div
                   className={`flex items-center p-3 cursor-pointer transition-colors ${
                     isFullySelected
@@ -430,7 +422,7 @@ function ProjectList({
                   </div>
                   <Badge variant="outline" className="mr-2">
                     <Layers className="h-3 w-3 mr-1" />
-                    {project.documents.length}
+                    {project.documents?.length}
                   </Badge>
                   <CollapsibleTrigger asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
                     <Button variant="ghost" size="sm" className="p-1 h-7 w-7">
@@ -441,7 +433,7 @@ function ProjectList({
 
                 <CollapsibleContent>
                   <div className="pl-6 pr-3 pb-2 pt-1 bg-background/50">
-                    {project.documents.map((doc) => {
+                    {project.documents?.map((doc) => {
                       const isSelected = selectedDocuments.some((d) => d.id === doc.id)
                       return (
                         <div

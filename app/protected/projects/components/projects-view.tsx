@@ -46,7 +46,7 @@ export function ProjectsView({ onSelectProject, className = "" }: ProjectsViewPr
 
   const filteredProjects = projects.filter((project) => {
     const matchesSearch =
-      project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       project.description?.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory = selectedCategory === "All" || project.category === selectedCategory
     return matchesSearch && matchesCategory

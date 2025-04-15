@@ -16,35 +16,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { UserAvatar } from "../../components/user-avatar" // adjust path if needed
-
 import { DocumentUploadModal } from "./document-upload-modal"
 import { CreateProjectModal } from "../../projects/components/create-project"
 import { RecentActivityCard } from "./recent-activity-card"
-
-interface Document {
-  id: string
-  name: string
-  file_path?: string
-  created_at: string
-  category?: string
-}
-
-interface Project {
-  id: string
-  name: string
-  description?: string
-  category?: string
-  created_at: string
-}
-
-interface Report {
-  id: string
-  project_id: string
-  projectName: string
-  type: string
-  name?: string
-  created_at: string
-}
+import { Project, Document, Report } from "@/models"
 
 interface DashboardProps {
   user: User

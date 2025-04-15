@@ -86,14 +86,22 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
   const handleShare = () => {
     // Implement share functionality
     // For now, just copy the project name to clipboard
-    navigator.clipboard.writeText(project.name)
+    if (project.name) {
+      navigator.clipboard.writeText(project.name)
+    } else {
+      toast({
+        title: "Error",
+        description: "Project name is not available to copy.",
+        variant: "destructive",
+      })
+    }
     toast({
       title: "Link copied",
       description: "Project link copied to clipboard.",
     })
   }
 
-  const documentCount = project.Documents?.length || 0
+  const documentCount = project.documents?.length || 0
 
   return (
     <>

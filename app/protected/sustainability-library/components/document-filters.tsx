@@ -13,7 +13,6 @@ import { Check, ChevronDown, Filter } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import {
   PublicDocumentCategory,
-  PUBLIC_DOCUMENT_CATEGORIES,
 } from "../../../../types/categories"
 
 interface DocumentFiltersProps {
