@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react"
 import { createClient } from "@/utils/supabase/client"
 
-interface PublicDocument {
+interface Document {
   id: string
   name: string
   category?: string
@@ -15,18 +15,14 @@ interface PublicDocument {
 interface UsePublicDocumentsOptions {
   category?: string | null
   search?: string
-  limit?: number
-  offset?: number
+  page?: number
+  pageSize?: number
 }
 
-export function usePublicDocuments({
-  category = null,
-  search = "",
-  limit = 15,
-  offset = 0,
-}: UsePublicDocumentsOptions) {
-  const [documents, setDocuments] = useState<PublicDocument[]>([])
-  const [loading, setLoading] = useState(true)
+export function usePublicDocuments({ category, search = "", page = 0, pageSize = 10 }: UsePublicDocumentsOptions) {
+  const [documents, setDocuments] = useState<Document[]>([])
+  const [loading, setLoading] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -39,7 +35,7 @@ export function usePublicDocuments({
         .from("public_documents")
         .select("id, name, category, created_at, file_url")
         .order("created_at", { ascending: false })
-        .range(offset, offset + limit - 1)
+        .range(page * pageSize, page * pageSize + pageSize - 1)
 
       if (category) query = query.eq("category", category)
       if (search) query = query.ilike("name", `%${search}%`)
@@ -48,16 +44,20 @@ export function usePublicDocuments({
 
       if (error) {
         setError(error.message)
-        setDocuments([])
-      } else {
-        setDocuments(data || [])
+        setLoading(false)
+        return
       }
 
+      setDocuments((prev) => {
+        const merged = [...prev, ...(data || [])]
+        return Array.from(new Map(merged.map((doc) => [doc.id, doc])).values())
+      })
+      setHasMore((data?.length || 0) === pageSize)
       setLoading(false)
     }
 
     fetchDocuments()
-  }, [category, search, limit, offset])
+  }, [category, search, page, pageSize])
 
-  return { documents, loading, error }
+  return { documents, loading, hasMore, error }
 }

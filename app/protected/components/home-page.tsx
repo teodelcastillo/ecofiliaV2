@@ -20,60 +20,27 @@ import type { User } from "@supabase/supabase-js"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 import { MonstiaAvatar } from "./monstia-avatar"
 import { DocumentUploadModal } from "../dashboard/components/document-upload-modal"
 import { CreateProjectModal } from "../projects/components/create-project"
 import { RecentActivityCard } from "../dashboard/components/recent-activity-card"
-import { Separator } from "@/components/ui/separator"
-
-interface Document {
-  id: string
-  name: string
-  file_path?: string
-  created_at: string
-  category?: string
-}
-
-interface Project {
-  id: string
-  name: string
-  description?: string
-  category?: string
-  created_at: string
-}
-
-interface Report {
-  id: string
-  project_id: string
-  projectName: string
-  type: string
-  name?: string
-  created_at: string
-}
+import { Document, Project, Report, Profile, } from "@/models"
 
 interface HomePageProps {
   user: User
-  profile: {
-    full_name?: string
-    avatar_url?: string
-    role?: string
-  }
+  profile: Profile | null
   recentDocuments: Document[]
   projects: Project[]
   reports: Report[]
 }
 
-
 export function HomePage({ user, profile, recentDocuments, projects, reports }: HomePageProps) {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false)
 
-  // Get user's first name for greeting
-  const displayName = profile?.full_name || "User"
-  const capitalizedName = displayName.charAt(0).toUpperCase() + displayName.slice(1)
-  
+  const capitalizedName = (profile?.full_name || "User").replace(/^./, (c) => c.toUpperCase())
 
-  // Get time of day for greeting
   const getGreeting = () => {
     const hour = new Date().getHours()
     if (hour < 12) return "Good morning"
@@ -83,119 +50,81 @@ export function HomePage({ user, profile, recentDocuments, projects, reports }: 
 
   return (
     <div className="container mx-auto py-8 px-4">
-      {/* Header with greeting */}
+      {/* Greeting */}
       <div className="flex items-center gap-4 mb-8">
-      <MonstiaAvatar size="md" showFallback />
-
-        <div >
+        <MonstiaAvatar size="md" showFallback />
+        <div>
           <h1 className="text-2xl font-bold">
             {getGreeting()}, {capitalizedName}!
           </h1>
           <p className="text-muted-foreground">
-            Welcome to <b>Ecofilia</b> - Accelerating sustainability with <b>intelligence and purpose</b>
+            Welcome to <b>Ecofilia</b> – Accelerating sustainability with <b>intelligence and purpose</b>
           </p>
         </div>
       </div>
 
       <Separator className="my-6" />
 
-      {/* Main content */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start mt-4">
-        {/* Left column (2/3 width on large screens) */}
+        {/* Left Column */}
         <div className="md:col-span-1 lg:col-span-2 space-y-6">
-          {/* Quick Access Section */}
-          <section className="w-full">
-            <div className="space-y-6">
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <Globe className="h-6 w-6 text-primary mb-2" />
-                    <CardTitle>AI Assistant</CardTitle>
-                    <CardDescription>Chat with your documents using AI</CardDescription>
-                  </CardHeader>
-                  <CardFooter>
-                    <Button variant="ghost" asChild className="w-full justify-start">
-                      <Link href="/protected/ecofilia-expert" className="flex items-center">
-                        View <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <BookOpen className="h-6 w-6 text-primary mb-2" />
-                    <CardTitle>My Library</CardTitle>
-                    <CardDescription>Access your uploaded documents</CardDescription>
-                  </CardHeader>
-                  <CardFooter>
-                    <Button variant="ghost" asChild className="w-full justify-start">
-                      <Link href="/protected/my-library" className="flex items-center">
-                        View <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <MessageCircle className="h-6 w-6 text-primary mb-2" />
-                    <CardTitle>Sustainability Library</CardTitle>
-                    <CardDescription>Browse sustainability resources</CardDescription>
-                  </CardHeader>
-                  <CardFooter>
-                    <Button variant="ghost" asChild className="w-full justify-start">
-                      <Link href="/protected/sustainability-library" className="flex items-center">
-                        View <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <FolderKanban className="h-6 w-6 text-primary mb-2" />
-                    <CardTitle>Projects</CardTitle>
-                    <CardDescription>Manage your sustainability projects</CardDescription>
-                  </CardHeader>
-                  <CardFooter>
-                    <Button variant="ghost" asChild className="w-full justify-start">
-                      <Link href="/protected/projects" className="flex items-center">
-                        View <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <Leaf className="h-6 w-6 text-primary mb-2" />
-                    <CardTitle>Reports</CardTitle>
-                    <CardDescription>Generate sustainability reports</CardDescription>
-                  </CardHeader>
-                  <CardFooter>
-                    <Button variant="ghost" asChild className="w-full justify-start">
-                      <Link href="/protected/reports" className="flex items-center">
-                        View <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <Recycle className="h-6 w-6 text-primary mb-2" />
-                    <CardTitle>Analytics</CardTitle>
-                    <CardDescription>View sustainability analytics</CardDescription>
-                  </CardHeader>
-                  <CardFooter>
-                    <Button variant="ghost" asChild className="w-full justify-start">
-                      <Link href="/protected/analytics" className="flex items-center">
-                        View <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </div>
-            </div>
+          {/* Quick Access Cards */}
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                icon: <Globe className="h-6 w-6 text-primary mb-2" />,
+                title: "AI Assistant",
+                description: "Chat with your documents using AI",
+                href: "/protected/ecofilia-expert",
+              },
+              {
+                icon: <BookOpen className="h-6 w-6 text-primary mb-2" />,
+                title: "My Library",
+                description: "Access your uploaded documents",
+                href: "/protected/my-library",
+              },
+              {
+                icon: <MessageCircle className="h-6 w-6 text-primary mb-2" />,
+                title: "Sustainability Library",
+                description: "Browse sustainability resources",
+                href: "/protected/sustainability-library",
+              },
+              {
+                icon: <FolderKanban className="h-6 w-6 text-primary mb-2" />,
+                title: "Projects",
+                description: "Manage your sustainability projects",
+                href: "/protected/projects",
+              },
+              {
+                icon: <Leaf className="h-6 w-6 text-primary mb-2" />,
+                title: "Reports",
+                description: "Generate sustainability reports",
+                href: "/protected/reports",
+              },
+              {
+                icon: <Recycle className="h-6 w-6 text-primary mb-2" />,
+                title: "Analytics",
+                description: "View sustainability analytics",
+                href: "/protected/analytics",
+              },
+            ].map(({ icon, title, description, href }) => (
+              <Card key={title}>
+                <CardHeader className="pb-2">
+                  {icon}
+                  <CardTitle>{title}</CardTitle>
+                  <CardDescription>{description}</CardDescription>
+                </CardHeader>
+                <CardFooter>
+                  <Button variant="ghost" asChild className="w-full justify-start">
+                    <Link href={href} className="flex items-center">
+                      View <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
           </section>
 
-          {/* Recent Activity */}
           <RecentActivityCard
             documents={recentDocuments}
             projects={projects}
@@ -205,44 +134,33 @@ export function HomePage({ user, profile, recentDocuments, projects, reports }: 
           />
         </div>
 
-        {/* Right column (1/3 width on large screens) */}
+        {/* Right Column */}
         <div className="md:col-span-1 space-y-6 self-start">
           {/* About Ecofilia */}
-          <section className="w-full">
-            <div className="space-y-6">
-              <Card className="min-h-[300px] h-full">
-                <CardContent className="space-y-3 pt-6">
-                  <h2>About Ecofilia</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Ecofilia is your comprehensive platform for sustainability management—designed for organizations
-                    aiming to streamline environmental workflows, ensure compliance, and accelerate climate action.
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    We combine modern document intelligence with actionable insights to help you analyze, track, and
-                    improve your environmental impact—at scale.
-                  </p>
-                  <div className="space-y-2 mt-4">
-                    <div className="flex items-start gap-2">
-                      <Globe className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">AI-powered document analysis</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <Leaf className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">Sustainability reporting</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <Recycle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">Environmental impact tracking</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <Puzzle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">Project-based knowledge management</span>
-                    </div>
+          <Card className="min-h-[300px] h-full">
+            <CardContent className="space-y-3 pt-6">
+              <h2>About Ecofilia</h2>
+              <p className="text-sm text-muted-foreground">
+                Ecofilia is your comprehensive platform for sustainability management—designed for organizations aiming to streamline environmental workflows, ensure compliance, and accelerate climate action.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                We combine modern document intelligence with actionable insights to help you analyze, track, and improve your environmental impact—at scale.
+              </p>
+              <div className="space-y-2 mt-4">
+                {[
+                  { icon: <Globe className="h-4 w-4 text-primary" />, label: "AI-powered document analysis" },
+                  { icon: <Leaf className="h-4 w-4 text-primary" />, label: "Sustainability reporting" },
+                  { icon: <Recycle className="h-4 w-4 text-primary" />, label: "Environmental impact tracking" },
+                  { icon: <Puzzle className="h-4 w-4 text-primary" />, label: "Project-based knowledge management" },
+                ].map(({ icon, label }) => (
+                  <div key={label} className="flex items-start gap-2">
+                    {icon}
+                    <span className="text-sm">{label}</span>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-          </section>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Quick Actions */}
           <Card>

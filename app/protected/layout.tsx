@@ -1,22 +1,23 @@
 import type React from "react"
-import { createClient } from "@/utils/supabase/server"
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
+import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { Sidebar } from "./components/layout/sidebar-nav"
 import { Header } from "./components/layout/header"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
+import type { Database } from "@/types/supabase"
 
 export default async function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  // Check if user is authenticated
-  const supabase = await createClient()
+  const supabase = createServerComponentClient<Database>({ cookies })
+
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // If no user is logged in, redirect to login page
   if (!user) {
     redirect("/auth")
   }
@@ -31,4 +32,3 @@ export default async function ProtectedLayout({
     </SidebarProvider>
   )
 }
-

@@ -11,14 +11,22 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Check, ChevronDown, Filter } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import {
+  PublicDocumentCategory,
+  PUBLIC_DOCUMENT_CATEGORIES,
+} from "../../../../types/categories"
 
 interface DocumentFiltersProps {
-  categories: string[]
-  selectedCategory: string | null
-  onSelectCategory: (category: string | null) => void
+  categories: PublicDocumentCategory[]
+  selectedCategory: PublicDocumentCategory | null
+  onSelectCategory: (category: PublicDocumentCategory | null) => void
 }
 
-export function DocumentFilters({ categories, selectedCategory, onSelectCategory }: DocumentFiltersProps) {
+export function DocumentFilters({
+  categories,
+  selectedCategory,
+  onSelectCategory,
+}: DocumentFiltersProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
@@ -43,6 +51,7 @@ export function DocumentFilters({ categories, selectedCategory, onSelectCategory
               <span>All Categories</span>
               {selectedCategory === null && <Check className="h-4 w-4" />}
             </DropdownMenuItem>
+
             {categories.map((category) => (
               <DropdownMenuItem
                 key={category}

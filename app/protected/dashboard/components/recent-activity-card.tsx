@@ -1,41 +1,15 @@
 "use client"
 
 import type React from "react"
-
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 import { FileText, FolderKanban, BarChart, Clock, ArrowRight, FileUp, FolderPlus } from "lucide-react"
-
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-
-interface Document {
-  id: string
-  name: string
-  file_path?: string
-  created_at: string
-  category?: string
-}
-
-interface Project {
-  id: string
-  name: string
-  description?: string
-  category?: string
-  created_at: string
-}
-
-interface Report {
-  id: string
-  project_id: string
-  projectName: string
-  type: string
-  name?: string
-  created_at: string
-}
+import { Project, Document, Report } from "@/models"
 
 interface RecentActivityCardProps {
   documents: Document[]
@@ -111,9 +85,10 @@ export function RecentActivityCard({
                         </div>
                         <div>
                           <p className="font-medium text-sm">{doc.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(doc.created_at), { addSuffix: true })}
+                          <p className="text-sm text-muted-foreground">
+                            {doc.created_at ? formatDistanceToNow(new Date(doc.created_at)) : "Unknown date"}
                           </p>
+
                         </div>
                       </div>
                       {doc.category && (
@@ -160,7 +135,7 @@ export function RecentActivityCard({
                         <div>
                           <p className="font-medium text-sm">{project.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(project.created_at), { addSuffix: true })}
+                            {project.created_at ? formatDistanceToNow(new Date(project.created_at)) : "Unknown date"}
                           </p>
                         </div>
                       </div>
@@ -209,11 +184,11 @@ export function RecentActivityCard({
                         </div>
                         <div>
                           <p className="font-medium text-sm">
-                            {report.name || `${report.type.charAt(0).toUpperCase() + report.type.slice(1)} Report`}
+                            {report.name || `${(report.type || "unknown").charAt(0).toUpperCase() + (report.type || "unknown").slice(1)} Report`}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {report.projectName} •{" "}
-                            {formatDistanceToNow(new Date(report.created_at), { addSuffix: true })}
+                            {report.projectName} • {" "}
+                            {report.created_at ? formatDistanceToNow(new Date(report.created_at)) : "Unknown date"}
                           </p>
                         </div>
                       </div>

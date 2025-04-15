@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { signInAction, signUpAction } from "@/app/actions";
+import { signUpAction } from "@/app/actions/actions";
+import { signInAction } from "@/app/actions/sign-in";
 import { FormMessage, type Message } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
 import {

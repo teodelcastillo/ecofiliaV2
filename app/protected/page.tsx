@@ -1,21 +1,15 @@
-import { redirect } from "next/navigation"
-import { createClient } from "@/utils/supabase/server"
-
 import { HomePage } from "./components/home-page"
+import { requireUser } from "@/lib/require-user"
 
 export default async function ProtectedPage() {
-  // Check if user is authenticated
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { user, supabase } = await requireUser()
 
-  // If no user is logged in, redirect to login page
-  if (!user) {
-    redirect("/auth")
-  }
-
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
+  // Fetch profile
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single()
 
   // Fetch recent documents (limit to 5)
   const { data: recentDocuments } = await supabase
@@ -35,13 +29,13 @@ export default async function ProtectedPage() {
 
   // Fetch reports (limit to 5)
   const { data: reports } = await supabase
-    .from("reports")
+    .from("project_reports")
     .select("*, projects(name)")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(5)
 
-  // Transform reports data to include project name
+  // Transform reports to include project name
   const transformedReports =
     reports?.map((report) => ({
       ...report,
@@ -51,10 +45,10 @@ export default async function ProtectedPage() {
   return (
     <HomePage
       user={user}
+      profile={profile}
       recentDocuments={recentDocuments || []}
       projects={projects || []}
       reports={transformedReports}
-      profile={profile}
     />
   )
 }

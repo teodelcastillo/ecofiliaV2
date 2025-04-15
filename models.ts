@@ -1,25 +1,40 @@
 export interface Document {
-  id: string;
-  name: string;
-  description?: string;
-  category?: string;
-  created_at: string;
-  file_url?: string;
-  file_path?: string;
-  file_type?: string;
-  user_id?: string;
-  type?: string;      
-  dateAdded?: string;  
+  id: string | null;
+  name: string | null;
+  description?: string | null;
+  category?: string | null;
+  created_at: string | null;
+  file_url?: string | null;
+  file_path?: string | null;
+  file_type?: string | null;
+  user_id?: string | null;
+  type?: string | null;      
+  dateAdded?: string | null;  
   source?: "user" | "public";
 }
 
 export interface Project {
-  id: string
-  name: string
-  description?: string
-  category?: string
-  client?: string
-  user_id: string
-  created_at: string
+  id: string | null
+  name: string | null
+  description?: string | null
+  category?: string | null
+  client?: string | null
+  user_id: string | null
+  created_at: string | null
   Documents?: Document[]
+}
+
+export interface Report {
+  id: string | null
+  project_id: string | null
+  projectName: string | null
+  type: string | null
+  name?: string | null
+  created_at: string | null
+}
+
+export interface Profile {
+  full_name?: string | null
+  avatar_url?: string | null
+  role?: string | null
 }
