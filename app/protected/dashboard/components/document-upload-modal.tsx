@@ -82,7 +82,6 @@ export function DocumentUploadModal({ isOpen, onClose, userId, onSuccess }: Docu
           category: category || null,
           file_path: filePath,
           user_id: userId,
-          file_type: fileExt,
         })
         .select()
         .single()
