@@ -3,7 +3,7 @@
 import type React from "react"
 
 import type { User } from "@supabase/supabase-js"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import {
@@ -15,7 +15,7 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserAvatar } from "../../components/user-avatar" // adjust path if needed
 
 import { DocumentUploadModal } from "./document-upload-modal"
 import { CreateProjectModal } from "../../projects/components/create-project"
@@ -56,10 +56,10 @@ interface DashboardProps {
 export function Dashboard({ user, recentDocuments, projects, reports }: DashboardProps) {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false)
-
   // Get user's first name for greeting
   const firstName = user.email?.split("@")[0] || "User"
   const capitalizedName = firstName.charAt(0).toUpperCase() + firstName.slice(1)
+
 
   // Get time of day for greeting
   const getGreeting = () => {
@@ -73,12 +73,8 @@ export function Dashboard({ user, recentDocuments, projects, reports }: Dashboar
     <div className="container mx-auto py-8 px-4">
       {/* Header with greeting */}
       <div className="flex items-center gap-4 mb-8">
-        <Avatar className="h-12 w-12 border-2 border-primary">
-          <AvatarImage src={user.user_metadata?.avatar_url} />
-          <AvatarFallback className="bg-primary/10 text-primary font-medium">
-            {capitalizedName.charAt(0)}
-          </AvatarFallback>
-        </Avatar>
+        <UserAvatar userId={user.id} size="lg" />
+
         <div>
           <h1 className="text-2xl font-bold">
             {getGreeting()}, {capitalizedName}
@@ -86,6 +82,13 @@ export function Dashboard({ user, recentDocuments, projects, reports }: Dashboar
           <p className="text-muted-foreground">Here's an overview of your recent activity</p>
         </div>
       </div>
+
+        <div>
+          <h1 className="text-2xl font-bold">
+            {getGreeting()}, {capitalizedName}
+          </h1>
+          <p className="text-muted-foreground">Here's an overview of your recent activity</p>
+        </div>
 
       {/* Main content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

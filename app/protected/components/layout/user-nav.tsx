@@ -39,15 +39,11 @@ export function UserNav({
   const [userData, setUserData] = useState<{
     id: string
     email?: string
-    user_metadata?: {
-      full_name?: string
-      name?: string
-      avatar_url?: string
-    }
+    full_name?: string
+    avatar_url?: string
   } | null>(null)
   const { toast } = useToast()
 
-  // Fetch user data on component mount
   useEffect(() => {
     async function fetchUserData() {
       setIsLoading(true)
@@ -58,21 +54,43 @@ export function UserNav({
           data: { user },
           error,
         } = await supabase.auth.getUser()
+        if (error || !user) throw error
 
-        if (error) {
-          throw error
-        }
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("full_name, avatar_url")
+          .eq("id", user.id)
+          .single()
 
-        if (user) {
-          setUserData(user)
+        if (profileError) throw profileError
 
-          // For demo purposes, randomly set notifications
-          if (showNotifications) {
-            setHasNotifications(Math.random() > 0.5)
+        let signedUrl: string | null = null
+
+        if (profile.avatar_url) {
+          const { data: signed, error: signedError } = await supabase
+            .storage
+            .from("avatars")
+            .createSignedUrl(profile.avatar_url, 60 * 60)
+
+          if (signedError) {
+            console.error("Error generating signed URL:", signedError.message)
+          } else {
+            signedUrl = signed?.signedUrl ?? null
           }
         }
-      } catch (error) {
-        console.error("Error fetching user data:", error)
+
+        setUserData({
+          id: user.id,
+          email: user.email,
+          full_name: profile.full_name,
+          avatar_url: signedUrl ?? undefined,
+        })
+
+        if (showNotifications) {
+          setHasNotifications(Math.random() > 0.5)
+        }
+      } catch (err) {
+        console.error("Error fetching profile/user data:", err)
       } finally {
         setIsLoading(false)
       }
@@ -84,7 +102,6 @@ export function UserNav({
   const handleLogout = async () => {
     setIsLoggingOut(true)
     const supabase = createClient()
-
     try {
       await supabase.auth.signOut()
       router.push(redirectAfterLogout)
@@ -100,21 +117,11 @@ export function UserNav({
     }
   }
 
-  // Get user display name from metadata or email
   const getUserDisplayName = () => {
     if (!userData) return "User"
-
-    return userData.user_metadata?.full_name || userData.user_metadata?.name || userData.email?.split("@")[0] || "User"
+    return userData.full_name || userData.email?.split("@")[0] || "User"
   }
 
-  // Get user avatar or initials
-  const getUserAvatar = () => {
-    if (!userData) return null
-
-    return userData.user_metadata?.avatar_url || null
-  }
-
-  // Get user initials for avatar fallback
   const getUserInitials = () => {
     const name = getUserDisplayName()
     return name.charAt(0).toUpperCase()
@@ -132,7 +139,7 @@ export function UserNav({
     return (
       <Button variant="ghost" className={`relative ${showFullInfo ? "pl-2 pr-3 py-1 h-10" : "h-10 w-10 rounded-full"}`}>
         <Avatar className="h-8 w-8">
-          <AvatarImage src={getUserAvatar() || ""} alt={getUserDisplayName()} />
+          <AvatarImage src={userData?.avatar_url || ""} alt={getUserDisplayName()} />
           <AvatarFallback className="bg-primary/10 text-primary">{getUserInitials()}</AvatarFallback>
         </Avatar>
 
