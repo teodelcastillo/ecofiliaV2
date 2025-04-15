@@ -53,10 +53,16 @@ export function ReportsOverview() {
           return acc
         }, {}) || {}
 
-      const enriched = projectsData.map((p) => ({
-        ...p,
-        documentCount: docCounts[p.id] || 0,
-      }))
+        const enriched: Project[] = projectsData.map((p) => ({
+          id: p.id,
+          name: p.name,
+          description: p.description ?? undefined,
+          category: p.category ?? undefined,
+          client: p.client ?? undefined,
+          created_at: p.created_at ?? "", // Fallback to an empty string if null
+          documentCount: docCounts[p.id] || 0,
+        }))
+        
 
       setProjects(enriched)
     } catch (error) {
