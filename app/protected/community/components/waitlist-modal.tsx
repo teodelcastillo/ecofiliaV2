@@ -106,8 +106,8 @@ export function WaitlistModal({ children, className }: WaitlistModalProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children || <Button className={className}>Join Waitlist</Button>}</DialogTrigger>
-      <DialogContent className="sm:max-w-[825px]">
-        {!isSuccess ? (
+      <DialogContent className="w-full max-w-[90vw] sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl p-6 sm:p-8">
+      {!isSuccess ? (
           <>
             <DialogHeader>
               <DialogTitle>Join the Waitlist</DialogTitle>
