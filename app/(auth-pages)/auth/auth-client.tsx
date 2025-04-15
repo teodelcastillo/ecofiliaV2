@@ -143,6 +143,17 @@ export function AuthClient() {
                   animate="visible"
                 >
                   <motion.div className="space-y-2" variants={itemVariants}>
+                    <Label htmlFor="signup-full-name">Full Name</Label>
+                    <Input
+                      id="signup-full-name"
+                      name="full_name"
+                      type="text"
+                      placeholder="John Doe"
+                      required
+                    />
+                  </motion.div>
+
+                  <motion.div className="space-y-2" variants={itemVariants}>
                     <Label htmlFor="signup-email">Email</Label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
