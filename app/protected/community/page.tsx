@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { CalendarIcon, MessageSquare, ThumbsUp, BookMarked, Sparkles, Users } from "lucide-react"
+import { WaitlistModal } from "./components/waitlist-modal"
 
 export default function CommunityPage() {
   return (
@@ -28,7 +29,8 @@ export default function CommunityPage() {
         ))}
       </div>*/}
       {/* Coming Soon Banner */}
-      <Card className="border-dashed bg-muted/30 mb-12">
+      {/* Coming Soon Banner */}
+      <Card className="border-dashed bg-muted/30">
         <CardContent className="flex flex-col items-center justify-center gap-4 p-6 text-center sm:p-10">
           <div className="rounded-full bg-primary/10 p-3">
             <Sparkles className="h-8 w-8 text-primary" />
@@ -40,9 +42,11 @@ export default function CommunityPage() {
               it launches.
             </p>
           </div>
-          <Button size="lg" className="mt-2">
-            Join Waitlist
-          </Button>
+          <WaitlistModal>
+            <Button size="lg" className="mt-2">
+              Join Waitlist
+            </Button>
+          </WaitlistModal>
         </CardContent>
       </Card>
 
