@@ -28,9 +28,9 @@ export default function CommunityPage() {
           </Card>
         ))}
       </div>*/}
+
       {/* Coming Soon Banner */}
-      {/* Coming Soon Banner */}
-      <Card className="border-dashed bg-muted/30">
+      <Card className="border-dashed bg-muted/30 mb-12">
         <CardContent className="flex flex-col items-center justify-center gap-4 p-6 text-center sm:p-10">
           <div className="rounded-full bg-primary/10 p-3">
             <Sparkles className="h-8 w-8 text-primary" />
