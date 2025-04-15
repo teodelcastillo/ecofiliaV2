@@ -38,7 +38,7 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
     const { data: projectLinks, error } = await supabase
       .from("project_documents")
       .select("*")
-      .eq("project_id", project.id)
+      .eq("project_id", project.id || "")
 
     if (error) {
       console.error("Error fetching project documents:", error.message)
@@ -47,10 +47,16 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
     }
 
     console.log("Project links found:", projectLinks)
-
-    const userDocIds = projectLinks.filter((link) => link.document_id).map((link) => link.document_id)
-    const publicDocIds = projectLinks.filter((link) => link.public_document_id).map((link) => link.public_document_id)
-
+    
+    const userDocIds = projectLinks
+    .filter((link) => link.document_id)
+    .map((link) => link.document_id)
+    .filter((id): id is string => id !== null)
+    const publicDocIds = projectLinks
+      .filter((link) => link.public_document_id)
+      .map((link) => link.public_document_id)
+      .filter((id): id is string => id !== null);
+    
     const [userDocsResp, publicDocsResp] = await Promise.all([
       userDocIds.length > 0
         ? supabase.from("documents").select("*").in("id", userDocIds)
@@ -84,7 +90,6 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
     const formattedPublicDocs = (publicDocsResp.data ?? []).map((doc) => ({
       id: doc.id,
       name: doc.name || "Untitled Document",
-      description: doc.description || "",
       category: doc.category || "Public",
       created_at: doc.created_at,
       file_path: doc.file_url,

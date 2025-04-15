@@ -32,6 +32,8 @@ export interface Report {
   type: string | null
   name?: string | null
   created_at: string | null
+  file_url?: string | null
+  file_path?: string | null
 }
 
 export interface Profile {

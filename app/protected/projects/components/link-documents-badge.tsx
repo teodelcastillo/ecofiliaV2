@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast"
 import type { Document } from "@/models"
 
 interface LinkDocumentsBadgeProps {
-  projectId: string
+  projectId: string | null
   onDocumentsLinked: () => void
 }
 
@@ -47,7 +47,7 @@ export function LinkDocumentsBadge({ projectId, onDocumentsLinked }: LinkDocumen
       // Fetch public documents
       const { data: publicDocs, error: publicDocsError } = await supabase
         .from("public_documents")
-        .select("id, name, file_url, created_at, category, description")
+        .select("id, name, file_url, created_at, category")
 
       if (publicDocsError) throw publicDocsError
 
@@ -76,6 +76,10 @@ export function LinkDocumentsBadge({ projectId, onDocumentsLinked }: LinkDocumen
 
     try {
       // Create links for each selected document
+      if (!projectId) {
+        throw new Error("Project ID is required");
+      }
+
       const links = documents.map((doc) => {
         if (doc.type === "user") {
           return {
