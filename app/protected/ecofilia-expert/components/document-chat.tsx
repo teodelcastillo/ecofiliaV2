@@ -260,7 +260,7 @@ export function DocumentChat({ personalDocuments, publicDocuments, userId, proje
         </motion.div>
       )}
 
-      {/* Floating action button to open document selector */}
+      {/* Floating action button to open document selector
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -269,7 +269,7 @@ export function DocumentChat({ personalDocuments, publicDocuments, userId, proje
         <Button onClick={openDocumentSelector} className="rounded-full h-12 w-12 shadow-md" size="icon">
           <FolderOpen className="h-5 w-5" />
         </Button>
-      </motion.div>
+      </motion.div> */}
     </div>
   )
 }
