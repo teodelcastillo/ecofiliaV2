@@ -139,7 +139,6 @@ export function UserNav({
     return (
       <Button variant="ghost" className={`relative ${showFullInfo ? "pl-2 pr-3 py-1 h-10" : "h-10 w-10 rounded-full"}`}>
         <UserAvatar
-          userId={userData?.id ?? ""}
           fallbackName={getUserDisplayName()}
           size="sm"
         />
