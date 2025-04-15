@@ -17,7 +17,9 @@ import {
   Clipboard,
   MessageSquare,
   LibraryBig,
-  Home
+  Home,
+  UsersRound,
+  UserRoundCog
 } from "lucide-react"
 import {
   Sidebar as ShadcnSidebar,
@@ -70,7 +72,8 @@ const menuItems: MenuItem[] = [
       { icon: BarChart, label: "Analytics", href: "/protected/analytics", badge: "SOON" },
     ],
   },
-  { icon: Users, label: "User Management", href: "/protected/users" },
+  { icon: UsersRound, label: "Community", href: "/protected/community", badge: "SOON" },
+  { icon: UserRoundCog, label: "Team Members", href: "/protected/users", badge: "SOON" },
   { icon: Settings, label: "Settings", href: "/protected/settings" },
 ]
 
@@ -114,7 +117,7 @@ export function Sidebar() {
   }, [pathname])
 
   return (
-    <ShadcnSidebar>
+    <ShadcnSidebar  >
       <SidebarHeader className="flex items-center gap-2 h-16 px-4 border-b" >
         <Leaf className="h-6 w-6 text-primary" />
         <span onClick={() => redirect("/protected")} className="font-bold text-xl tracking-tight">Ecofilia</span>
