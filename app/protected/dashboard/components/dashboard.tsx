@@ -73,7 +73,7 @@ export function Dashboard({ user, recentDocuments, projects, reports }: Dashboar
     <div className="container mx-auto py-8 px-4">
       {/* Header with greeting */}
       <div className="flex items-center gap-4 mb-8">
-        <UserAvatar userId={user.id} size="lg" />
+        <UserAvatar size="lg" />
 
         <div>
           <h1 className="text-2xl font-bold">
