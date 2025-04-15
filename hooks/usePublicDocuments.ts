@@ -3,27 +3,28 @@
 
 import { useEffect, useState } from "react"
 import { createClient } from "@/utils/supabase/client"
-
-interface Document {
-  id: string
-  name: string
-  category?: string
-  created_at: string
-  file_url: string
-}
+import type { Document } from "@/models"
+import {
+    PublicDocumentCategory
+} from "@/types/categories"
 
 interface UsePublicDocumentsOptions {
-  category?: string | null
+  category?:  PublicDocumentCategory | null
   search?: string
   page?: number
   pageSize?: number
 }
 
-export function usePublicDocuments({ category, search = "", page = 0, pageSize = 10 }: UsePublicDocumentsOptions) {
+export function usePublicDocuments({
+  category = null,
+  search = "",
+  page = 0,
+  pageSize = 15,
+}: UsePublicDocumentsOptions) {
   const [documents, setDocuments] = useState<Document[]>([])
-  const [loading, setLoading] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [hasMore, setHasMore] = useState(true)
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -35,29 +36,37 @@ export function usePublicDocuments({ category, search = "", page = 0, pageSize =
         .from("public_documents")
         .select("id, name, category, created_at, file_url")
         .order("created_at", { ascending: false })
-        .range(page * pageSize, page * pageSize + pageSize - 1)
 
-      if (category) query = query.eq("category", category)
-      if (search) query = query.ilike("name", `%${search}%`)
+      if (category) {
+        query = query.eq("category", category)
+      }
+
+      if (search) {
+        query = query.or(
+          `name.ilike.%${search}%,description.ilike.%${search}%`
+        )
+      }
+
+      const from = page * pageSize
+      const to = from + pageSize - 1
+      query = query.range(from, to)
 
       const { data, error } = await query
 
       if (error) {
         setError(error.message)
-        setLoading(false)
-        return
+        setDocuments([])
+      } else {
+        // If it's the first page, replace. Else append.
+        setDocuments((prev) => (page === 0 ? data || [] : [...prev, ...(data || [])]))
+        setHasMore((data?.length || 0) === pageSize)
       }
 
-      setDocuments((prev) => {
-        const merged = [...prev, ...(data || [])]
-        return Array.from(new Map(merged.map((doc) => [doc.id, doc])).values())
-      })
-      setHasMore((data?.length || 0) === pageSize)
       setLoading(false)
     }
 
     fetchDocuments()
   }, [category, search, page, pageSize])
 
-  return { documents, loading, hasMore, error }
+  return { documents, loading, error, hasMore }
 }

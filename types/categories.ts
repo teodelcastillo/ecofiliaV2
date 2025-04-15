@@ -7,6 +7,7 @@ export const PUBLIC_DOCUMENT_CATEGORIES = [
     "ESG",
     "IPCC",
     "IPBES",
+    null
   ] as const
   
   export type PublicDocumentCategory = typeof PUBLIC_DOCUMENT_CATEGORIES[number]

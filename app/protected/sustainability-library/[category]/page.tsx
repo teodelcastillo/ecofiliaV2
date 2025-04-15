@@ -9,7 +9,7 @@ interface CategoryPageProps {
   params: { category: string }
 }
 
-function isValidCategory(value: string): value is PublicDocumentCategory {
+function isValidCategory(value: string | null): value is PublicDocumentCategory {
   return PUBLIC_DOCUMENT_CATEGORIES.includes(value as PublicDocumentCategory)
 }
 
