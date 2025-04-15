@@ -73,7 +73,6 @@ export function UploadDocumentForm({ userId, onSuccess }: UploadDocumentFormProp
           file_path: filePath,
           user_id: userId,
           file_type: fileExt,
-          file_size: file.size,
         })
         .select()
         .single()
