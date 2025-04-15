@@ -1,6 +1,6 @@
 "use client"
 
-import { forgotPasswordAction } from "@/app/actions/actions"
+import { forgotPasswordAction } from "@/app/actions/forgot-password"
 import { FormMessage, type Message } from "@/components/form-message"
 import { SubmitButton } from "@/components/submit-button"
 import {

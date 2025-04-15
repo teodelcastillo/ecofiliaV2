@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { signUpAction } from "@/app/actions/actions";
+import { signUpAction } from "@/app/actions/sign-up";
 import { signInAction } from "@/app/actions/sign-in";
 import { FormMessage, type Message } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
