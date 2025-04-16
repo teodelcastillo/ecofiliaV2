@@ -63,7 +63,6 @@ export function DocumentUploadModal({ isOpen, onClose, userId, onSuccess }: Docu
     try {
       const document = await uploadAndProcessDocument({
         file,
-        userId,
         name,
         description,
         category,

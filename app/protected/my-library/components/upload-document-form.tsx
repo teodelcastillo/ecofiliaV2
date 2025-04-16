@@ -53,7 +53,6 @@ export function UploadDocumentForm({ userId, onSuccess }: UploadDocumentFormProp
     try {
       const document = await uploadAndProcessDocument({
         file,
-        userId,
         name,
         description,
         category,
