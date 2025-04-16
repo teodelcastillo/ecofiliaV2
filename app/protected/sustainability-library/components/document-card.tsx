@@ -10,7 +10,7 @@ interface DocumentCardProps {
 }
 
 export function DocumentCard({ document }: DocumentCardProps) {
-  const { name, description, category, created_at, file_url, user_id } = document
+  const { name, description, category, created_at, file_url, user_id, processing_status } = document
 
   return (
     <Card className="h-full flex flex-col">
@@ -22,7 +22,8 @@ export function DocumentCard({ document }: DocumentCardProps) {
         )}
         <CardTitle>{name || "Unnamed Document"}</CardTitle>
         <CardDescription className="line-clamp-2">{description || "No description available"}</CardDescription>
-      </CardHeader>
+        <Badge>{processing_status}</Badge>
+    </CardHeader>
       <CardContent className="flex-grow">
         <div className="space-y-2 text-sm text-muted-foreground">
           { user_id && (

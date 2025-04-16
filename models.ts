@@ -11,6 +11,7 @@ export interface Document {
   type?: string | null;      
   dateAdded?: string | null;
   body?: string | null;  
+  processing_status?: string | null;
   source?: "user" | "public";
 }
 
