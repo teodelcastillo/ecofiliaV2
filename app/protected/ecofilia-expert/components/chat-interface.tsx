@@ -133,7 +133,7 @@ export function ChatInterface({
                   {message.role === "user" ? (
                       <UserAvatar size="md" />
                     ) : (
-                      <MonstiaAvatar size="md" showFallback />
+                      <MonstiaAvatar size="md" />
                     )}
 
                     <div
