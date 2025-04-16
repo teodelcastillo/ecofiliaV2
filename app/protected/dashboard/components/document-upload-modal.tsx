@@ -1,16 +1,14 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { createClient } from "@/utils/supabase/client"
-import { useToast } from "@/hooks/use-toast"
 import { Upload, Loader2, X } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { uploadAndProcessDocument } from "@/hooks/uploadAndProcessDocument"
 import {
   Dialog,
   DialogContent,
@@ -35,7 +33,6 @@ export function DocumentUploadModal({ isOpen, onClose, userId, onSuccess }: Docu
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const supabase = createClient()
   const { toast } = useToast()
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,7 +40,6 @@ export function DocumentUploadModal({ isOpen, onClose, userId, onSuccess }: Docu
       const selectedFile = e.target.files[0]
       setFile(selectedFile)
 
-      // Auto-fill name from filename if empty
       if (!name) {
         setName(selectedFile.name.split(".")[0])
       }
@@ -65,40 +61,22 @@ export function DocumentUploadModal({ isOpen, onClose, userId, onSuccess }: Docu
     setIsUploading(true)
 
     try {
-      // 1. Upload file to storage
-      const fileExt = file.name.split(".").pop()
-      const filePath = `${userId}/${Date.now()}.${fileExt}`
-
-      const { error: uploadError } = await supabase.storage.from("documents").upload(filePath, file)
-
-      if (uploadError) throw uploadError
-
-      // 2. Create document record in database
-      const { data, error } = await supabase
-        .from("documents")
-        .insert({
-          name: name || file.name,
-          description,
-          category: category || null,
-          file_path: filePath,
-          user_id: userId,
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-
-      // 3. Call success callback
-      if (onSuccess) {
-        onSuccess(data)
-      }
+      const document = await uploadAndProcessDocument({
+        file,
+        userId,
+        name,
+        description,
+        category,
+      })
 
       toast({
         title: "Document uploaded",
-        description: "Your document has been successfully uploaded.",
+        description: "Your document has been successfully processed.",
       })
 
-      // 4. Reset form and close modal
+      onSuccess?.(document)
+
+      // Reset and close
       setName("")
       setDescription("")
       setCategory("")
@@ -106,15 +84,15 @@ export function DocumentUploadModal({ isOpen, onClose, userId, onSuccess }: Docu
       if (fileInputRef.current) fileInputRef.current.value = ""
       onClose()
 
-      // 5. Refresh the page to show the new document
+      // Optional: reload to refresh list
       setTimeout(() => {
         window.location.reload()
       }, 500)
     } catch (error) {
-      console.error("Error uploading document:", error)
+      console.error("❌ Error uploading or processing document:", error)
       toast({
         title: "Upload failed",
-        description: "There was an error uploading your document. Please try again.",
+        description: "There was an error uploading or processing your document.",
         variant: "destructive",
       })
     } finally {

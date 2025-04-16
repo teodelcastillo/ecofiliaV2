@@ -1,16 +1,14 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { createClient } from "@/utils/supabase/client"
-import { useToast } from "@/hooks/use-toast"
 import { Upload, Loader2, X } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { uploadAndProcessDocument } from "@/hooks/uploadAndProcessDocument" // 🔁 importa tu helper
 
 interface UploadDocumentFormProps {
   userId: string
@@ -25,7 +23,6 @@ export function UploadDocumentForm({ userId, onSuccess }: UploadDocumentFormProp
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const supabase = createClient()
   const { toast } = useToast()
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,47 +51,20 @@ export function UploadDocumentForm({ userId, onSuccess }: UploadDocumentFormProp
     setIsUploading(true)
 
     try {
-      const fileExt = file.name.split(".").pop()
-      const filePath = `${userId}/${Date.now()}.${fileExt}`
-
-      const { error: uploadError } = await supabase.storage.from("documents").upload(filePath, file)
-      if (uploadError) throw uploadError
-
-      const { data, error } = await supabase
-        .from("documents")
-        .insert({
-          name: name || file.name,
-          description,
-          category: category || null,
-          file_path: filePath,
-          user_id: userId,
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-
-      // ✅ Extraer texto y chunks
-      const extractRes = await fetch("/api/extract-text-serverless", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          documentId: data.id,
-          type: "user",
-        }),
+      const document = await uploadAndProcessDocument({
+        file,
+        userId,
+        name,
+        description,
+        category,
       })
 
-      if (!extractRes.ok) {
-        const err = await extractRes.json()
-        console.warn("⚠️ Extraction failed:", err)
-        toast({
-          title: "Extraction warning",
-          description: "File was uploaded but content extraction may have failed.",
-          variant: "destructive",
-        })
-      }
+      toast({
+        title: "Document uploaded",
+        description: "Your document has been processed successfully.",
+      })
 
-      onSuccess(data)
+      onSuccess(document)
 
       // Reset form
       setName("")
@@ -103,10 +73,10 @@ export function UploadDocumentForm({ userId, onSuccess }: UploadDocumentFormProp
       setFile(null)
       if (fileInputRef.current) fileInputRef.current.value = ""
     } catch (error) {
-      console.error("❌ Error uploading document:", error)
+      console.error("❌ Error uploading or processing document:", error)
       toast({
         title: "Upload failed",
-        description: "There was an error uploading your document. Please try again.",
+        description: "There was an error uploading or processing your document.",
         variant: "destructive",
       })
     } finally {

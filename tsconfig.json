@@ -32,7 +32,8 @@
 		"app/protected/my-library/components",
 		"app/api/extract-text-serverless/extract-text-serverless.js",
 		"scripts/backfillChunks.js",
-		"app/protected/projects"
+		"app/protected/projects",
+		"types/pdfjs-dist.d.js"
 	],
 	"exclude": ["node_modules"]
 }

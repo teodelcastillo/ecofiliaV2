@@ -1,9 +1,15 @@
+// 👇 NECESARIO PARA VERCEL
+export const runtime = "nodejs";
+
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import pdf from "pdf-parse/lib/pdf-parse.js";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import OpenAI from "openai";
+
+// ...todo lo demás igual
+
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
