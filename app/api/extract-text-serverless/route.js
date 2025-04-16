@@ -5,68 +5,22 @@ import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import OpenAI from "openai";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PRIVATE_SERVICE_KEY
-);
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-function extractSectionTitles(text) {
-  const regex = /(?:^|\n)([A-Z][A-Z0-9\s\-]{5,})(?=\n)/g;
-  const matches = [...text.matchAll(regex)];
-
-  return matches.map((match) => ({
-    index: match.index ?? 0,
-    title: match[1].trim(),
-  }));
-}
-
-async function chunkWithSections(fullText) {
-  const sectionMarkers = extractSectionTitles(fullText);
-  const chunks = [];
-
-  for (let i = 0; i < sectionMarkers.length; i++) {
-    const start = sectionMarkers[i].index;
-    const end = sectionMarkers[i + 1]?.index ?? fullText.length;
-    const sectionText = fullText.slice(start, end).trim();
-    const sectionTitle = sectionMarkers[i].title;
-
-    const splitter = new RecursiveCharacterTextSplitter({
-      chunkSize: 1000,
-      chunkOverlap: 200,
-    });
-
-    const sectionChunks = await splitter.createDocuments([sectionText]);
-    const texts = sectionChunks.map((chunk) => chunk.pageContent);
-
-    texts.forEach((content, j) => {
-      chunks.push({
-        content,
-        section_title: sectionTitle,
-        chunk_index: chunks.length,
-      });
-    });
-  }
-
-  return chunks;
-}
-
 export async function POST(req) {
   try {
-    console.log("\uD83D\uDD25 extract-text-serverless TRIGGERED");
+    console.log("🔥 extract-text-serverless TRIGGERED");
 
     const { documentId, type } = await req.json();
-    console.log("\uD83D\uDCC5 Received request for document:", documentId, "| type:", type);
+    console.log("📅 Received request for document:", documentId, "| type:", type);
 
     if (!documentId || !type) {
+      console.error("❌ Missing documentId or type");
       return NextResponse.json({ error: "Missing documentId or type" }, { status: 400 });
     }
 
     const tableName = type === "public" ? "public_documents" : "documents";
     const bucketName = type === "public" ? "documents" : "user-documents";
+
+    console.log("🧾 tableName:", tableName, "| bucketName:", bucketName);
 
     const { data: doc, error: docError } = await supabase
       .from(tableName)
@@ -75,6 +29,7 @@ export async function POST(req) {
       .single();
 
     if (docError || !doc) {
+      console.error("❌ Document fetch error:", docError);
       return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
@@ -83,21 +38,28 @@ export async function POST(req) {
       : doc.file_path;
 
     if (!filePath) {
+      console.error("❌ Invalid file path:", filePath);
       return NextResponse.json({ error: "Invalid file path" }, { status: 500 });
     }
+
+    console.log("📂 Downloading file from:", filePath);
 
     const { data: fileData, error: downloadError } = await supabase.storage
       .from(bucketName)
       .download(filePath);
 
     if (downloadError || !fileData) {
+      console.error("❌ Download error:", downloadError);
       return NextResponse.json({ error: "Failed to download file" }, { status: 500 });
     }
 
     const arrayBuffer = await fileData.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+
     const parsed = await pdf(buffer);
     const extractedText = parsed.text;
+
+    console.log("📄 Extracted text length:", extractedText.length);
 
     if (!extractedText || extractedText.length < 20) {
       console.warn("⚠️ Extracted text too short. Might be scanned/invisible.");
@@ -109,16 +71,21 @@ export async function POST(req) {
       .eq("id", documentId);
 
     if (updateError) {
+      console.error("❌ Failed to update extracted text:", updateError);
       return NextResponse.json({ error: "Failed to store extracted text" }, { status: 500 });
     }
 
     const enhancedChunks = await chunkWithSections(extractedText);
+    console.log("🧠 Generated", enhancedChunks.length, "chunks");
+
     const texts = enhancedChunks.map((c) => c.content);
 
     const embedder = new OpenAIEmbeddings({
       openAIApiKey: process.env.OPENAI_API_KEY,
     });
+
     const embeddings = await embedder.embedDocuments(texts);
+    console.log("🔗 Embeddings generated:", embeddings.length);
 
     const chunksToInsert = embeddings.map((embedding, i) => ({
       document_id: documentId,
@@ -134,15 +101,18 @@ export async function POST(req) {
       .insert(chunksToInsert);
 
     if (insertError) {
+      console.error("❌ Failed to insert chunks:", insertError);
       return NextResponse.json({ error: "Failed to insert chunks" }, { status: 500 });
     }
 
+    console.log("✅ Extraction complete");
     return NextResponse.json({
       success: true,
       extractedTextLength: extractedText.length,
       chunksInserted: chunksToInsert.length,
     });
   } catch (err) {
+    console.error("🔥 Unexpected server error:", err);
     return NextResponse.json({ error: "Unexpected server error" }, { status: 500 });
   }
 }
