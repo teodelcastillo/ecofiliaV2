@@ -33,7 +33,6 @@ export function UploadDocumentForm({ userId, onSuccess }: UploadDocumentFormProp
       const selectedFile = e.target.files[0]
       setFile(selectedFile)
 
-      // Auto-fill name from filename if empty
       if (!name) {
         setName(selectedFile.name.split(".")[0])
       }
@@ -55,15 +54,12 @@ export function UploadDocumentForm({ userId, onSuccess }: UploadDocumentFormProp
     setIsUploading(true)
 
     try {
-      // 1. Upload file to storage
       const fileExt = file.name.split(".").pop()
       const filePath = `${userId}/${Date.now()}.${fileExt}`
 
       const { error: uploadError } = await supabase.storage.from("documents").upload(filePath, file)
-
       if (uploadError) throw uploadError
 
-      // 2. Create document record in database
       const { data, error } = await supabase
         .from("documents")
         .insert({
@@ -78,17 +74,36 @@ export function UploadDocumentForm({ userId, onSuccess }: UploadDocumentFormProp
 
       if (error) throw error
 
-      // 3. Call success callback
+      // ✅ Extraer texto y chunks
+      const extractRes = await fetch("/api/extract-text-serverless", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          documentId: data.id,
+          type: "user",
+        }),
+      })
+
+      if (!extractRes.ok) {
+        const err = await extractRes.json()
+        console.warn("⚠️ Extraction failed:", err)
+        toast({
+          title: "Extraction warning",
+          description: "File was uploaded but content extraction may have failed.",
+          variant: "destructive",
+        })
+      }
+
       onSuccess(data)
 
-      // 4. Reset form
+      // Reset form
       setName("")
       setDescription("")
       setCategory("")
       setFile(null)
       if (fileInputRef.current) fileInputRef.current.value = ""
     } catch (error) {
-      console.error("Error uploading document:", error)
+      console.error("❌ Error uploading document:", error)
       toast({
         title: "Upload failed",
         description: "There was an error uploading your document. Please try again.",
