@@ -1,13 +1,12 @@
-// NECESARIO PARA VERCEL
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import pdf from "pdf-parse/lib/pdf-parse.js";
 import OpenAI from "openai";
+import { z } from "zod";
 import { OpenAIEmbeddings } from "@langchain/openai";
 
-// Supabase y OpenAI clients
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PRIVATE_SERVICE_KEY!
@@ -15,7 +14,6 @@ const supabase = createClient(
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
-// Utilidad para obtener tabla, bucket y campo correcto según tipo
 function getDocumentSource(type: "user" | "public") {
   return {
     table: type === "public" ? "public_documents" : "documents",
@@ -24,7 +22,6 @@ function getDocumentSource(type: "user" | "public") {
   };
 }
 
-// Divide texto largo en bloques para OpenAI
 function splitTextIntoChunks(text: string, maxLength = 12000): string[] {
   const chunks = [];
   for (let i = 0; i < text.length; i += maxLength) {
@@ -33,7 +30,18 @@ function splitTextIntoChunks(text: string, maxLength = 12000): string[] {
   return chunks;
 }
 
-// Chunking con OpenAI + parsing robusto
+const ChunkSchema = z.object({
+  section_title: z.string(),
+  content: z.string(),
+  summary: z.string(),
+  keywords: z.array(z.string()),
+  section_level: z.number(),
+  start_char: z.number(),
+  end_char: z.number(),
+});
+
+const ChunkListSchema = z.array(ChunkSchema);
+
 async function chunkWithOpenAI(fullText: string) {
   const rawChunks = splitTextIntoChunks(fullText);
   const results = [];
@@ -48,7 +56,10 @@ async function chunkWithOpenAI(fullText: string) {
 - start_char
 - end_char
 
-Formato: JSON estricto en una lista []. No agregues comentarios ni explicaciones.\n\nTexto:\n${chunk}`;
+Formato: JSON estricto en una lista []. No incluyas explicaciones, solo JSON.
+
+Texto:
+${chunk}`;
 
     const res = await openai.chat.completions.create({
       model: "gpt-4-turbo",
@@ -56,28 +67,28 @@ Formato: JSON estricto en una lista []. No agregues comentarios ni explicaciones
       messages: [
         {
           role: "system",
-          content: "Responde como un especialista en generar vectores para luego procesar. Responde estrictamente en formato JSON plano. No uses Markdown, comillas inteligentes ni ningún tipo de formato adicional.",
+          content:
+            "Devuelve únicamente un JSON plano válido, bien formateado y estrictamente compatible con JSON.parse. Nada de markdown, comentarios ni comillas inteligentes.",
         },
         { role: "user", content: prompt },
       ],
     });
 
-    try {
-      const raw = res.choices[0].message.content || "[]";
-    
-      // limpieza básica (podés expandir según necesidad)
-      const sanitized = raw
-        .replace(/[\u201C\u201D]/g, '"') // comillas curvas → comillas dobles
-        .replace(/[\u2018\u2019]/g, "'") // comillas simples curvas
-        .replace(/\\(?!["\\/bfnrtu])/g, ""); // elimina barras invertidas mal escapadas
-    
-      const parsed = JSON.parse(sanitized);
-      results.push(...parsed);
-    } catch (err) {
-      console.warn("❌ Falló el parseo del JSON:", err);
-      console.log("📥 Contenido recibido:", res.choices[0].message.content);
+    const raw = res.choices[0].message.content || "[]";
+    const jsonMatch = raw.match(/\[.*\]/s);
+
+    if (!jsonMatch) {
+      console.warn("⚠️ No se encontró JSON válido en la respuesta:", raw);
+      continue;
     }
-    
+
+    try {
+      const parsed = JSON.parse(jsonMatch[0]);
+      const validated = ChunkListSchema.parse(parsed);
+      results.push(...validated);
+    } catch (err) {
+      console.warn("❌ JSON inválido o no matchea con el schema:", err);
+    }
   }
 
   return results.map((chunk, i) => ({
@@ -97,6 +108,7 @@ export async function POST(req: Request) {
     }
 
     const { table, bucket, pathField } = getDocumentSource(type);
+    await supabase.from(table).update({ processing_status: "processing" }).eq("id", documentId);
 
     const { data: doc, error: docError } = await supabase
       .from(table)
@@ -105,6 +117,7 @@ export async function POST(req: Request) {
       .single();
 
     if (docError || !doc) {
+      await supabase.from(table).update({ processing_status: "error", processing_error: "Document not found" }).eq("id", documentId);
       return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
@@ -114,14 +127,11 @@ export async function POST(req: Request) {
         : (doc as { file_path?: string }).file_path;
 
     if (!filePath) {
+      await supabase.from(table).update({ processing_status: "error", processing_error: "Invalid file path" }).eq("id", documentId);
       return NextResponse.json({ error: "Invalid file path" }, { status: 400 });
     }
 
-    console.log("📦 Bucket:", bucket);
-    console.log("📄 File path:", filePath);
-
-    const { data: signedUrlData, error: signedUrlError } = await supabase
-      .storage
+    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
       .from(bucket)
       .createSignedUrl(filePath, 60);
 
@@ -132,18 +142,15 @@ export async function POST(req: Request) {
     const fileRes = await fetch(signedUrlData.signedUrl);
     const arrayBuffer = await fileRes.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-
     const parsed = await pdf(buffer);
     const extractedText = parsed.text;
 
     if (!extractedText || extractedText.length < 20) {
+      await supabase.from(table).update({ processing_status: "error", processing_error: "Text too short or unreadable" }).eq("id", documentId);
       return NextResponse.json({ error: "Text too short or unreadable" }, { status: 500 });
     }
 
-    await supabase.from(table).update({ extracted_text: extractedText }).eq("id", documentId);
-
     const enhancedChunks = await chunkWithOpenAI(extractedText);
-
     const embedder = new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY! });
     const embeddings = await embedder.embedDocuments(enhancedChunks.map((c) => c.content));
 
@@ -164,9 +171,13 @@ export async function POST(req: Request) {
     }));
 
     const { error: insertError } = await supabase.from("document_chunks").insert(chunksToInsert);
+
     if (insertError) {
+      await supabase.from(table).update({ processing_status: "error", processing_error: insertError.message }).eq("id", documentId);
       return NextResponse.json({ error: "Failed to insert chunks" }, { status: 500 });
     }
+
+    await supabase.from(table).update({ processing_status: "done" }).eq("id", documentId);
 
     return NextResponse.json({
       success: true,
@@ -175,6 +186,20 @@ export async function POST(req: Request) {
     });
   } catch (err) {
     console.error("🔥 Unexpected error:", err);
+
+    const { documentId, type } = await req.json().catch(() => ({}));
+    const table = type === "public" ? "public_documents" : "documents";
+
+    if (documentId) {
+      await supabase
+        .from(table)
+        .update({
+          processing_status: "error",
+          processing_error: (err as Error).message ?? "Unexpected server error",
+        })
+        .eq("id", documentId);
+    }
+
     return NextResponse.json({ error: "Unexpected server error" }, { status: 500 });
   }
 }

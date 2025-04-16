@@ -40,25 +40,24 @@ export async function uploadAndProcessDocument({
       category: category || null,
       file_path: filePath,
       user_id: userId,
+      processing_status: "pending", // 👈 inicializamos el estado
     })
     .select()
     .single()
 
   if (error) throw error
 
-  const extractRes = await fetch("/api/extract-smart-openai", {
+  // 👇 Disparamos el procesamiento en segundo plano (sin await)
+  fetch("/api/extract-smart-openai", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       documentId: data.id,
       type: "user",
     }),
+  }).catch((err) => {
+    console.warn("⚠️ Background extraction failed to trigger:", err)
   })
-
-  if (!extractRes.ok) {
-    const err = await extractRes.json()
-    console.warn("⚠️ Extraction failed:", err)
-  }
 
   return data
 }
