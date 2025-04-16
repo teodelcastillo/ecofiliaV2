@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+// @ts-expect-error: No types available for pdf-parse subpath
 import pdf from "pdf-parse/lib/pdf-parse.js";
 import OpenAI from "openai";
 import { z } from "zod";
