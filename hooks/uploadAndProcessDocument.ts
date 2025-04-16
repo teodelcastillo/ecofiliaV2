@@ -1,25 +1,36 @@
-// /lib/uploadAndProcessDocument.ts
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client"
 
 export async function uploadAndProcessDocument({
   file,
-  userId,
   name,
   description,
   category,
 }: {
-  file: File;
-  userId: string;
-  name?: string;
-  description?: string;
-  category?: string;
+  file: File
+  name?: string
+  description?: string
+  category?: string
 }) {
-  const supabase = createClient();
-  const fileExt = file.name.split(".").pop();
-  const filePath = `${userId}/${Date.now()}.${fileExt}`;
+  const supabase = createClient()
 
-  const { error: uploadError } = await supabase.storage.from("documents").upload(filePath, file);
-  if (uploadError) throw uploadError;
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
+
+  if (userError || !user) {
+    throw new Error("No authenticated user")
+  }
+
+  const userId = user.id
+  const fileExt = file.name.split(".").pop()
+  const filePath = `${userId}/${Date.now()}.${fileExt}`
+
+  const { error: uploadError } = await supabase.storage
+    .from("user-documents")
+    .upload(filePath, file)
+
+  if (uploadError) throw uploadError
 
   const { data, error } = await supabase
     .from("documents")
@@ -31,23 +42,23 @@ export async function uploadAndProcessDocument({
       user_id: userId,
     })
     .select()
-    .single();
+    .single()
 
-  if (error) throw error;
+  if (error) throw error
 
-  const extractRes = await fetch("/api/extract-smart", {
+  const extractRes = await fetch("/api/extract-smart-openai", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       documentId: data.id,
       type: "user",
     }),
-  });
+  })
 
   if (!extractRes.ok) {
-    const err = await extractRes.json();
-    console.warn("⚠️ Extraction failed:", err);
+    const err = await extractRes.json()
+    console.warn("⚠️ Extraction failed:", err)
   }
 
-  return data;
+  return data
 }
