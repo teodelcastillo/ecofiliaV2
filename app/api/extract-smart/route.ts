@@ -6,7 +6,7 @@ import { createClient } from "@supabase/supabase-js";
 import OpenAI from "openai";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { encoding_for_model } from "tiktoken";
-import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
+import pdf from "pdf-parse";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -47,22 +47,12 @@ function inferPageNumber(startChar: number, pages: string[]): number {
 }
 
 async function extractPdfText(buffer: Buffer): Promise<{ text: string; pages: string[] }> {
-  const pdf = await getDocument({ data: buffer }).promise;
-  const numPages = pdf.numPages;
-  const allPages: string[] = [];
-
-  for (let i = 1; i <= numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    const strings = content.items.map((item: any) => item.str);
-    const pageText = strings.join(" ").replace(/\s+/g, " ").trim();
-    allPages.push(pageText);
-  }
-
-  const fullText = allPages.join("\n\n");
-  return { text: fullText, pages: allPages };
+  const parsed = await pdf(buffer);
+  const rawPages = parsed.text.split(/\f|\n{2,}/g); // separa en "páginas" aproximadas
+  const pages = rawPages.map(p => p.trim()).filter(p => p.length > 0);
+  const fullText = pages.join("\n\n");
+  return { text: fullText, pages };
 }
-
 
 async function getSemanticChunks(textBlock: string): Promise<any[]> {
   const prompt = `
