@@ -40,24 +40,41 @@ export async function uploadAndProcessDocument({
       category: category || null,
       file_path: filePath,
       user_id: userId,
-      processing_status: "pending", // 👈 inicializamos el estado
+      processing_status: "pending",
     })
     .select()
     .single()
 
   if (error) throw error
 
-  // 👇 Disparamos el procesamiento en segundo plano (sin await)
-  fetch("/api/extract-smart-openai", {
+  const payload = {
+    documentId: data.id,
+    type: "user",
+  }
+
+  // 👇 Ejecutamos el pipeline asincrónico sin bloquear la UI
+  fetch("/api/extract-text", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      documentId: data.id,
-      type: "user",
-    }),
-  }).catch((err) => {
-    console.warn("⚠️ Background extraction failed to trigger:", err)
+    body: JSON.stringify(payload),
   })
+    .then(() =>
+      fetch("/api/chunk-openai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+    )
+    .then(() =>
+      fetch("/api/embed-chunks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+    )
+    .catch((err) => {
+      console.warn("⚠️ Error in async processing pipeline:", err)
+    })
 
   return data
 }
