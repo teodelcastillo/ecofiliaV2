@@ -2,16 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { OpenAIEmbeddings } from '@langchain/openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
-
-const embedder = new OpenAIEmbeddings({
-  openAIApiKey: process.env.OPENAI_API_KEY!,
-});
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+const embedder = new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY! });
 
 const MAX_TOKENS_BUDGET = 6000;
-const SIMILARITY_THRESHOLD = 0.75; // adjustable
+const SIMILARITY_THRESHOLD = 0.75;
 
 function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
@@ -36,89 +31,88 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing question or userId' }, { status: 400 });
     }
 
+    if (!Array.isArray(documents) || documents.some((d) => !d.id || !d.type)) {
+      return NextResponse.json({ error: 'Each document must include id and type' }, { status: 400 });
+    }
+
+    const supabase = getSupabase();
     let combinedText = '';
     let totalTokens = 0;
-    const supabase = getSupabase();
 
-    if (documents?.length > 0) {
-      const documentIds = documents.map((doc: { id: string }) => doc.id);
+    const personalIds = documents.filter((d) => d.type === 'user').map((d) => d.id);
+    const publicIds = documents.filter((d) => d.type === 'public').map((d) => d.id);
 
-      const { data: docMetadata, error: metaError } = await supabase
-        .from('documents')
-        .select('id, name')
-        .in('id', documentIds);
+    // Get metadata from both tables
+    const [personalMeta, publicMeta] = await Promise.all([
+      supabase.from('documents').select('id, name').in('id', personalIds),
+      supabase.from('public_documents').select('id, name').in('id', publicIds),
+    ]);
 
-      if (metaError || !docMetadata) {
-        console.error('❌ Failed to fetch document titles:', metaError);
-        return NextResponse.json({ error: 'Failed to fetch document titles' }, { status: 500 });
-      }
+    if (personalMeta.error || publicMeta.error) {
+      console.error('❌ Metadata errors:', personalMeta.error, publicMeta.error);
+      return NextResponse.json({ error: 'Error fetching document metadata' }, { status: 500 });
+    }
 
-      const titleMap: Record<string, string> = Object.fromEntries(
-        docMetadata.map((doc: { id: string; name: string }) => [doc.id, doc.name])
-      );
+    const titleMap: Record<string, string> = {
+      ...Object.fromEntries((personalMeta.data || []).map((doc: { id: any; name: any; }) => [doc.id, doc.name])),
+      ...Object.fromEntries((publicMeta.data || []).map((doc: { id: any; name: any; }) => [doc.id, doc.name])),
+    };
 
-      const questionEmbedding = await embedder.embedQuery(question);
+    const allIds = [...personalIds, ...publicIds];
+    const questionEmbedding = await embedder.embedQuery(question);
 
-      const { data: matches, error: matchError } = await supabase.rpc('match_document_chunks', {
-        query_embedding: questionEmbedding,
-        match_count: 50, // get more to filter/diversify
-        match_user_id: userId,
-        filter_document_ids: documentIds,
-      });
+    const { data: matches, error: matchError } = await supabase.rpc('match_document_chunks', {
+      query_embedding: questionEmbedding,
+      match_count: 50,
+      match_user_id: userId,
+      filter_document_ids: allIds,
+    });
 
-      if (matchError) {
-        console.error('❌ match_document_chunks error:', matchError);
-        return NextResponse.json({ error: 'Failed to match document chunks' }, { status: 500 });
-      }
+    if (matchError) {
+      console.error('❌ match_document_chunks error:', matchError);
+      return NextResponse.json({ error: 'Failed to match document chunks' }, { status: 500 });
+    }
 
-      // ✅ Filter by similarity score (you’ll need to return it from RPC)
-      interface Match {
-        document_id: string;
-        content: string;
-        similarity_score?: number;
-        document_type?: string;
-      }
+    // Filter and group chunks
+    const filteredMatches = (matches ?? []).filter(
+      (m: { similarity_score: number | undefined; }) => m.similarity_score === undefined || m.similarity_score >= SIMILARITY_THRESHOLD
+    );
 
-      const filteredMatches: Match[] = matches?.filter(
-        (m: Match) => m.similarity_score === undefined || m.similarity_score >= SIMILARITY_THRESHOLD
-      ) ?? [];
+    const chunksByDoc: Record<string, any[]> = {};
+    for (const match of filteredMatches) {
+      if (!chunksByDoc[match.document_id]) chunksByDoc[match.document_id] = [];
+      chunksByDoc[match.document_id].push(match);
+    }
 
-      // ✅ Group by document
-      const chunksByDoc: Record<string, any[]> = {};
-      for (const match of filteredMatches) {
-        if (!chunksByDoc[match.document_id]) chunksByDoc[match.document_id] = [];
-        chunksByDoc[match.document_id].push(match);
-      }
-
-      // ✅ Interleave chunks from different documents (max 3 per doc)
-      const flattenedChunks: any[] = [];
-      let done = false;
-      let index = 0;
-
-      while (!done) {
-        done = true;
-        for (const docId of Object.keys(chunksByDoc)) {
-          const chunk = chunksByDoc[docId][index];
-          if (chunk) {
-            flattenedChunks.push(chunk);
-            done = false;
-          }
+    // Interleave chunks (max 3 per doc, then cycle through again)
+    const flattenedChunks: any[] = [];
+    let done = false;
+    let index = 0;
+    while (!done) {
+      done = true;
+      for (const docId of Object.keys(chunksByDoc)) {
+        const chunk = chunksByDoc[docId][index];
+        if (chunk) {
+          flattenedChunks.push(chunk);
+          done = false;
         }
-        index++;
       }
+      index++;
+    }
 
-      // ✅ Inject context up to token limit
-      for (const match of flattenedChunks) {
-        const chunkText = match.content?.trim();
-        if (!chunkText) continue;
+    // Build combined text up to token budget
+    for (const match of flattenedChunks) {
+      const chunkText = match.content?.trim();
+      if (!chunkText) continue;
 
-        const chunkTokens = estimateTokens(chunkText);
-        if (totalTokens + chunkTokens > MAX_TOKENS_BUDGET) break;
+      const chunkTokens = estimateTokens(chunkText);
+      if (totalTokens + chunkTokens > MAX_TOKENS_BUDGET) break;
 
-        const title = titleMap[match.document_id] || `Document ${match.document_id}`;
-        combinedText += `\n### 📄 Source: *${title}* (${match.document_type})\n> ${chunkText.replace(/\n/g, '\n> ')}\n`;
-        totalTokens += chunkTokens;
-      }
+      const title = titleMap[match.document_id] || `Document ${match.document_id}`;
+      const docTypeLabel = match.document_type === 'public' ? '🌐 Public' : '🔒 Private';
+
+      combinedText += `\n### 📄 Source: *${title}* (${docTypeLabel})\n> ${chunkText.replace(/\n/g, '\n> ')}\n`;
+      totalTokens += chunkTokens;
     }
 
     const systemPrompt = `
