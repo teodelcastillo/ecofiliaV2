@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-
+import { montserrat } from "@/app/fonts"
 import { useState, useEffect } from "react"
 import { redirect, usePathname } from "next/navigation"
 import Link from "next/link"
@@ -11,7 +11,6 @@ import {
   Settings,
   ChevronDown,
   Zap,
-  Users,
   Folder,
   Leaf,
   Clipboard,
@@ -37,6 +36,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import Image from "next/image"
 
 // Define menu items with proper typing
 interface MenuItem {
@@ -118,9 +118,13 @@ export function Sidebar() {
 
   return (
     <ShadcnSidebar  >
-      <SidebarHeader className="flex items-center gap-2 h-16 px-4 border-b" >
-        <Leaf className="h-6 w-6 text-primary" />
-        <span onClick={() => redirect("/protected")} className="font-bold text-xl tracking-tight">Ecofilia</span>
+      <SidebarHeader className="flex justify-center items-center gap-2 h-16 border-b" >
+        <span onClick={() => redirect("/protected")} className="flex items-center gap-2 cursor-pointer">
+          <Image src="/ECOFILIALEAF.png" alt="Ecofilia Logo" width={32} height={32} className="h-8 w-8" />
+          <span className={`${montserrat.className} font-bold text-lg tracking-tight`}>
+            ECOFILIA
+          </span>
+        </span>
       </SidebarHeader>
 
       <SidebarContent>
