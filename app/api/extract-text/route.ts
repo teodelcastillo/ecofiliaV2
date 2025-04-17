@@ -79,6 +79,17 @@ export async function POST(req: Request) {
       .from(table)
       .update({ extracted_text: extractedText, processing_status: "extracted" })
       .eq("id", documentId);
+      // 🔁 Disparar procesamiento asincrónico en backend (chunking y embeddings)
+      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/continue-processing`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.CRON_SECRET}`,
+        },
+      }).catch((err) => {
+        console.warn("⚠️ Error triggering continue-processing:", err);
+      });
+
 
     if (updateError) {
       return NextResponse.json({ error: "Failed to update extracted text" }, { status: 500 });
