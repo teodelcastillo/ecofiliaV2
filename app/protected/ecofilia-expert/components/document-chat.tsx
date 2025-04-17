@@ -14,7 +14,7 @@ import { DocumentSelectorModal } from "./document-selector-modal"
 import { ChatHistory } from "./chat-history"
 
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, History, FolderOpen } from "lucide-react"
+import { ChevronLeft, ChevronRight, History } from "lucide-react"
 
 import type { Message } from "ai"
 import type { Document } from "@/models"
