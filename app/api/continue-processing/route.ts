@@ -10,7 +10,14 @@ const supabase = createClient(
 
 const MAX_DOCS_PER_RUN = 3;
 
-export async function POST() {
+export async function POST(req: Request) {
+  const authHeader = req.headers.get("Authorization");
+  const validToken = `Bearer ${process.env.CRON_SECRET}`;
+
+  if (authHeader !== validToken) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     // 1. Buscar documentos pendientes de chunking
     const { data: docsToChunk, error: chunkError } = await supabase

@@ -9,5 +9,12 @@
 		"app/api/generate-report/route.js": {
 			"maxDuration": 60
 		}
-	}
+	},
+
+	"crons": [
+		{
+			"path": "/api/continue-processing",
+			"schedule": "*/5 * * * *"
+		}
+	]
 }

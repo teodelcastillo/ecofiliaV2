@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/client"
+import { createClient } from "@/utils/supabase/client";
 
 export async function uploadAndProcessDocument({
   file,
@@ -6,31 +6,31 @@ export async function uploadAndProcessDocument({
   description,
   category,
 }: {
-  file: File
-  name?: string
-  description?: string
-  category?: string
+  file: File;
+  name?: string;
+  description?: string;
+  category?: string;
 }) {
-  const supabase = createClient()
+  const supabase = createClient();
 
   const {
     data: { user },
     error: userError,
-  } = await supabase.auth.getUser()
+  } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    throw new Error("No authenticated user")
+    throw new Error("No authenticated user");
   }
 
-  const userId = user.id
-  const fileExt = file.name.split(".").pop()
-  const filePath = `${userId}/${Date.now()}.${fileExt}`
+  const userId = user.id;
+  const fileExt = file.name.split(".").pop();
+  const filePath = `${userId}/${Date.now()}.${fileExt}`;
 
   const { error: uploadError } = await supabase.storage
     .from("user-documents")
-    .upload(filePath, file)
+    .upload(filePath, file);
 
-  if (uploadError) throw uploadError
+  if (uploadError) throw uploadError;
 
   const { data, error } = await supabase
     .from("documents")
@@ -43,38 +43,21 @@ export async function uploadAndProcessDocument({
       processing_status: "pending",
     })
     .select()
-    .single()
+    .single();
 
-  if (error) throw error
+  if (error) throw error;
 
-  const payload = {
-    documentId: data.id,
-    type: "user",
-  }
-
-  // 👇 Ejecutamos el pipeline asincrónico sin bloquear la UI
+  // 🔁 Solo disparamos el primer paso: extracción de texto
   fetch("/api/extract-text", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  })
-    .then(() =>
-      fetch("/api/chunk-openai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      })
-    )
-    .then(() =>
-      fetch("/api/embed-chunks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      })
-    )
-    .catch((err) => {
-      console.warn("⚠️ Error in async processing pipeline:", err)
-    })
+    body: JSON.stringify({
+      documentId: data.id,
+      type: "user",
+    }),
+  }).catch((err) => {
+    console.warn("⚠️ Error starting extraction:", err);
+  });
 
-  return data
+  return data;
 }
