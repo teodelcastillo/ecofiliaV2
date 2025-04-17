@@ -82,6 +82,126 @@
     --input: 170 35% 24%;
     --ring: 160 84% 39%;
   }
+
+  /* Light grayscale theme */
+  .grayscale {
+    /* Main colors */
+    --background: 0 0% 98%;
+    --foreground: 0 0% 12%;
+
+    /* Card styles */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 12%;
+
+    /* Popover styles */
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 12%;
+
+    /* Primary brand color - dark gray */
+    --primary: 0 0% 25%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary color - light gray */
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 12%;
+
+    /* Muted elements */
+    --muted: 0 0% 94%;
+    --muted-foreground: 0 0% 45%;
+
+    /* Accent elements */
+    --accent: 0 0% 90%;
+    --accent-foreground: 0 0% 12%;
+
+    /* Destructive elements */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Border, input and ring styles */
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 0 0% 25%;
+  }
+
+  /* Dark grayscale theme */
+  .dark-grayscale {
+    /* Main colors */
+    --background: 0 0% 10%;
+    --foreground: 0 0% 90%;
+
+    /* Card styles */
+    --card: 0 0% 15%;
+    --card-foreground: 0 0% 90%;
+
+    /* Popover styles */
+    --popover: 0 0% 15%;
+    --popover-foreground: 0 0% 90%;
+
+    /* Primary brand color - light gray */
+    --primary: 0 0% 70%;
+    --primary-foreground: 0 0% 10%;
+
+    /* Secondary color - dark gray */
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 0 0% 90%;
+
+    /* Muted elements */
+    --muted: 0 0% 25%;
+    --muted-foreground: 0 0% 65%;
+
+    /* Accent elements */
+    --accent: 0 0% 30%;
+    --accent-foreground: 0 0% 90%;
+
+    /* Destructive elements */
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Border, input and ring styles */
+    --border: 0 0% 30%;
+    --input: 0 0% 30%;
+    --ring: 0 0% 70%;
+  }
+
+  /* Standard dark theme (neutral dark with green accents) */
+  .standard-dark {
+    /* Main colors */
+    --background: 220 10% 10%;
+    --foreground: 220 10% 98%;
+
+    /* Card styles */
+    --card: 220 10% 13%;
+    --card-foreground: 220 10% 98%;
+
+    /* Popover styles */
+    --popover: 220 10% 13%;
+    --popover-foreground: 220 10% 98%;
+
+    /* Primary brand color - vibrant green (as requested) */
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary color - dark slate */
+    --secondary: 215 14% 20%;
+    --secondary-foreground: 210 10% 98%;
+
+    /* Muted elements */
+    --muted: 215 14% 16%;
+    --muted-foreground: 220 10% 70%;
+
+    /* Accent elements */
+    --accent: 215 25% 27%;
+    --accent-foreground: 210 10% 98%;
+
+    /* Destructive elements */
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Border, input and ring styles */
+    --border: 215 14% 25%;
+    --input: 215 14% 25%;
+    --ring: 160 84% 39%; /* Green ring to match primary */
+  }
 }
 
 @layer base {
