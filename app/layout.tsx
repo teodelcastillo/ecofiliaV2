@@ -18,6 +18,11 @@ const montserrat = Montserrat({
 })
 
 export const metadata: Metadata = {
+  icons: {
+    icon: "/ECOFILIALEAF.png",
+    shortcut: "/ECOFILIALEAF.png",
+    apple: "/ECOFILIALEAF.png",
+  },
   title: {
     template: "%s | Ecofilia",
     default: "Ecofilia - Sustainability Platform",
