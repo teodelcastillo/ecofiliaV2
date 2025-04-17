@@ -75,7 +75,13 @@ export function MyLibrary({ documents: initialDocuments, userId, initialLimit }:
       if (error) throw error
 
       if (data && data.length > 0) {
-        setDocuments((prev) => [...prev, ...data])
+        setDocuments((prev) => [
+          ...prev,
+          ...data.map((doc) => ({
+            ...doc,
+            createElement: () => null, // Provide a default or mock implementation for missing properties
+          })),
+        ])
         setPage(nextPage)
         setHasMore(data.length >= initialLimit)
       } else {
