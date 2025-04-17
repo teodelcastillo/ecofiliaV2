@@ -1,40 +1,44 @@
-// app/api/get-signed-url/route.ts
+import { NextResponse } from "next/server"
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
+import { cookies } from "next/headers"
 
-import { createClient } from '@/utils/supabase/server'
-import { NextRequest, NextResponse } from 'next/server'
+export async function POST(req: Request) {
+  const supabase = createRouteHandlerClient({ cookies })
+  const { filePath } = await req.json()
 
-export async function GET(req: NextRequest) {
-  const supabase = createClient()
+  console.log("🔐 Requested filePath:", filePath)
 
-  const { searchParams } = new URL(req.url)
-  const filePath = searchParams.get('filePath')
-
+  // Validamos que el documento exista y sea del usuario
   const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user || !filePath) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const { data: doc } = await supabase
-    .from('documents')
-    .select('id')
-    .eq('user_id', user.id)
-    .eq('file_path', filePath)
+    data: doc,
+    error,
+  } = await supabase
+    .from("documents")
+    .select("id")
+    .eq("file_path", filePath)
     .single()
 
-  if (!doc) {
-    return NextResponse.json({ error: 'Not authorized or file not found' }, { status: 403 })
+  if (error || !doc) {
+    console.warn("❌ Document not found or not owned:", error?.message)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const { data: signed } = await supabase.storage
-    .from('user_documents')
-    .createSignedUrl(filePath, 60 * 60)
+  
 
-  if (!signed) {
-    return NextResponse.json({ error: 'Failed to generate URL' }, { status: 500 })
+  console.log("📦 Generando signed URL para filePath:", filePath)
+
+  const { data: signed, error: signError } = await supabase.storage
+    .from("user_documents")
+    .createSignedUrl(filePath, 60 * 5)
+  
+  console.log("🧾 Resultado signedUrl:", signed)
+  console.log("❌ Error (si hubo):", signError)
+  
+
+  if (signError || !signed) {
+    console.error("🧨 Signed URL error:", signError?.message)
+    return NextResponse.json({ error: "Signed URL generation failed" }, { status: 500 })
   }
 
-  return NextResponse.json({ url: signed.signedUrl })
+  return NextResponse.json({ signedUrl: signed.signedUrl })
 }

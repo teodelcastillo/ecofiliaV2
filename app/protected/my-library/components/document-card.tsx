@@ -42,28 +42,46 @@ interface DocumentCardProps {
   onDelete?: (id: string) => void
 }
 
-export function DocumentCard({ document, onDelete }: DocumentCardProps) {
+export function DocumentCard({ document: doc, onDelete }: DocumentCardProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const { toast } = useToast()
   const supabase = createClient()
 
+  const getSignedUrlFromApi = async (filePath: string): Promise<string | null> => {
+    try {
+      const res = await fetch("/api/get-signed-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filePath }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Failed to generate signed URL")
+      return data.signedUrl
+    } catch (error) {
+      console.error("Signed URL error:", error)
+      toast({ title: "Error", description: "Could not generate file URL.", variant: "destructive" })
+      return null
+    }
+  }
+
   const handleDelete = async () => {
-    if (!document.id) return
+    if (!doc.id) return
 
     setIsDeleting(true)
     try {
-      const { error } = await supabase.from("documents").delete().eq("id", document.id)
+      const { error } = await supabase.from("documents").delete().eq("id", doc.id)
       if (error) throw error
 
-      if (document.file_path) {
-        const { error: storageError } = await supabase.storage.from("documents").remove([document.file_path])
+      if (doc.file_path) {
+        const { error: storageError } = await supabase.storage.from("documents").remove([doc.file_path])
         if (storageError) console.error("Storage deletion error:", storageError)
       }
 
       toast({ title: "Document deleted", description: "The document has been successfully deleted." })
-      onDelete?.(document.id)
+      onDelete?.(doc.id)
     } catch (error) {
       console.error("Delete error:", error)
       toast({ title: "Error", description: "Failed to delete the document.", variant: "destructive" })
@@ -74,52 +92,33 @@ export function DocumentCard({ document, onDelete }: DocumentCardProps) {
   }
 
   const handleDownload = async () => {
-    if (!document.file_path) return
+    if (!doc.file_path) return
+    const url = await getSignedUrlFromApi(doc.file_path)
+    if (!url) return
 
-    try {
-      const { data, error } = await supabase.storage.from("documents").download(document.file_path)
-      if (error) throw error
+    const a = document.createElement("a")
+    a.href = url
+    a.download = doc.name || "document"
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
 
-      const url = URL.createObjectURL(data)
-      const a = window.document.createElement("a")
-      a.href = url
-      a.download = document.name || "document"
-      window.document.body.appendChild(a)
-      a.click()
-      window.document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-
-      toast({ title: "Download started", description: "Your document is being downloaded." })
-    } catch (error) {
-      console.error("Download error:", error)
-      toast({ title: "Download failed", description: "Try again later.", variant: "destructive" })
-    }
-  }
-
-  const handleShare = () => {
-    navigator.clipboard.writeText(document.name || "")
-    toast({ title: "Link copied", description: "Document name copied to clipboard." })
-  }
-
-  const getFileUrl = async () => {
-    if (!document.file_path) return null
-    try {
-      const { data, error } = await supabase.storage.from("documents").createSignedUrl(document.file_path, 60)
-      if (error) throw error
-      return data.signedUrl
-    } catch (error) {
-      console.error("Signed URL error:", error)
-      return null
-    }
+    toast({ title: "Download started", description: "Your document is being downloaded." })
   }
 
   const handleView = async () => {
-    const url = await getFileUrl()
+    if (!doc.file_path) return
+    const url = await getSignedUrlFromApi(doc.file_path)
     if (url) {
       window.open(url, "_blank")
     } else {
       toast({ title: "Error", description: "Failed to open the document.", variant: "destructive" })
     }
+  }
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(doc.name || "")
+    toast({ title: "Link copied", description: "Document name copied to clipboard." })
   }
 
   return (
@@ -139,7 +138,7 @@ export function DocumentCard({ document, onDelete }: DocumentCardProps) {
                 <div className="bg-primary/10 p-1.5 rounded-md">
                   <FileText className="h-4 w-4 text-primary" />
                 </div>
-                {document.category && <Badge variant="outline">{document.category}</Badge>}
+                {doc.category && <Badge variant="outline">{doc.category}</Badge>}
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -162,10 +161,10 @@ export function DocumentCard({ document, onDelete }: DocumentCardProps) {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <CardTitle className="text-lg mt-2 line-clamp-2">{document.name || "Untitled"}</CardTitle>
-            {document.description && (
+            <CardTitle className="text-lg mt-2 line-clamp-2">{doc.name || "Untitled"}</CardTitle>
+            {doc.description && (
               <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                {document.description}
+                {doc.description}
               </p>
             )}
           </CardHeader>
@@ -173,8 +172,8 @@ export function DocumentCard({ document, onDelete }: DocumentCardProps) {
             <div className="flex items-center text-sm text-muted-foreground">
               <Calendar className="mr-2 h-4 w-4" />
               <span>
-                {document.created_at
-                  ? `Added ${formatDistanceToNow(new Date(document.created_at), { addSuffix: true })}`
+                {doc.created_at
+                  ? `Added ${formatDistanceToNow(new Date(doc.created_at), { addSuffix: true })}`
                   : "Date unknown"}
               </span>
             </div>

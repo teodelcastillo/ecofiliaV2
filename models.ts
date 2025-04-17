@@ -1,4 +1,5 @@
 export interface Document {
+  createElement(arg0: string): unknown;
   id: string | null;
   name: string | null;
   description?: string | null;
