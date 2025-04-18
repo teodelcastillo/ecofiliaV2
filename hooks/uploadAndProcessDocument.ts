@@ -40,10 +40,11 @@ export async function uploadAndProcessDocument({
       category: category || null,
       file_path: filePath,
       user_id: userId,
-      processing_status: "pending",
+      chunking_status: "pending", // ✅ clave
     })
     .select()
     .single();
+
 
   if (error) throw error;
 
@@ -58,6 +59,23 @@ export async function uploadAndProcessDocument({
   }).catch((err) => {
     console.warn("⚠️ Error starting extraction:", err);
   });
+  // 🔁 Paso 1: extracción de texto
+await fetch("/api/extract-text", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    documentId: data.id,
+    type: "user",
+  }),
+});
+
+// ⏳ Paso 2: iniciar chunking inicial (procesa solo 1 bloque)
+await fetch("/api/chunk-openai", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ documentId: data.id }),
+});
+
 
   return data;
 }

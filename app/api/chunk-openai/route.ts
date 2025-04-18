@@ -1,96 +1,111 @@
-// app/api/chunk-openai/route.ts
-
-export const runtime = "nodejs";
-
-import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import { chunkWithOpenAI } from "@/lib/chunking";
+// /api/chunk-openai/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+import { OpenAI } from 'openai';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PRIVATE_SERVICE_KEY!
 );
 
-function getDocumentSource(type: "user" | "public") {
-  return {
-    table: type === "public" ? "public_documents" : "documents",
-  };
-}
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
-const MAX_CHARS_PER_BATCH = 12000;
+const CHUNKS_PER_CALL = 3;
+const CHUNK_SIZE = 1000;
 
-function extractChunk(text: string, offset: number, max = MAX_CHARS_PER_BATCH) {
-  return text.slice(offset, offset + max);
-}
+export async function POST(req: NextRequest) {
+  const { documentId } = await req.json();
+  if (!documentId) return NextResponse.json({ error: 'Missing documentId' }, { status: 400 });
 
-export async function POST(req: Request) {
   try {
-    const { documentId, type } = await req.json();
-    const { table } = getDocumentSource(type);
-
-    const { data: doc, error } = await supabase
-      .from(table)
-      .select("extracted_text, chunking_offset")
-      .eq("id", documentId)
+    const { data: doc, error: docErr } = await supabase
+      .from('documents')
+      .select('extracted_text, chunking_offset')
+      .eq('id', documentId)
       .single();
 
-    if (error || !doc?.extracted_text) {
-      return NextResponse.json({ error: "Extracted text not found" }, { status: 404 });
-    }
+    if (docErr || !doc?.extracted_text) throw new Error('Document or text not found');
 
-    const offset = doc.chunking_offset ?? 0;
     const fullText = doc.extracted_text;
-    const fragment = extractChunk(fullText, offset);
+    const offset = doc.chunking_offset ?? 0;
 
-    if (!fragment || fragment.length === 0) {
-      await supabase.from(table).update({ chunking_done: true }).eq("id", documentId);
-      return NextResponse.json({ done: true, message: "All text already processed" });
+    const blocks = splitTextIntoChunks(fullText, CHUNK_SIZE);
+    const remaining = blocks.slice(offset, offset + CHUNKS_PER_CALL);
+
+    if (remaining.length === 0) {
+      await supabase.from('documents').update({
+        chunking_done: true,
+        chunking_status: 'done',
+      }).eq('id', documentId);
+      return NextResponse.json({ message: 'Chunking complete' });
     }
 
-    const parsedChunks = await chunkWithOpenAI(fragment, offset);
+    const enrichedChunks = await Promise.all(
+      remaining.map((content, i) => enrichChunkWithOpenAI(content, offset + i))
+    );
 
-    const currentChunkCount = await supabase
-      .from("document_chunks")
-      .select("id", { count: "exact", head: true })
-      .eq("document_id", documentId)
-      .eq("document_type", type);
-
-    const baseIndex = currentChunkCount.count || 0;
-
-    const chunksToInsert = parsedChunks.map((chunk, i) => ({
+    const inserts = enrichedChunks.map((chunk) => ({
       document_id: documentId,
-      document_type: type,
-      content: chunk.content,
-      embedding: null,
-      section_title: chunk.section_title,
-      chunk_index: baseIndex + i,
-      section_level: chunk.section_level,
-      tokens: chunk.tokens,
-      start_char: chunk.start_char,
-      end_char: chunk.end_char,
-      page_number: chunk.page_number,
-      keywords: chunk.keywords,
-      summary: chunk.summary,
+      ...chunk,
     }));
 
-    await supabase.from("document_chunks").insert(chunksToInsert);
+    const { error: insertErr } = await supabase
+      .from('document_chunks')
+      .insert(inserts);
 
-    const newOffset = offset + fragment.length;
-    const chunkingDone = newOffset >= fullText.length;
+      if (insertErr) {
+        console.error("❌ Insert error:", insertErr);
+        console.log("📦 Inserts preview:", JSON.stringify(inserts, null, 2));
+        throw new Error("Failed to insert chunks");
+      }
+      
+    const newOffset = offset + remaining.length;
+    const chunkingDone = newOffset >= blocks.length;
 
-    await supabase.from(table).update({
+    await supabase.from('documents').update({
       chunking_offset: newOffset,
       chunking_done: chunkingDone,
-    }).eq("id", documentId);
+      chunking_status: chunkingDone ? 'done' : 'in_progress',
+    }).eq('id', documentId);
 
-    return NextResponse.json({
-      success: true,
-      chunksInserted: chunksToInsert.length,
-      chunkingDone,
-      nextOffset: newOffset,
-    });
-  } catch (err) {
-    console.error("🔥 Error in chunk-openai:", err);
-    return NextResponse.json({ error: "Unexpected server error" }, { status: 500 });
+    return NextResponse.json({ message: 'Chunks processed', done: chunkingDone });
+  } catch (err: any) {
+    console.error('Chunking error:', err);
+    await supabase.from('documents').update({ chunking_status: 'failed' }).eq('id', documentId);
+    return NextResponse.json({ error: err.message || 'Chunking failed' }, { status: 500 });
   }
+}
+
+function splitTextIntoChunks(text: string, size: number): string[] {
+  const result = [];
+  for (let i = 0; i < text.length; i += size) {
+    result.push(text.slice(i, i + size));
+  }
+  return result;
+}
+
+async function enrichChunkWithOpenAI(content: string, index: number) {
+  const prompt = `For the following text, return a JSON with:\n- title (if identifiable)\n- summary (1-2 sentences)\n- keywords (max 5)\n- token_count estimate\n\nText:\n${content}`;
+
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4-turbo',
+    messages: [
+      { role: 'system', content: 'You are a document analyst.' },
+      { role: 'user', content: prompt },
+    ],
+    temperature: 0.3,
+  });
+
+  const raw = completion.choices[0].message.content?.trim() || '{}';
+  const cleaned = raw.replace(/```json|```/g, '').trim();
+  const json = JSON.parse(cleaned);
+
+  return {
+    chunk_index: index,
+    content,
+    title: json.title || null,
+    summary: json.summary || null,
+    keywords: json.keywords || null,
+    token_count: json.token_count || Math.ceil(content.length / 4),
+  };
 }

@@ -1,8 +1,9 @@
+// /api/extract-text/route.ts
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-// @ts-expect-error: no types for subpath
+// @ts-expect-error
 import pdf from "pdf-parse/lib/pdf-parse.js";
 
 const supabase = createClient(
@@ -28,10 +29,7 @@ export async function POST(req: Request) {
 
     const { table, bucket, pathField } = getDocumentSource(type);
 
-    await supabase
-      .from(table)
-      .update({ processing_status: "processing" })
-      .eq("id", documentId);
+    await supabase.from(table).update({ chunking_status: "in_progress" }).eq("id", documentId);
 
     const { data: doc, error: docError } = await supabase
       .from(table)
@@ -63,33 +61,38 @@ export async function POST(req: Request) {
     const fileRes = await fetch(signedUrlData.signedUrl);
     const arrayBuffer = await fileRes.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const parsed = await pdf(buffer);
-    const extractedText = parsed.text;
+
+    let extractedText = "";
+    try {
+      const parsed = await pdf(buffer);
+      extractedText = parsed.text;
+      console.log("📄 Extracted text length:", extractedText.length);
+    } catch (err) {
+      console.error("❌ PDF parsing failed:", err);
+      await supabase.from(table).update({ chunking_status: "failed" }).eq("id", documentId);
+      return NextResponse.json({ error: "PDF parsing failed" }, { status: 500 });
+    }
 
     if (!extractedText || extractedText.length < 20) {
-      await supabase
-        .from(table)
-        .update({ processing_status: "error", processing_error: "Text too short or unreadable" })
-        .eq("id", documentId);
-
+      console.warn("⚠️ Extracted text too short or empty");
+      await supabase.from(table).update({ chunking_status: "failed" }).eq("id", documentId);
       return NextResponse.json({ error: "Text too short or unreadable" }, { status: 500 });
     }
 
     const { error: updateError } = await supabase
       .from(table)
-      .update({ extracted_text: extractedText, processing_status: "extracted" })
+      .update({ extracted_text: extractedText, chunking_status: "extracted" })
       .eq("id", documentId);
-      // 🔁 Disparar procesamiento asincrónico en backend (chunking y embeddings)
-      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/continue-processing`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.CRON_SECRET}`,
-        },
-      }).catch((err) => {
-        console.warn("⚠️ Error triggering continue-processing:", err);
-      });
 
+    await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/continue-processing`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.CRON_SECRET}`,
+      },
+    }).catch((err) => {
+      console.warn("⚠️ Error triggering continue-processing:", err);
+    });
 
     if (updateError) {
       return NextResponse.json({ error: "Failed to update extracted text" }, { status: 500 });

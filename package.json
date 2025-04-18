@@ -69,6 +69,7 @@
     "react-resizable-panels": "^2.1.7",
     "recharts": "^2.15.1",
     "sonner": "^2.0.1",
+    "supabase": "^2.20.12",
     "tiktoken": "^1.0.20",
     "vaul": "^1.1.2",
     "zod": "^3.24.2"
