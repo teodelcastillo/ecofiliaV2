@@ -31,9 +31,11 @@ export async function POST(req: NextRequest) {
 
     const supabase = getSupabase()
 
+    // Separar documentos personales y públicos
     const personalIds = documents.filter((d) => d.type === 'user').map((d) => d.id)
     const publicIds = documents.filter((d) => d.type === 'public').map((d) => d.id)
 
+    // Obtener nombres de documentos
     const [personalMeta, publicMeta] = await Promise.all([
       supabase.from('documents').select('id, name').in('id', personalIds),
       supabase.from('public_documents').select('id, name').in('id', publicIds),
@@ -44,17 +46,17 @@ export async function POST(req: NextRequest) {
     }
 
     const titleMap: Record<string, string> = {
-      ...Object.fromEntries((personalMeta.data || []).map((doc: { id: any; name: any }) => [doc.id, doc.name])),
-      ...Object.fromEntries((publicMeta.data || []).map((doc: { id: any; name: any }) => [doc.id, doc.name])),
+      ...Object.fromEntries((personalMeta.data || []).map((doc: any) => [doc.id, doc.name])),
+      ...Object.fromEntries((publicMeta.data || []).map((doc: any) => [doc.id, doc.name])),
     }
 
     const allDocumentIds = [...personalIds, ...publicIds]
     const questionEmbedding = await embedder.embedQuery(question)
 
+    // Llamar a la función RPC, que debería respetar RLS internamente
     const { data: matches, error: matchError } = await supabase.rpc('match_document_chunks', {
       query_embedding: questionEmbedding,
       match_count: 50,
-      match_user_id: userId,
       filter_document_ids: allDocumentIds,
     })
 
@@ -63,21 +65,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Matching failed' }, { status: 500 })
     }
 
-    // Agrupar chunks por documento
+    // Agrupar por documento
     const chunksByDoc: Record<string, string[]> = {}
 
     for (const match of matches || []) {
-      if (!match.content) continue
       if (match.similarity_score !== undefined && match.similarity_score < SIMILARITY_THRESHOLD) continue
 
       const docId = match.document_id
       if (!chunksByDoc[docId]) chunksByDoc[docId] = []
+
       if (chunksByDoc[docId].length < MAX_CHUNKS_PER_DOCUMENT) {
-        chunksByDoc[docId].push(match.content.trim())
+        const enriched = [
+          match.title ? `**${match.title}**` : null,
+          match.summary ? `_${match.summary}_` : null,
+          match.keywords ? `**Keywords:** ${match.keywords}` : null,
+          match.content ? `> ${match.content.trim().replace(/\n/g, '\n> ')}` : null,
+        ]
+          .filter(Boolean)
+          .join('\n\n')
+
+        chunksByDoc[docId].push(enriched)
       }
     }
 
-    // 👉 Detectar intención del usuario
+    // Detectar intención del usuario
     const isPerDocumentQuestion = /cada documento|uno por uno|describ[íi]r?|por separado/i.test(question)
 
     const documentSections: string[] = []
@@ -90,13 +101,12 @@ export async function POST(req: NextRequest) {
       const selectedChunks =
         chunks.length > 0
           ? chunks.slice(0, MAX_CHUNKS_PER_DOCUMENT)
-          : [`(No relevant content found for this document)`]
+          : [`_(No relevant content found for this document)_`]
 
       const sectionText = selectedChunks.map((c) => `> ${c.replace(/\n/g, '\n> ')}`).join('\n\n')
       const section = `### 📘 ${title}\n${sectionText}`
       const sectionTokens = estimateTokens(section)
 
-      // Si no es consulta por documento, aplicar límite de tokens
       if (!isPerDocumentQuestion && totalTokens + sectionTokens > MAX_TOKENS_BUDGET) continue
 
       documentSections.push(section)
