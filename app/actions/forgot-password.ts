@@ -9,7 +9,7 @@ import type { Database } from "@/types/supabase"
 export const forgotPasswordAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString()
   const callbackUrl = formData.get("callbackUrl")?.toString()
-  const origin = (await headers()).get("origin") || process.env.NEXT_PUBLIC_SITE_URL || "ecofilia.host"
+  const origin = (await headers()).get("origin") || process.env.NEXT_PUBLIC_BASE_URL || "ecofilia.host"
 
   if (!email) {
     return encodedRedirect("error", "/forgot-password", "Email is required")

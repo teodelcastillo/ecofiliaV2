@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 
     const documentId = docs[0].id;
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
     const res = await fetch(`${baseUrl}/api/chunk-openai`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
