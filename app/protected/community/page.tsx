@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { CalendarIcon, MessageSquare, ThumbsUp, BookMarked, Sparkles, Users, BookOpen, UsersRound } from "lucide-react"
+import { CalendarIcon, MessageCircle, ThumbsUp, BookMarked, Sparkles, Users, BookOpen, UsersRound } from "lucide-react"
 import { WaitlistModal } from "./components/waitlist-modal"
 
 export default function CommunityPage() {
@@ -37,7 +37,7 @@ export default function CommunityPage() {
         {[
           { icon: <Users className="h-6 w-6" />, label: "Active Members", value: "2,500+" },
           { icon: <BookMarked className="h-6 w-6" />, label: "Shared Libraries", value: "850+" },
-          { icon: <MessageSquare className="h-6 w-6" />, label: "Daily Discussions", value: "120+" },
+          { icon: <MessageCircle className="h-6 w-6" />, label: "Daily Discussions", value: "120+" },
           { icon: <Sparkles className="h-6 w-6" />, label: "New Ideas", value: "300+" },
         ].map((stat, index) => (
           <Card key={index} className="border-none bg-muted/50">
@@ -123,7 +123,7 @@ export default function CommunityPage() {
               title: "Engage in Discussions",
               description:
                 "Start meaningful conversations about documents, research papers, and more. Learn from diverse perspectives.",
-              icon: <MessageSquare className="h-5 w-5" />,
+              icon: <MessageCircle className="h-5 w-5" />,
             },
             {
               title: "Discover New Ideas",
@@ -312,7 +312,7 @@ function PostCard({ post }: { post: Post }) {
           </div>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <div className="flex items-center">
-              <MessageSquare className="mr-1 h-3 w-3" />
+              <MessageCircle className="mr-1 h-3 w-3" />
               {post.comments}
             </div>
             <div className="flex items-center">

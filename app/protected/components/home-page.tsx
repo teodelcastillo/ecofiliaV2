@@ -4,18 +4,18 @@ import { useState } from "react"
 import Link from "next/link"
 import {
   ArrowRight,
-  Leaf,
-  Globe,
   Recycle,
-  BookOpen,
+  LibraryBig,
   MessageCircle,
-  FileText,
   FolderKanban,
-  BarChart,
+  ChartSpline,
   FileUp,
   FolderPlus,
-  Puzzle,
 } from "lucide-react"
+import { GiMonsteraLeaf } from "react-icons/gi";
+import { TbReportAnalytics } from "react-icons/tb";
+
+
 import type { User } from "@supabase/supabase-js"
 
 import { Button } from "@/components/ui/button"
@@ -72,22 +72,22 @@ export function HomePage({ user, profile, recentDocuments, projects, reports }: 
           <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
-                icon: <Globe className="h-6 w-6 text-primary mb-2" />,
-                title: "AI Assistant",
-                description: "Chat with your documents using AI",
+                icon: <MessageCircle className="h-6 w-6 text-primary mb-2" />,
+                title: "Ecofilia Assistant",
+                description: "Ask Ecofilia anything about sustainability and climate. ",
                 href: "/protected/ecofilia-expert",
               },
               {
-                icon: <BookOpen className="h-6 w-6 text-primary mb-2" />,
-                title: "My Library",
-                description: "Access your uploaded documents",
-                href: "/protected/my-library",
+                icon: <GiMonsteraLeaf className="h-6 w-6 text-primary mb-2" />,
+                title: "Sustainability Library",
+                description: "Explore accurated selection of sustainability resources",
+                href: "/protected/sustainability-library",
               },
               {
-                icon: <MessageCircle className="h-6 w-6 text-primary mb-2" />,
-                title: "Sustainability Library",
-                description: "Browse sustainability resources",
-                href: "/protected/sustainability-library",
+                icon: <LibraryBig className="h-6 w-6 text-primary mb-2" />,
+                title: "My Library",
+                description: "Upload and manage your own sustainability documents",
+                href: "/protected/my-library",
               },
               {
                 icon: <FolderKanban className="h-6 w-6 text-primary mb-2" />,
@@ -96,15 +96,15 @@ export function HomePage({ user, profile, recentDocuments, projects, reports }: 
                 href: "/protected/projects",
               },
               {
-                icon: <Leaf className="h-6 w-6 text-primary mb-2" />,
+                icon: <TbReportAnalytics className="h-6 w-6 text-primary mb-2" />,
                 title: "Reports",
                 description: "Generate sustainability reports",
                 href: "/protected/reports",
               },
               {
-                icon: <Recycle className="h-6 w-6 text-primary mb-2" />,
+                icon: <ChartSpline className="h-6 w-6 text-primary mb-2" />,
                 title: "Analytics",
-                description: "View sustainability analytics",
+                description: "Extract sustainability KPIs and insights",
                 href: "/protected/analytics",
               },
             ].map(({ icon, title, description, href }) => (
@@ -117,7 +117,20 @@ export function HomePage({ user, profile, recentDocuments, projects, reports }: 
                 <CardFooter>
                   <Button variant="ghost" asChild className="w-full justify-start">
                     <Link href={href} className="flex items-center">
-                      View <ArrowRight className="ml-2 h-4 w-4" />
+                    {title === "Ecofilia Assistant"
+                        ? "New chat"
+                        : title === "My Library"
+                        ? "My documents"
+                        : title === "Sustainability Library"
+                        ? "View resources"
+                        : title === "Projects"
+                        ? "Manage projects"
+                        : title === "Reports"
+                        ? "View reports"
+                        : title === "Analytics"
+                        ? "View Analytics"
+                        : ""}
+                      <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
                 </CardFooter>
@@ -136,7 +149,7 @@ export function HomePage({ user, profile, recentDocuments, projects, reports }: 
 
         {/* Right Column */}
         <div className="md:col-span-1 space-y-6 self-start">
-          {/* About Ecofilia */}
+          {/* About Ecofilia 
           <Card className="min-h-[300px] h-full">
             <CardContent className="space-y-3 pt-6">
               <h2>About Ecofilia</h2>
@@ -161,6 +174,7 @@ export function HomePage({ user, profile, recentDocuments, projects, reports }: 
               </div>
             </CardContent>
           </Card>
+          */}
 
           {/* Quick Actions */}
           <Card>
@@ -178,14 +192,14 @@ export function HomePage({ user, profile, recentDocuments, projects, reports }: 
               </Button>
               <Button className="w-full justify-start" asChild>
                 <Link href="/protected/reports">
-                  <BarChart className="mr-2 h-4 w-4" />
+                  <TbReportAnalytics className="mr-2 h-4 w-4" />
                   Generate Report
                 </Link>
               </Button>
               <Button className="w-full justify-start" variant="outline" asChild>
                 <Link href="/protected/ecofilia-expert">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Ecofilia Expert
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  New Chat
                 </Link>
               </Button>
             </CardContent>
