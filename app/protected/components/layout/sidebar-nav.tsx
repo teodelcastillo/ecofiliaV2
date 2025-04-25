@@ -71,12 +71,12 @@ const menuItems: MenuItem[] = [
       { icon: Folder, label: "Projects", href: "/protected/projects" },
       { icon: MessageCircle, label: "Ecofilia Assistant", href: "/protected/ecofilia-expert" },
       { icon: TbReportAnalytics, label: "Reports", href: "/protected/reports" },
-      { icon: ChartSpline, label: "Analytics", href: "/protected/analytics", badge: "SOON" },
+      { icon: ChartSpline, label: "Analytics", href: "/protected/analytics" },
     ],
   },
   { icon: UsersRound, label: "Community", href: "/protected/community", badge: "SOON" },
   { icon: UserRoundCog, label: "Team Members", href: "/protected/users", badge: "SOON" },
-  { icon: Settings, label: "Settings", href: "/protected/settings" },
+
 ]
 
 export function Sidebar() {
