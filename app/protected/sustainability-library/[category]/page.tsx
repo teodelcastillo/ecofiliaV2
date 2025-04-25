@@ -17,7 +17,7 @@ export default async function CategoryPage({ params }: { params: Promise<Categor
   const { category } = await params
   const selectedCategory = isValidCategory(category) ? category : null
 
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { data: categoriesData, error } = await supabase
     .from("public_documents")

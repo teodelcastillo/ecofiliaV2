@@ -7,8 +7,7 @@ import { DocumentFilters } from "./document-filters"
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { PUBLIC_DOCUMENT_CATEGORIES, PublicDocumentCategory } from "../../../../types/categories"
-
+import { PUBLIC_DOCUMENT_CATEGORIES, type PublicDocumentCategory } from "../../../../types/categories"
 
 interface SustainabilityLibraryProps {
   categories: PublicDocumentCategory[]
@@ -17,10 +16,12 @@ interface SustainabilityLibraryProps {
 
 export function SustainabilityLibrary({ initialCategory = null }: SustainabilityLibraryProps) {
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState<PublicDocumentCategory | null>(initialCategory as PublicDocumentCategory | null)
+  const [selectedCategory, setSelectedCategory] = useState<PublicDocumentCategory | null>(
+    initialCategory as PublicDocumentCategory | null,
+  )
   const [page, setPage] = useState(0)
 
-  const { documents, loading, hasMore } = usePublicDocuments({
+  const { documents, loading, hasMore, totalCount } = usePublicDocuments({
     category: selectedCategory,
     search: searchQuery,
     page,
@@ -34,6 +35,8 @@ export function SustainabilityLibrary({ initialCategory = null }: Sustainability
     setSelectedCategory(null)
     setPage(0)
   }
+
+  const currentCount = documents.length
 
   return (
     <div>
@@ -64,6 +67,14 @@ export function SustainabilityLibrary({ initialCategory = null }: Sustainability
           </Button>
         )}
       </div>
+
+      {/* Document Count */}
+      {!loading && documents.length > 0 && (
+        <div className="text-sm text-muted-foreground mb-4">
+          Showing {currentCount} document{currentCount !== 1 ? "s" : ""}{" "}
+          {totalCount !== undefined ? `from ${totalCount} total` : ""}
+        </div>
+      )}
 
       {/* Document Grid */}
       {documents.length === 0 && !loading ? (

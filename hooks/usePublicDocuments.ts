@@ -25,6 +25,7 @@ export function usePublicDocuments({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [hasMore, setHasMore] = useState(true)
+  const [totalCount, setTotalCount] = useState<number | undefined>()
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -34,35 +35,28 @@ export function usePublicDocuments({
       const supabase = createClient()
       let query = supabase
         .from("public_documents")
-        .select("id, name, category, created_at, file_url")
+        .select("id, name, category, created_at, file_url", { count: "exact" }) // 👈 count enabled
         .order("created_at", { ascending: false })
 
-      if (category) {
-        query = query.eq("category", category)
-      }
-
       if (search) {
-        // When searching, ignore category
         query = query.or(`name.ilike.%${search}%`)
       } else if (category) {
-        // Only apply category if no search is active
         query = query.eq("category", category)
       }
-      
 
       const from = page * pageSize
       const to = from + pageSize - 1
       query = query.range(from, to)
 
-      const { data, error } = await query
+      const { data, error, count } = await query
 
       if (error) {
         setError(error.message)
         setDocuments([])
       } else {
-        // If it's the first page, replace. Else append.
         setDocuments((prev) => (page === 0 ? data || [] : [...prev, ...(data || [])]))
         setHasMore((data?.length || 0) === pageSize)
+        setTotalCount(count ?? undefined) // 👈 new
       }
 
       setLoading(false)
@@ -71,5 +65,17 @@ export function usePublicDocuments({
     fetchDocuments()
   }, [category, search, page, pageSize])
 
-  return { documents, loading, error, hasMore }
-}
+  return {
+    documents,
+    loading,
+    error,
+    hasMore,
+    totalCount,
+  } satisfies {
+    documents: Document[]
+    loading: boolean
+    error: string | null
+    hasMore: boolean
+    totalCount?: number
+  }
+  }
