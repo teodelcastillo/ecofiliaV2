@@ -12,7 +12,7 @@ export function Analytics() {
       {/* Coming Soon Overlay */}
       <AnalyticsComingSoonOverlay />
 
-      {/* Original content (will be blurred) */}
+      {/* Original content */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="space-y-1">

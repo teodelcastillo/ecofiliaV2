@@ -75,10 +75,10 @@ const menuItems: MenuItem[] = [
     ],
   },
   { icon: UsersRound, label: "Community", href: "/protected/community", badge: "SOON" },
-  { icon: UserRoundCog, label: "Team Members", href: "/protected/users", badge: "SOON" },
-
+  { icon: Settings, label: "Settings", href: "/protected/settings" },
 ]
 
+/*{ icon: UserRoundCog, label: "Team Members", href: "/protected/users", badge: "SOON" },*/
 export function Sidebar() {
   const pathname = usePathname()
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({

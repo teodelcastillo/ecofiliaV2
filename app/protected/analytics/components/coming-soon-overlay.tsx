@@ -3,12 +3,21 @@
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { BarChart3, LineChart, BrainCircuit, AreaChart } from "lucide-react"
+import { BarChart3, LineChart, BrainCircuit, AreaChart, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { WaitlistModal } from "../../community/components/waitlist-modal"
+import { useState } from "react"
 
 export function AnalyticsComingSoonOverlay() {
   const router = useRouter()
+  const [isVisible, setIsVisible] = useState(true)
+
+  // Simple close function that only affects the current session
+  const handleClose = () => {
+    setIsVisible(false)
+  }
+
+  if (!isVisible) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -22,7 +31,16 @@ export function AnalyticsComingSoonOverlay() {
         transition={{ duration: 0.5 }}
         className="z-10 w-full max-w-2xl"
       >
-        <Card className="border-2 border-primary/20 shadow-xl">
+        <Card className="border-2 border-primary/20 shadow-xl relative">
+          {/* Close button */}
+          <button
+            onClick={handleClose}
+            className="absolute top-4 right-4 p-1 rounded-full hover:bg-muted transition-colors"
+            aria-label="Close overlay"
+          >
+            <X className="h-5 w-5" />
+          </button>
+
           <CardHeader className="text-center pb-2">
             <div className="flex justify-center mb-4">
               <div className="relative">
@@ -49,9 +67,6 @@ export function AnalyticsComingSoonOverlay() {
             </div>
 
             <div className="pt-4 gap-4 flex flex-col sm:flex-row justify-center items-center">
-              <Button onClick={() => router.push("/protected")} size="lg" className="px-8" variant="outline">
-                Return to Dashboard
-              </Button>
               <WaitlistModal>
                 <Button size="lg" className="px-8">
                   I want to try this feature!
