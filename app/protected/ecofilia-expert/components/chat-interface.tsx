@@ -50,8 +50,7 @@ export function ChatInterface({
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
           <CardTitle className="text-xl font-semibold flex items-center gap-2">
-            <FileText className="h-5 w-5 text-primary" />
-            <span>New Chat</span>
+            <span>{}</span>
           </CardTitle>
           <div className="flex items-center gap-2">
             <TooltipProvider>
@@ -107,11 +106,11 @@ export function ChatInterface({
                 className="text-center space-y-4 max-w-md p-6"
               >
                 <div className="mx-auto bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center">
-                  <FileText className="h-8 w-8 text-primary" />
+                  <MonstiaAvatar />
                 </div>
-                <h3 className="text-xl font-medium">Start a conversation</h3>
+                <h3 className="text-xl font-medium">Start a conversation with Ecofilia</h3>
                 <p className="text-muted-foreground text-sm">
-                  Select documents from your library or the public collection and ask questions about their content.
+                  Try selecting documents from your library or the public collection and ask questions about their content.
                 </p>
                 <Button variant="outline" className="mt-2" onClick={onOpenDocumentSelector}>
                   <FolderOpen className="mr-2 h-4 w-4" />
@@ -158,8 +157,8 @@ export function ChatInterface({
         <form onSubmit={handleSubmit} className="w-full space-y-2">
           <div className="flex items-end gap-2 relative">
             <Textarea
-              aria-label="Ask a question about your documents"
-              placeholder="Ask a question about your documents..."
+              aria-label="Ask Ecofilia anything you need to support your sustainability work..."
+              placeholder="Ask Ecofilia anything you need to support your sustainability work..."
               value={input}
               onChange={handleInputChange}
               className="min-h-24 flex-1 pr-12 resize-none border-muted focus-visible:ring-primary/50"
@@ -180,8 +179,7 @@ export function ChatInterface({
                 animate={{ opacity: 1 }}
                 className="text-xs text-muted-foreground flex items-center gap-1.5 pl-1"
               >
-                <FileText className="h-3 w-3" />
-                You can ask general sustainability or environmental questions without selecting documents.
+                AI-generated response. Our tool is configured using reliable sources and technical frameworks, but responses may still contain errors. Please verify the information before making important decisions.
               </motion.p>
             )}
         </form>
