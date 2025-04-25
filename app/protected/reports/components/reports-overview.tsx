@@ -86,14 +86,7 @@ export function ReportsOverview() {
 
   return (
     <div className="container mx-auto py-8 space-y-8">
-      <div className="flex flex-col space-y-2">
-        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-          Environmental Reports
-        </h1>
-        <p className="text-muted-foreground text-lg">
-          Each project listed below contains associated documentation. Use this view to explore your consultancy work.
-        </p>
-      </div>
+
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
