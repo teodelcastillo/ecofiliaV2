@@ -36,7 +36,7 @@ export function usePublicDocuments({
       let query = supabase
         .from("public_documents")
         .select("id, name, category, created_at, file_url", { count: "exact" }) // 👈 count enabled
-        .order("created_at", { ascending: false })
+        .order("created_at", { ascending: true })
 
       if (search) {
         query = query.or(`name.ilike.%${search}%`)
