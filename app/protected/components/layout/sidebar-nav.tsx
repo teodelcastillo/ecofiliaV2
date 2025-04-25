@@ -70,7 +70,7 @@ const menuItems: MenuItem[] = [
       { icon: LibraryBig, label: "My Library", href: "/protected/my-library" },
       { icon: Folder, label: "Projects", href: "/protected/projects" },
       { icon: MessageCircle, label: "Ecofilia Assistant", href: "/protected/ecofilia-expert" },
-      { icon: TbReportAnalytics, label: "Reports", href: "/protected/reports", badge: "SOON" },
+      { icon: TbReportAnalytics, label: "Reports", href: "/protected/reports" },
       { icon: ChartSpline, label: "Analytics", href: "/protected/analytics", badge: "SOON" },
     ],
   },
