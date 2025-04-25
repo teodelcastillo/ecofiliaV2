@@ -26,27 +26,27 @@ const resources = [
     icon: Target,
     title: "Long-Term Strategies (LTS)",
     description: "Review long-term approaches to achieving sustainability goals.",
-    category: "all",
+    category: "LTS",
   },
   {
     icon: PieChart,
     title: "ESG Guidelines",
     description: "Follow best practices for Environmental, Social, and Governance performance.",
-    category: "all",
+    category: "ESG",
   },
   {
     icon: Thermometer,
     title: "IPCC Reports",
     description:
       "Access the latest scientific findings on climate change from the Intergovernmental Panel on Climate Change.",
-    category: "all",
+    category: "IPCC",
   },
   {
     icon: Leaf,
     title: "IPBES Reports",
     description:
       "Explore biodiversity assessments from the Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services.",
-    category: "all",
+    category: "IPBES",
   },
 ]
 
