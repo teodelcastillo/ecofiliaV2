@@ -60,7 +60,8 @@ export default function SustainabilityOverview() {
         <h1 className="text-3xl font-bold">Sustainability Library</h1>
       </div>
         <p className="text-muted-foreground mb-8">
-        Explore a curated selection of global sustainability documents to guide your environmental strategies and analysis.        </p>
+          Explore a curated selection of global sustainability documents to guide your environmental strategies and analysis.
+        </p>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {resources.map((resource) => (
