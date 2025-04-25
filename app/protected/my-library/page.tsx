@@ -32,7 +32,7 @@ export default async function MyLibraryPage() {
         <h1 className="text-3xl font-bold">My Library</h1>
       </div>
       <p className="text-muted-foreground mb-8">Your centralized space to organize sustainability initiatives and unlock AI-powered insights, reporting, and collaboration. 
-        <br/>Upload and manage your own sustainability documents.</p>
+        <br/>Upload and manage your own sustainability documents and projects.</p>
       <IntegratedLibrary documents={userDocuments || []} userId={user.id} initialLimit={INITIAL_PAGE_SIZE} />
     </div>
   )
