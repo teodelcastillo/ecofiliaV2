@@ -6,8 +6,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! })
 const embedder = new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY! })
 
 const MAX_TOKENS_BUDGET = 6000
-const MAX_CHUNKS_PER_DOCUMENT = 3
-const SIMILARITY_THRESHOLD = 0.75
+const DEFAULT_CHUNKS_PER_DOCUMENT = 3
 
 function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4)
@@ -38,7 +37,6 @@ export async function POST(req: NextRequest) {
 
     console.log('📄 Selected document IDs:', allDocumentIds)
 
-    // Obtener metadatos
     const [personalMeta, publicMeta] = await Promise.all([
       supabase.from('documents').select('id, name').in('id', personalIds),
       supabase.from('public_documents').select('id, name').in('id', publicIds),
@@ -59,7 +57,7 @@ export async function POST(req: NextRequest) {
 
     const { data: matches, error: matchError } = await supabase.rpc('match_document_chunks', {
       query_embedding: questionEmbedding,
-      match_count: 50,
+      match_count: 100,
       filter_document_ids: allDocumentIds,
     })
 
@@ -74,41 +72,40 @@ export async function POST(req: NextRequest) {
       console.log(`🔎 ${matches.length} match(es) returned.`)
     }
 
-    const chunksByDoc: Record<string, string[]> = {}
+    const isPerDocumentQuestion = /cada documento|uno por uno|describ[íi]r?|por separado/i.test(question)
 
+    const chunksByDoc: Record<string, any[]> = {}
     for (const match of matches || []) {
-      const score = match.similarity_score
-      if (score !== undefined && score < SIMILARITY_THRESHOLD) {
-        console.log(`⛔ Chunk discarded (low score: ${score}) for doc ${match.document_id}`)
-        continue
-      }
-
       const docId = match.document_id
       if (!chunksByDoc[docId]) chunksByDoc[docId] = []
-
-      if (chunksByDoc[docId].length < MAX_CHUNKS_PER_DOCUMENT) {
-        const enriched = [
-          match.title && `**${match.title}**`,
-          match.summary && `_${match.summary}_`,
-          match.keywords && `**Keywords:** ${match.keywords}`,
-          match.content && `> ${match.content.trim().replace(/\n/g, '\n> ')}`
-        ].filter(Boolean).join('\n\n')
-
-        chunksByDoc[docId].push(enriched)
-      }
+      chunksByDoc[docId].push(match)
     }
-
-    const isPerDocumentQuestion = /cada documento|uno por uno|describ[íi]r?|por separado/i.test(question)
 
     const documentSections: string[] = []
     let totalTokens = 0
 
+    const isManyDocuments = allDocumentIds.length > 1
+    const chunksPerDoc = isManyDocuments ? 1 : DEFAULT_CHUNKS_PER_DOCUMENT
+
     for (const docId of allDocumentIds) {
       const title = titleMap[docId] || `Document ${docId}`
-      const chunks = chunksByDoc[docId] ?? []
+      const matchesForDoc = chunksByDoc[docId] ?? []
 
-      const selectedChunks = chunks.length > 0
-        ? chunks.slice(0, MAX_CHUNKS_PER_DOCUMENT)
+      // Ordenar por mejor score
+      matchesForDoc.sort((a, b) => (b.similarity_score ?? 0) - (a.similarity_score ?? 0))
+
+      const selectedMatches = matchesForDoc.slice(0, chunksPerDoc)
+
+      const selectedChunks = selectedMatches.length > 0
+        ? selectedMatches.map((match: any) => {
+            const enriched = [
+              match.title && `**${match.title}**`,
+              match.summary && `_${match.summary}_`,
+              match.keywords && `**Keywords:** ${match.keywords}`,
+              match.content && `> ${match.content.trim().replace(/\n/g, '\n> ')}`
+            ].filter(Boolean).join('\n\n')
+            return enriched
+          })
         : [`_(No relevant content found for this document)_`]
 
       const sectionText = selectedChunks.map(c => `> ${c.replace(/\n/g, '\n> ')}`).join('\n\n')
