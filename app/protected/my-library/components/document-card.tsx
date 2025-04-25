@@ -56,16 +56,22 @@ export function DocumentCard({ document: doc, onDelete }: DocumentCardProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ filePath }),
       })
-
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || "Failed to generate signed URL")
-      return data.signedUrl
+  
+      const { signedUrl, error } = await res.json()
+  
+      if (!res.ok || !signedUrl) {
+        console.error("Signed URL error:", error)
+        throw new Error(error || "Failed to generate signed URL")
+      }
+  
+      return signedUrl
     } catch (error) {
-      console.error("Signed URL error:", error)
+      console.error("Signed URL fetch error:", error)
       toast({ title: "Error", description: "Could not generate file URL.", variant: "destructive" })
       return null
     }
   }
+  
 
   const handleDelete = async () => {
     if (!doc.id) return

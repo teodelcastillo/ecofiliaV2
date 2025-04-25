@@ -1,44 +1,61 @@
-import { NextResponse } from "next/server"
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
+import { NextResponse } from "next/server"
+import type { Database } from "@/types/supabase"
 
 export async function POST(req: Request) {
-  const supabase = createRouteHandlerClient({ cookies })
-  const { filePath } = await req.json()
+  const supabase = createRouteHandlerClient<Database>({
+    cookies: () => cookies(),
+  })
 
-  console.log("🔐 Requested filePath:", filePath)
+  const body = await req.json()
+  const filePath = body.filePath?.trim()
 
-  // Validamos que el documento exista y sea del usuario
+  console.log("📥 Received filePath:", filePath)
+
+  if (!filePath) {
+    console.warn("⚠️ Missing file path in request.")
+    return NextResponse.json({ error: "Missing file path" }, { status: 400 })
+  }
+
   const {
-    data: doc,
-    error,
-  } = await supabase
-    .from("documents")
-    .select("id")
-    .eq("file_path", filePath)
-    .single()
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
 
-  if (error || !doc) {
-    console.warn("❌ Document not found or not owned:", error?.message)
+  if (userError || !user) {
+    console.error("❌ User session error:", userError)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  
+  console.log("👤 Authenticated user ID:", user.id)
 
-  console.log("📦 Generando signed URL para filePath:", filePath)
+  // Buscar documento en la base de datos
+  const { data: doc, error: docError } = await supabase
+    .from("documents")
+    .select("id, file_path, user_id")
+    .eq("file_path", filePath)
+    .eq("user_id", user.id)
+    .single()
 
-  const { data: signed, error: signError } = await supabase.storage
-    .from("user_documents")
-    .createSignedUrl(filePath, 60 * 5)
-  
-  console.log("🧾 Resultado signedUrl:", signed)
-  console.log("❌ Error (si hubo):", signError)
-  
-
-  if (signError || !signed) {
-    console.error("🧨 Signed URL error:", signError?.message)
-    return NextResponse.json({ error: "Signed URL generation failed" }, { status: 500 })
+  if (docError || !doc) {
+    console.warn("🛑 Document not found or not owned by user")
+    return NextResponse.json({ error: "Unauthorized access to document" }, { status: 403 })
   }
 
-  return NextResponse.json({ signedUrl: signed.signedUrl })
+
+  const { data: signedData, error: signedError } = await supabase.storage
+    .from("user-documents")
+    .createSignedUrl(filePath, 60 * 5)
+
+  if (signedError || !signedData?.signedUrl) {
+    console.error("❌ Signed URL generation failed")
+
+    const message = signedError?.message || "Failed to generate signed URL"
+
+    return NextResponse.json({ error: message })
+  }
+
+
+  return NextResponse.json({ signedUrl: signedData.signedUrl })
 }
