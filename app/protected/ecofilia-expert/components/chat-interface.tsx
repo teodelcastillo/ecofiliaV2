@@ -51,7 +51,7 @@ export function ChatInterface({
         <div className="flex justify-between items-center">
           <CardTitle className="text-xl font-semibold flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
-            <span>Document Chat</span>
+            <span>New Chat</span>
           </CardTitle>
           <div className="flex items-center gap-2">
             <TooltipProvider>

@@ -7,18 +7,18 @@ import { redirect, usePathname } from "next/navigation"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import {
-  BarChart,
+  
   Settings,
   ChevronDown,
   Zap,
   Folder,
   Leaf,
-  Clipboard,
-  MessageSquare,
+  MessageCircle,
   LibraryBig,
   Home,
   UsersRound,
-  UserRoundCog
+  UserRoundCog,
+  ChartSpline
 } from "lucide-react"
 import {
   Sidebar as ShadcnSidebar,
@@ -32,11 +32,13 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { TbReportAnalytics } from "react-icons/tb";
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import Image from "next/image"
+import { GiMonsteraLeaf } from "react-icons/gi"
 
 // Define menu items with proper typing
 interface MenuItem {
@@ -64,12 +66,12 @@ const menuItems: MenuItem[] = [
     label: "Functionalities",
     dropdown: true,
     submenu: [
-      { icon: Leaf, label: "Sustainability Library", href: "/protected/sustainability-library" },
+      { icon: GiMonsteraLeaf, label: "Sustainability Library", href: "/protected/sustainability-library" },
       { icon: LibraryBig, label: "My Library", href: "/protected/my-library" },
       { icon: Folder, label: "Projects", href: "/protected/projects" },
-      { icon: MessageSquare, label: "Ecofilia Expert", href: "/protected/ecofilia-expert" },
-      { icon: Clipboard, label: "Reports", href: "/protected/reports", badge: "SOON" },
-      { icon: BarChart, label: "Analytics", href: "/protected/analytics", badge: "SOON" },
+      { icon: MessageCircle, label: "Ecofilia Assistant", href: "/protected/ecofilia-expert" },
+      { icon: TbReportAnalytics, label: "Reports", href: "/protected/reports", badge: "SOON" },
+      { icon: ChartSpline, label: "Analytics", href: "/protected/analytics", badge: "SOON" },
     ],
   },
   { icon: UsersRound, label: "Community", href: "/protected/community", badge: "SOON" },

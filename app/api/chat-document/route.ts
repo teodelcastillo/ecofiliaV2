@@ -26,22 +26,26 @@ export async function POST(req: NextRequest) {
     const { documents, question, userId } = body
 
     if (!question?.trim() || !userId || !Array.isArray(documents)) {
+      console.warn('⚠️ Missing required fields:', { question, userId, documents })
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
     const supabase = getSupabase()
 
-    // Separar documentos personales y públicos
-    const personalIds = documents.filter((d) => d.type === 'user').map((d) => d.id)
-    const publicIds = documents.filter((d) => d.type === 'public').map((d) => d.id)
+    const personalIds = documents.filter(d => d.type === 'user').map(d => d.id)
+    const publicIds = documents.filter(d => d.type === 'public').map(d => d.id)
+    const allDocumentIds = [...personalIds, ...publicIds]
 
-    // Obtener nombres de documentos
+    console.log('📄 Selected document IDs:', allDocumentIds)
+
+    // Obtener metadatos
     const [personalMeta, publicMeta] = await Promise.all([
       supabase.from('documents').select('id, name').in('id', personalIds),
       supabase.from('public_documents').select('id, name').in('id', publicIds),
     ])
 
     if (personalMeta.error || publicMeta.error) {
+      console.error('❌ Metadata fetch failed:', personalMeta.error, publicMeta.error)
       return NextResponse.json({ error: 'Metadata fetch failed' }, { status: 500 })
     }
 
@@ -50,10 +54,9 @@ export async function POST(req: NextRequest) {
       ...Object.fromEntries((publicMeta.data || []).map((doc: any) => [doc.id, doc.name])),
     }
 
-    const allDocumentIds = [...personalIds, ...publicIds]
     const questionEmbedding = await embedder.embedQuery(question)
+    console.log('🔍 Generated embedding for question.')
 
-    // Llamar a la función RPC, que debería respetar RLS internamente
     const { data: matches, error: matchError } = await supabase.rpc('match_document_chunks', {
       query_embedding: questionEmbedding,
       match_count: 50,
@@ -61,34 +64,40 @@ export async function POST(req: NextRequest) {
     })
 
     if (matchError) {
-      console.error('❌ Error in match_document_chunks:', matchError)
+      console.error('❌ match_document_chunks failed:', matchError)
       return NextResponse.json({ error: 'Matching failed' }, { status: 500 })
     }
 
-    // Agrupar por documento
+    if (!matches || matches.length === 0) {
+      console.warn('⚠️ No matches returned from match_document_chunks')
+    } else {
+      console.log(`🔎 ${matches.length} match(es) returned.`)
+    }
+
     const chunksByDoc: Record<string, string[]> = {}
 
     for (const match of matches || []) {
-      if (match.similarity_score !== undefined && match.similarity_score < SIMILARITY_THRESHOLD) continue
+      const score = match.similarity_score
+      if (score !== undefined && score < SIMILARITY_THRESHOLD) {
+        console.log(`⛔ Chunk discarded (low score: ${score}) for doc ${match.document_id}`)
+        continue
+      }
 
       const docId = match.document_id
       if (!chunksByDoc[docId]) chunksByDoc[docId] = []
 
       if (chunksByDoc[docId].length < MAX_CHUNKS_PER_DOCUMENT) {
         const enriched = [
-          match.title ? `**${match.title}**` : null,
-          match.summary ? `_${match.summary}_` : null,
-          match.keywords ? `**Keywords:** ${match.keywords}` : null,
-          match.content ? `> ${match.content.trim().replace(/\n/g, '\n> ')}` : null,
-        ]
-          .filter(Boolean)
-          .join('\n\n')
+          match.title && `**${match.title}**`,
+          match.summary && `_${match.summary}_`,
+          match.keywords && `**Keywords:** ${match.keywords}`,
+          match.content && `> ${match.content.trim().replace(/\n/g, '\n> ')}`
+        ].filter(Boolean).join('\n\n')
 
         chunksByDoc[docId].push(enriched)
       }
     }
 
-    // Detectar intención del usuario
     const isPerDocumentQuestion = /cada documento|uno por uno|describ[íi]r?|por separado/i.test(question)
 
     const documentSections: string[] = []
@@ -98,38 +107,41 @@ export async function POST(req: NextRequest) {
       const title = titleMap[docId] || `Document ${docId}`
       const chunks = chunksByDoc[docId] ?? []
 
-      const selectedChunks =
-        chunks.length > 0
-          ? chunks.slice(0, MAX_CHUNKS_PER_DOCUMENT)
-          : [`_(No relevant content found for this document)_`]
+      const selectedChunks = chunks.length > 0
+        ? chunks.slice(0, MAX_CHUNKS_PER_DOCUMENT)
+        : [`_(No relevant content found for this document)_`]
 
-      const sectionText = selectedChunks.map((c) => `> ${c.replace(/\n/g, '\n> ')}`).join('\n\n')
+      const sectionText = selectedChunks.map(c => `> ${c.replace(/\n/g, '\n> ')}`).join('\n\n')
       const section = `### 📘 ${title}\n${sectionText}`
       const sectionTokens = estimateTokens(section)
 
-      if (!isPerDocumentQuestion && totalTokens + sectionTokens > MAX_TOKENS_BUDGET) continue
+      if (!isPerDocumentQuestion && totalTokens + sectionTokens > MAX_TOKENS_BUDGET) {
+        console.log(`⚠️ Skipping section for ${docId} due to token budget`)
+        continue
+      }
 
       documentSections.push(section)
       totalTokens += sectionTokens
     }
 
     const systemPrompt = `
-You are Monstia, an AI expert in environmental sustainability.
+      You are Ecofilia, an AI expert in environmental sustainability.
 
-You help users explore and understand multiple documents. Use the sections below to answer:
+      You help users explore and understand multiple documents. Use the sections below to answer:
 
-- If the question is about *each document*, respond separately for each.
-- If it's a general question, synthesize across all sources.
-- Always quote and label documents clearly.
+      - If the question is about *each document*, respond separately for each.
+      - If it's a general question, synthesize across all sources.
+      - Always quote and label documents clearly.
 
-Use Markdown formatting: headings (###), quotes (>), bullet points, and bold text.
-Be professional, accurate, and easy to read.
-`
+      Use Markdown formatting: headings (###), quotes (>), bullet points, and bold text.
+      Be professional, accurate, and easy to read.
+    `.trim()
 
     const userPrompt = documentSections.length > 0
       ? `Here are the document excerpts:\n\n${documentSections.join('\n\n')}\n\nQuestion: ${question}`
       : `The user selected documents, but no content could be retrieved.\n\nQuestion: ${question}`
 
+    console.log('🧠 Calling OpenAI with final prompt...')
     const openaiStream = await openai.chat.completions.create({
       model: 'gpt-4-turbo',
       stream: true,
