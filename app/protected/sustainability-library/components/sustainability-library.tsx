@@ -91,6 +91,11 @@ export function SustainabilityLibrary({ initialCategory = null }: Sustainability
           </div>
           {hasMore && (
             <div className="text-center mt-6">
+                      <p className="text-muted-foreground">
+          {selectedCategory
+            ? `Showing all sustainability documents under ${selectedCategory} category.`
+            : "Showing all available sustainability documents."}
+        </p>
               <Button onClick={handleLoadMore} disabled={loading}>
                 {loading ? "Loading..." : "Load More"}
               </Button>

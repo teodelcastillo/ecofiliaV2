@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     }));
 
     const { error: insertErr } = await supabase
-      .from('document_chunks')
+      .from('smart_chunks')
       .insert(inserts);
 
       if (insertErr) {
