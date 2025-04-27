@@ -6,7 +6,7 @@ import { OpenAIEmbeddings } from '@langchain/openai';
 // --- Configuración ---
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 const embedder = new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY! });
-const MAX_TOKENS_BUDGET = 40000; // 40k tokens para el modelo gpt-4.1-mini
+const MAX_TOKENS_BUDGET = 40000; // Presupuesto total de tokens
 
 // --- Utilidades ---
 function estimateTokens(text: string): number {
@@ -15,237 +15,6 @@ function estimateTokens(text: string): number {
 
 function getSupabase() {
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PRIVATE_SERVICE_KEY!);
-}
-
-// --- API Handler ---
-export async function POST(req: NextRequest) {
-  const start = performance.now();
-
-  try {
-    // 1. Parsear y validar input
-    const { documents, question, userId } = await req.json();
-    if (!question?.trim() || !userId || !Array.isArray(documents)) {
-      console.warn('⚠️ Missing required fields');
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
-
-    const supabase = getSupabase();
-    const publicIds = documents.map(d => d.id);
-
-    console.log('📄 Public document IDs:', publicIds);
-
-    // 2. Embedding de la pregunta
-    const questionEmbedding = await embedder.embedQuery(question);
-    console.log('🔍 Question embedded.');
-
-    // 3. Buscar chunks relevantes en smart_chunks
-    const { data: matches, error: matchError } = await supabase.rpc('match_smart_chunks', {
-      query_embedding: questionEmbedding,
-      match_count: 100,
-      filter_document_ids: publicIds,
-    });
-
-    if (matchError) {
-      console.error('❌ match_smart_chunks failed:', matchError);
-      return NextResponse.json({ error: 'Matching failed' }, { status: 500 });
-    }
-
-    if (!matches || matches.length === 0) {
-      console.warn('⚠️ No matches returned');
-    } else {
-      console.log(`🔎 ${matches.length} match(es) found.`);
-    }
-
-    // 4. Organizar chunks por documento
-    const chunksByDoc: Record<string, any[]> = {};
-    for (const match of matches ?? []) {
-      const docId = match.public_document_id;
-      if (!chunksByDoc[docId]) chunksByDoc[docId] = [];
-      chunksByDoc[docId].push(match);
-    }
-
-    // 5. Traer metadata de documentos para armar nombres amigables
-    const [personalMeta, publicMeta] = await Promise.all([
-      supabase.from('documents').select('id, name').in('id', []), // No personalIds
-      supabase.from('public_documents').select('id, name').in('id', publicIds),
-    ]);
-
-    const titleMap: Record<string, string> = {
-      ...Object.fromEntries((personalMeta.data || []).map((doc: any) => [doc.id, doc.name])),
-      ...Object.fromEntries((publicMeta.data || []).map((doc: any) => [doc.id, doc.name])),
-    };
-
-    // 6. Seleccionar chunks garantizados y sobrantes
-    const guaranteedChunks: any[] = [];
-
-    for (const docId of publicIds) {
-      const matchesForDoc = chunksByDoc[docId] ?? [];
-      if (matchesForDoc.length > 0) {
-        matchesForDoc.sort((a, b) => (b.similarity_score ?? 0) - (a.similarity_score ?? 0));
-        guaranteedChunks.push(matchesForDoc[0]);
-      }
-    }
-
-    const leftoverChunks = (matches ?? [])
-      .filter((match: any) => !guaranteedChunks.includes(match))
-      .sort((a: { similarity_score: any; }, b: { similarity_score: any; }) => (b.similarity_score ?? 0) - (a.similarity_score ?? 0));
-
-// 7. Construir contexto para OpenAI
-const documentSections: string[] = [];
-let totalTokens = 0;
-
-// --- (1) Agregar garantizados primero ---
-for (const match of guaranteedChunks) {
-  const chunkText = formatChunk(match);
-  const chunkTokens = estimateTokens(chunkText);
-
-  // Siempre agregar al menos un chunk por documento, aunque superemos el budget ligeramente
-  if (totalTokens + chunkTokens > MAX_TOKENS_BUDGET && documentSections.length > 0) {
-    console.warn(`⚠️ Budget exceeded while adding guaranteed chunks.`);
-    break;
-  }
-
-  const title = titleMap[match.public_document_id] || `Document ${match.public_document_id}`;
-  const section = `### 📘 ${title}\n\n${chunkText}`;
-  documentSections.push(section);
-  totalTokens += chunkTokens;
-}
-
-// --- (2) Agregar sobrantes SOLO si queda espacio ---
-for (const match of leftoverChunks) {
-  const chunkText = formatChunk(match);
-  const chunkTokens = estimateTokens(chunkText);
-
-  if (totalTokens + chunkTokens > MAX_TOKENS_BUDGET) {
-    console.log(`⚠️ Token budget reached after adding extras.`);
-    break;
-  }
-
-  const title = titleMap[match.public_document_id] || `Document ${match.public_document_id}`;
-  const section = `### 📘 ${title}\n\n${chunkText}`;
-  documentSections.push(section);
-  totalTokens += chunkTokens;
-}
-
-
-// --- Construir el resumen dinámico dinámico mejorado ---
-
-// Documentos incluidos realmente en el contexto
-const documentsIncluded = guaranteedChunks.map(match => match.public_document_id);
-
-// Documentos seleccionados que NO lograron tener chunks garantizados
-const documentsMissing = publicIds.filter(id => !documentsIncluded.includes(id));
-
-// Construir texto
-const documentsCovered = documentsIncluded
-  .map(id => titleMap[id] ? `✅ ${titleMap[id]}` : `✅ Document ${id}`)
-  .join('\n');
-
-const documentsOmitted = documentsMissing.length > 0
-  ? documentsMissing
-      .map(id => titleMap[id] ? `⚠️ ${titleMap[id]}` : `⚠️ Document ${id}`)
-      .join('\n')
-  : '';
-
-const summaryBlock = `
-**Summary:**
-- Documents included:
-${documentsCovered}
-${documentsOmitted ? `\n- Documents NOT included (no excerpts found):\n${documentsOmitted}` : ''}
-- Total excerpts used: ${documentSections.length}
-- Total tokens consumed: ${totalTokens} / ${MAX_TOKENS_BUDGET}
-`.trim();
-
-
-    // --- Crear prompts para OpenAI ---
-    const systemPrompt = `
-You are Ecofilia, an AI expert in sustainability, climate change, and ESG frameworks.
-
-You assist users by analyzing multiple documents at once.
-
-When answering:
-- Use the provided document sections carefully.
-- Always clearly **cite** which document(s) your answer is based on.
-- If the user asks for **each document separately**, answer **document by document**, clearly labeling each.
-- If the user asks a **general question**, **synthesize** insights across documents.
-- If relevant, **quote** key phrases or summaries from the documents.
-- Prefer **detailed** and **comprehensive** answers over brief ones.
-
-**Formatting Guidelines (Markdown):**
-- Use \`###\` for main headings (e.g., per document or per topic).
-- Use \`**bold**\` for document titles, section names, and important terms.
-- Use \`> quotes\` to highlight relevant text excerpts from the documents.
-- Use bullet points \`-\` for lists or multi-part answers.
-- Structure your response into clear sections to maximize readability.
-
-**Prioritize (in this order):**
-1. Factual accuracy.
-2. Clarity and structure.
-3. Completeness and richness of information.
-4. Professional and concise tone.
-
-If you cannot find a direct answer from the documents, **say so clearly** and recommend next steps if possible.
-
-Be accurate, well-organized, and professional, using clear language understandable by non-expert audiences.
-`.trim();
-
-    const userPrompt = documentSections.length > 0
-      ? `
-${summaryBlock}
-
-The following are excerpts from selected documents:
-
-${documentSections.join('\n\n')}
-
-Please answer the following question based on the information above:
-
-**Question:** ${question}
-      `.trim()
-      : `
-The user selected documents, but no relevant excerpts were found.
-
-Please still try to answer the following question if possible:
-
-**Question:** ${question}
-      `.trim();
-
-    // --- Llamar a OpenAI ---
-    console.log('🧠 Calling OpenAI...');
-
-    const openaiStream = await openai.chat.completions.create({
-      model: 'gpt-4.1-mini',
-      stream: true,
-      max_tokens: 16384,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-    });
-
-    // --- Responder como Stream ---
-    const encoder = new TextEncoder();
-    const { readable, writable } = new TransformStream();
-    const writer = writable.getWriter();
-
-    ;(async () => {
-      for await (const chunk of openaiStream) {
-        const content = chunk.choices?.[0]?.delta?.content;
-        if (content) await writer.write(encoder.encode(content));
-      }
-      await writer.close();
-    })();
-
-    console.log(`✅ Response generated in ${(performance.now() - start).toFixed(1)}ms`);
-
-    return new NextResponse(readable, {
-      status: 200,
-      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-    });
-
-  } catch (err) {
-    console.error('🔥 Unhandled error:', err);
-    return NextResponse.json({ error: 'Unexpected server error' }, { status: 500 });
-  }
 }
 
 // --- Helper para formatear cada chunk ---
@@ -279,4 +48,254 @@ function formatChunk(match: any): string {
   }
 
   return parts.join('\n\n');
+}
+
+// --- API Handler ---
+export async function POST(req: NextRequest) {
+  const start = performance.now();
+
+  try {
+    // 1. Parsear y validar input
+    const { documents, question, userId } = await req.json();
+    if (!question?.trim() || !userId || !Array.isArray(documents)) {
+      console.warn('⚠️ Missing required fields');
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    const supabase = getSupabase();
+    const publicIds = documents.map(d => d.id);
+
+    console.log('📄 Public document IDs:', publicIds);
+
+    // 2. Embedding de la pregunta
+    const questionEmbedding = await embedder.embedQuery(question);
+    console.log('🔍 Question embedded.');
+
+    // 3. Traer metadata de documentos para armar nombres amigables
+    const { data: publicMeta, error: publicMetaError } = await supabase
+      .from('public_documents')
+      .select('id, name')
+      .in('id', publicIds);
+
+    if (publicMetaError) {
+      console.error('❌ Error fetching document metadata:', publicMetaError);
+      return NextResponse.json({ error: 'Error fetching document metadata' }, { status: 500 });
+    }
+
+    const titleMap: Record<string, string> = Object.fromEntries(
+      (publicMeta || []).map((doc: any) => [doc.id, doc.name])
+    );
+
+    // 4. Obtener los mejores chunks por documento
+    const perDocumentChunks: any[] = [];
+    const documentsMissing: string[] = [];
+
+    for (const docId of publicIds) {
+      const { data: matches, error } = await supabase.rpc('match_smart_chunks', {
+        query_embedding: questionEmbedding,
+        match_count: 5,
+        filter_document_ids: [docId],
+      });
+
+      if (error) {
+        console.warn(`⚠️ Error fetching matches for document ${docId}:`, error.message);
+        documentsMissing.push(docId);
+        continue;
+      }
+
+      if (!matches || matches.length === 0) {
+        // Si no hay matches, intentar obtener el primer chunk del documento
+        const { data: fallbackChunk, error: fallbackError } = await supabase
+          .from('smart_chunks')
+          .select('*')
+          .eq('public_document_id', docId)
+          .order('chunk_index', { ascending: true })
+          .limit(1)
+          .single();
+
+        if (fallbackError || !fallbackChunk) {
+          console.warn(`⚠️ No fallback chunk found for document ${docId}`);
+          documentsMissing.push(docId);
+          continue;
+        }
+
+        perDocumentChunks.push({ docId, chunks: [fallbackChunk] });
+      } else {
+        perDocumentChunks.push({ docId, chunks: matches });
+      }
+    }
+
+    // 5. Construir contexto para OpenAI
+    const documentSections: string[] = [];
+    let totalTokens = 0;
+
+    // --- (1) Agregar chunks por documento ---
+    for (const { docId, chunks } of perDocumentChunks) {
+      const title = titleMap[docId] || `Document ${docId}`;
+      const topChunks = chunks.slice(0, 3); // Al menos 3 chunks por documento
+
+      for (const match of topChunks) {
+        const chunkText = formatChunk(match);
+        const chunkTokens = estimateTokens(chunkText);
+
+        if (totalTokens + chunkTokens > MAX_TOKENS_BUDGET) {
+          console.warn(`⚠️ Token budget exceeded while adding chunks for document ${docId}`);
+          break;
+        }
+
+        const section = `### 📘 ${title}\n\n${chunkText}`;
+        documentSections.push(section);
+        totalTokens += chunkTokens;
+      }
+    }
+
+    // --- (2) Agregar chunks adicionales globales si queda espacio ---
+    const { data: globalMatches, error: globalMatchError } = await supabase.rpc('match_smart_chunks', {
+      query_embedding: questionEmbedding,
+      match_count: 100,
+      filter_document_ids: publicIds,
+    });
+
+    if (globalMatchError) {
+      console.error('❌ Error fetching global matches:', globalMatchError);
+      return NextResponse.json({ error: 'Error fetching global matches' }, { status: 500 });
+    }
+
+    const usedChunkIds = new Set(
+      perDocumentChunks.flatMap(({ chunks }) => chunks.map((chunk: any) => chunk.id))
+    );
+
+    const additionalChunks = (globalMatches || [])
+      .filter((match: any) => !usedChunkIds.has(match.id))
+      .sort((a: any, b: any) => (b.similarity_score ?? 0) - (a.similarity_score ?? 0));
+
+    for (const match of additionalChunks) {
+      const chunkText = formatChunk(match);
+      const chunkTokens = estimateTokens(chunkText);
+
+      if (totalTokens + chunkTokens > MAX_TOKENS_BUDGET) {
+        console.log(`⚠️ Token budget reached after adding additional chunks.`);
+        break;
+      }
+
+      const title = titleMap[match.public_document_id] || `Document ${match.public_document_id}`;
+      const section = `### 📘 ${title}\n\n${chunkText}`;
+      documentSections.push(section);
+      totalTokens += chunkTokens;
+    }
+
+    // --- Construir el resumen dinámico ---
+    const documentsIncluded = perDocumentChunks.map(({ docId }) => docId);
+
+    const documentsCovered = documentsIncluded
+      .map(id => titleMap[id] ? `✅ ${titleMap[id]}` : `✅ Document ${id}`)
+      .join('\n');
+
+    const documentsOmitted = documentsMissing.length > 0
+      ? documentsMissing
+          .map(id => titleMap[id] ? `⚠️ ${titleMap[id]}` : `⚠️ Document ${id}`)
+          .join('\n')
+      : '';
+
+    const summaryBlock = `
+**Resumen:**
+- Documentos incluidos:
+${documentsCovered}
+${documentsOmitted ? `\n- Documentos NO incluidos (no se encontraron fragmentos relevantes):\n${documentsOmitted}` : ''}
+- Total de fragmentos utilizados: ${documentSections.length}
+- Total de tokens consumidos: ${totalTokens} / ${MAX_TOKENS_BUDGET}
+`.trim();
+
+    // --- Crear prompts para OpenAI ---
+    const systemPrompt = `
+Eres Ecofilia, una experta en sostenibilidad, cambio climático y marcos ESG.
+
+Asistes a los usuarios analizando múltiples documentos a la vez.
+
+Al responder:
+- Utiliza cuidadosamente las secciones de documentos proporcionadas.
+- Siempre **cita claramente** en qué documento(s) se basa tu respuesta.
+- Si el usuario pregunta por **cada documento por separado**, responde **documento por documento**, etiquetando claramente cada uno.
+- Si el usuario hace una **pregunta general**, **sintetiza** ideas entre documentos.
+- Si es relevante, **cita** frases clave o resúmenes de los documentos.
+- Prefiere respuestas **detalladas** y **completas** sobre respuestas breves.
+
+**Guías de formato (Markdown):**
+- Usa \`###\` para encabezados principales (por ejemplo, por documento o por tema).
+- Usa \`**negrita**\` para títulos de documentos, nombres de secciones y términos importantes.
+- Usa \`> citas\` para resaltar fragmentos de texto relevantes de los documentos.
+- Usa viñetas \`-\` para listas o respuestas de múltiples partes.
+- Estructura tu respuesta en secciones claras para maximizar la legibilidad.
+
+**Prioriza (en este orden):**
+1. Precisión factual.
+2. Claridad y estructura.
+3. Integridad y riqueza de información.
+4. Tono profesional y conciso.
+
+Si no puedes encontrar una respuesta directa en los documentos, **indícalo claramente** y recomienda los próximos pasos si es posible.
+
+Sé precisa, bien organizada y profesional, utilizando un lenguaje claro comprensible para audiencias no expertas.
+`.trim();
+
+    const userPrompt = documentSections.length > 0
+      ? `
+${summaryBlock}
+
+A continuación se presentan fragmentos de los documentos seleccionados:
+
+${documentSections.join('\n\n')}
+
+Por favor, responde la siguiente pregunta basándote en la información anterior:
+
+**Pregunta:** ${question}
+      `.trim()
+      : `
+El usuario seleccionó documentos, pero no se encontraron fragmentos relevantes.
+
+Por favor, intenta responder la siguiente pregunta si es posible:
+
+**Pregunta:** ${question}
+      `.trim();
+
+    // --- Llamar a OpenAI ---
+    // --- Llamar a OpenAI ---
+    console.log('🧠 Llamando a OpenAI...');
+
+    const openaiStream = await openai.chat.completions.create({
+      model: 'gpt-4.1-mini',
+      stream: true,
+      max_tokens: 16384,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+    });
+
+    // --- Responder como Stream ---
+    const encoder = new TextEncoder();
+    const { readable, writable } = new TransformStream();
+    const writer = writable.getWriter();
+
+    (async () => {
+      for await (const chunk of openaiStream) {
+        const content = chunk.choices?.[0]?.delta?.content;
+        if (content) {
+          await writer.write(encoder.encode(content));
+        }
+      }
+      await writer.close();
+    })();
+
+    console.log(`✅ Response generated in ${(performance.now() - start).toFixed(1)}ms`);
+
+    return new NextResponse(readable, {
+      status: 200,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    });
+
+  } catch (err) {
+    console.error('🔥 Unhandled error:', err);
+    return NextResponse.json({ error: 'Unexpected server error' }, { status: 500 });
+  }
 }
