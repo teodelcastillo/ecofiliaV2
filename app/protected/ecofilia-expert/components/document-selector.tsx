@@ -89,16 +89,22 @@ export function DocumentSelector({
           )}
         </div>
 
-        {selectedDocuments.length > 0 && (
-          <div className="mt-2 flex justify-between items-center bg-secondary/50 p-2 rounded-md">
-            <span className="text-xs text-muted-foreground">
-              {selectedDocuments.length} selected
-            </span>
-            <Button variant="ghost" size="sm" onClick={clearSelection}>
-              Clear
-            </Button>
-          </div>
-        )}
+        <div className="mt-2 flex justify-between items-center bg-secondary/50 p-2 rounded-md">
+  {selectedDocuments.length === 0 ? (
+    <span className="text-xs text-muted-foreground">No documents selected</span>
+  ) : (
+    <span className="text-xs text-muted-foreground">
+      {selectedDocuments.length} {selectedDocuments.length === 1 ? "document" : "documents"} selected
+    </span>
+  )}
+  
+  {selectedDocuments.length > 0 && (
+    <Button variant="ghost" size="sm" onClick={clearSelection}>
+      Clear
+    </Button>
+  )}
+</div>
+
       </CardHeader>
 
       <CardContent className="p-0 px-4 pb-4">

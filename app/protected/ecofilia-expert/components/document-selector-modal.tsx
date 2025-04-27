@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { motion } from "framer-motion"
 import type { Document, Project } from "@/models"
 import { usePublicDocuments } from "@/hooks/usePublicDocuments"
 import { DocumentList, ProjectList } from "./DocumentLists"
@@ -70,6 +69,9 @@ export function DocumentSelectorModal({
       (project.documents ?? []).some((doc) => doc.name?.toLowerCase().includes(searchQuery.toLowerCase())),
   )
 
+  function clearSelection(): void {
+    setLocalSelectedDocs([]);
+  }
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[80vh]">
@@ -101,16 +103,32 @@ export function DocumentSelectorModal({
           )}
         </div>
 
-        {localSelectedDocs.length > 0 && (
-          <div className="flex justify-between items-center bg-muted/50 p-2 rounded-md mt-2">
-            <span className="text-xs">
-              {localSelectedDocs.length} selected
-            </span>
-            <Button variant="ghost" size="sm" onClick={() => setLocalSelectedDocs([])}>
-              Clear
-            </Button>
-          </div>
-        )}
+<div className="mt-2 flex justify-between items-center bg-secondary/50 p-2 rounded-md">
+  {localSelectedDocs.length === 0 ? (
+    <span className="text-xs text-muted-foreground">No documents selected</span>
+  ) : (
+    <span className="text-xs text-muted-foreground">
+      {localSelectedDocs.length} {localSelectedDocs.length === 1 ? "document" : "documents"} selected
+    </span>
+  )}
+  
+  {localSelectedDocs.length > 0 && (
+    <Button variant="ghost" size="sm" onClick={clearSelection}>
+      Clear
+    </Button>
+  )}
+</div>
+  
+  
+          <div className="mt-2 flex justify-between items-center bg-secondary/50 p-2 rounded-md">
+  
+  {selectedDocuments.length > 0 && (
+    <Button variant="ghost" size="sm" onClick={clearSelection}>
+      Clear
+    </Button>
+  )}
+</div>
+
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-auto mt-2">
           <TabsList className="grid grid-cols-3">
@@ -169,7 +187,7 @@ export function DocumentSelectorModal({
           </span>
           <div className="flex gap-2">
             <Button variant="outline" onClick={onClose}>Cancel</Button>
-            <Button onClick={handleApply} disabled={localSelectedDocs.length === 0}>Apply</Button>
+            <Button onClick={handleApply}>Apply</Button>
           </div>
         </DialogFooter>
       </DialogContent>
