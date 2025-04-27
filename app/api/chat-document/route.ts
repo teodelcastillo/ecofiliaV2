@@ -128,17 +128,34 @@ for (const match of leftoverChunks) {
 }
 
 
-    // --- Construir el resumen dinámico ---
-    const documentsCovered = publicIds
-      .map(id => titleMap[id] ? titleMap[id] : `Document ${id}`)
-      .join(', ');
+// --- Construir el resumen dinámico dinámico mejorado ---
 
-    const summaryBlock = `
+// Documentos incluidos realmente en el contexto
+const documentsIncluded = guaranteedChunks.map(match => match.public_document_id);
+
+// Documentos seleccionados que NO lograron tener chunks garantizados
+const documentsMissing = publicIds.filter(id => !documentsIncluded.includes(id));
+
+// Construir texto
+const documentsCovered = documentsIncluded
+  .map(id => titleMap[id] ? `✅ ${titleMap[id]}` : `✅ Document ${id}`)
+  .join('\n');
+
+const documentsOmitted = documentsMissing.length > 0
+  ? documentsMissing
+      .map(id => titleMap[id] ? `⚠️ ${titleMap[id]}` : `⚠️ Document ${id}`)
+      .join('\n')
+  : '';
+
+const summaryBlock = `
 **Summary:**
-- Documents covered: ${documentsCovered}
+- Documents included:
+${documentsCovered}
+${documentsOmitted ? `\n- Documents NOT included (no excerpts found):\n${documentsOmitted}` : ''}
 - Total excerpts used: ${documentSections.length}
 - Total tokens consumed: ${totalTokens} / ${MAX_TOKENS_BUDGET}
 `.trim();
+
 
     // --- Crear prompts para OpenAI ---
     const systemPrompt = `
