@@ -4,12 +4,10 @@
 import { useEffect, useState } from "react"
 import { createClient } from "@/utils/supabase/client"
 import type { Document } from "@/models"
-import {
-    PublicDocumentCategory
-} from "@/types/categories"
+import { PublicDocumentCategory } from "@/types/categories"
 
 interface UsePublicDocumentsOptions {
-  category?:  PublicDocumentCategory | null
+  category?: PublicDocumentCategory | null
   search?: string
   page?: number
   pageSize?: number
@@ -35,13 +33,17 @@ export function usePublicDocuments({
       const supabase = createClient()
       let query = supabase
         .from("public_documents")
-        .select("id, name, category, created_at, file_url", { count: "exact" }) // 👈 count enabled
+        .select("id, name, category, created_at, file_url", { count: "exact" })
         .order("created_at", { ascending: true })
 
-      if (search) {
-        query = query.or(`name.ilike.%${search}%`)
-      } else if (category) {
+      // Aplicar siempre primero categoría si está presente
+      if (category) {
         query = query.eq("category", category)
+      }
+
+      // Aplicar búsqueda siempre si está presente
+      if (search) {
+        query = query.ilike("name", `%${search}%`)
       }
 
       const from = page * pageSize
@@ -56,7 +58,7 @@ export function usePublicDocuments({
       } else {
         setDocuments((prev) => (page === 0 ? data || [] : [...prev, ...(data || [])]))
         setHasMore((data?.length || 0) === pageSize)
-        setTotalCount(count ?? undefined) // 👈 new
+        setTotalCount(count ?? undefined)
       }
 
       setLoading(false)
@@ -78,4 +80,4 @@ export function usePublicDocuments({
     hasMore: boolean
     totalCount?: number
   }
-  }
+}
