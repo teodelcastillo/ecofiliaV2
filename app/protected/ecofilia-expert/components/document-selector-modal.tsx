@@ -104,31 +104,27 @@ export function DocumentSelectorModal({
           )}
         </div>
 
-<div className="mt-2 flex justify-between items-center bg-secondary/50 p-2 rounded-md">
-  {localSelectedDocs.length === 0 ? (
-    <span className="text-xs text-muted-foreground">No documents selected</span>
-  ) : (
-    <span className="text-xs text-muted-foreground">
-      {localSelectedDocs.length} {localSelectedDocs.length === 1 ? "document" : "documents"} selected
-    </span>
-  )}
-  
-  {localSelectedDocs.length > 0 && (
-    <Button variant="ghost" size="sm" onClick={clearSelection}>
-      Clear
-    </Button>
-  )}
-</div>
-  
-  
-          <div className="mt-2 flex justify-between items-center bg-secondary/50 p-2 rounded-md">
-  
-  {selectedDocuments.length > 0 && (
-    <Button variant="ghost" size="sm" onClick={clearSelection}>
-      Clear
-    </Button>
-  )}
-</div>
+        <div className="mt-2 flex justify-between items-center bg-secondary/50 p-2 rounded-md">
+          {localSelectedDocs.length === 0 ? (
+            <span className="text-xs text-muted-foreground">No documents selected </span>
+          ) : (
+            <span className="text-xs text-muted-foreground">
+              {localSelectedDocs.length} {localSelectedDocs.length === 1 ? "document" : "documents"} selected
+            </span>
+            
+          )}
+          
+          {localSelectedDocs.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={clearSelection}>
+              Clear
+            </Button>
+          )}
+        </div>          
+          {selectedDocuments.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={clearSelection}>
+              Clear
+            </Button>
+          )}
 
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-auto mt-2">
