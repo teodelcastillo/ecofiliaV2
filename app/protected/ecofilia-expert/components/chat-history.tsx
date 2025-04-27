@@ -9,11 +9,11 @@ import { Input } from "@/components/ui/input"
 import { motion, AnimatePresence } from "framer-motion"
 import { format } from "date-fns"
 
+// Nuevo tipo para alinear con tu tabla real de Supabase
 interface ChatSession {
   id: string
   title: string
-  preview: string
-  date: Date
+  createdAt: Date
 }
 
 interface ChatHistoryProps {
@@ -26,15 +26,13 @@ interface ChatHistoryProps {
 export function ChatHistory({ sessions, activeSession, onSelectSession, onNewChat }: ChatHistoryProps) {
   const [searchQuery, setSearchQuery] = useState("")
 
-  const filteredSessions = sessions.filter(
-    (session) =>
-      session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      session.preview.toLowerCase().includes(searchQuery.toLowerCase()),
+  const filteredSessions = sessions.filter((session) =>
+    session.title.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   return (
-<Card className="h-[calc(100vh-12rem)] shadow-md border-border/50 w-full max-w-sm">
-<CardHeader className="pb-3">
+    <Card className="h-[calc(100vh-12rem)] shadow-md border-border/50 w-full max-w-sm">
+      <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
           <CardTitle className="text-xl font-semibold flex items-center gap-2">
             <History className="h-5 w-5 text-primary" />
@@ -104,10 +102,9 @@ export function ChatHistory({ sessions, activeSession, onSelectSession, onNewCha
                     >
                       <div className="flex flex-col gap-1">
                         <h3 className="text-sm font-medium truncate">{session.title}</h3>
-                        <p className="text-xs text-muted-foreground line-clamp-2">{session.preview}</p>
                         <div className="flex items-center mt-1 text-xs text-muted-foreground">
                           <Clock className="h-3 w-3 mr-1" />
-                          {format(session.date, "MMM d, yyyy • h:mm a")}
+                          {format(session.createdAt, "MMM d, yyyy • h:mm a")}
                         </div>
                       </div>
                     </div>
