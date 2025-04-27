@@ -36,7 +36,6 @@ export function DocumentChat({ personalDocuments, publicDocuments, userId, proje
   const [chatSessions, setChatSessions] = useState<{ id: string; title: string; preview: string; date: Date }[]>([])
   const [activeSession, setActiveSession] = useState<string | null>(null)
 
-  const session = useSession()
   const { toast } = useToast()
   const isMobile = useMediaQuery("(max-width: 1023px)")
 

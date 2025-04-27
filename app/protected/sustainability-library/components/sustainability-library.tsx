@@ -91,11 +91,10 @@ export function SustainabilityLibrary({ initialCategory = null }: Sustainability
           </div>
           {hasMore && (
             <div className="text-center mt-6">
-                      <p className="text-muted-foreground">
-          {selectedCategory
-            ? `Showing all sustainability documents under ${selectedCategory} category.`
-            : "Showing all available sustainability documents."}
-        </p>
+        <div className="text-sm text-muted-foreground mb-4">
+          Showing {currentCount} document{currentCount !== 1 ? "s" : ""}{" "}
+          {totalCount !== undefined ? `from ${totalCount} total` : ""}
+        </div>
               <Button onClick={handleLoadMore} disabled={loading}>
                 {loading ? "Loading..." : "Load More"}
               </Button>
