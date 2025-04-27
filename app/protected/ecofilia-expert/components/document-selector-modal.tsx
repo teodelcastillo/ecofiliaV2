@@ -18,6 +18,7 @@ interface DocumentSelectorModalProps {
   projects?: Project[]
   selectedDocuments: Document[]
   onDocumentsSelected: (documents: Document[]) => void
+  publicDocuments?: Document[]
 }
 
 export function DocumentSelectorModal({
