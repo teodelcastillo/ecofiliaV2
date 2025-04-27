@@ -86,44 +86,53 @@ export async function POST(req: NextRequest) {
       (publicMeta || []).map((doc: any) => [doc.id, doc.name])
     );
 
-    // 4. Obtener los mejores chunks por documento
-    const perDocumentChunks: any[] = [];
+    // 4. Obtener los mejores chunks por documento (en paralelo)
     const documentsMissing: string[] = [];
 
-    for (const docId of publicIds) {
-      const { data: matches, error } = await supabase.rpc('match_smart_chunks', {
-        query_embedding: questionEmbedding,
-        match_count: 5,
-        filter_document_ids: [docId],
-      });
+    const chunkResults = await Promise.all(
+      publicIds.map(async (docId) => {
+        try {
+          // Hacer match_smart_chunks para cada documento
+          const { data: matches, error } = await supabase.rpc('match_smart_chunks', {
+            query_embedding: questionEmbedding,
+            match_count: 5,
+            filter_document_ids: [docId],
+          });
 
-      if (error) {
-        console.warn(`⚠️ Error fetching matches for document ${docId}:`, error.message);
-        documentsMissing.push(docId);
-        continue;
-      }
+          if (error || !matches || matches.length === 0) {
+            console.warn(`⚠️ No good matches for document ${docId}. Trying fallback...`);
 
-      if (!matches || matches.length === 0) {
-        // Si no hay matches, intentar obtener el primer chunk del documento
-        const { data: fallbackChunk, error: fallbackError } = await supabase
-          .from('smart_chunks')
-          .select('*')
-          .eq('public_document_id', docId)
-          .order('chunk_index', { ascending: true })
-          .limit(1)
-          .single();
+            // Buscar el primer chunk como fallback si no hay matches
+            const { data: fallbackChunk, error: fallbackError } = await supabase
+              .from('smart_chunks')
+              .select('*')
+              .eq('public_document_id', docId)
+              .order('chunk_index', { ascending: true })
+              .limit(1)
+              .single();
 
-        if (fallbackError || !fallbackChunk) {
-          console.warn(`⚠️ No fallback chunk found for document ${docId}`);
+            if (fallbackError || !fallbackChunk) {
+              console.warn(`⚠️ No fallback chunk found for document ${docId}`);
+              documentsMissing.push(docId);
+              return null;
+            }
+
+            return { docId, chunks: [fallbackChunk] };
+          }
+
+          // Matches exitosos
+          return { docId, chunks: matches };
+        } catch (err) {
+          console.error(`🔥 Error fetching chunks for document ${docId}:`, err);
           documentsMissing.push(docId);
-          continue;
+          return null;
         }
+      })
+    );
 
-        perDocumentChunks.push({ docId, chunks: [fallbackChunk] });
-      } else {
-        perDocumentChunks.push({ docId, chunks: matches });
-      }
-    }
+    // Filtrar nulos (documentos que no se pudieron recuperar)
+    const perDocumentChunks = chunkResults.filter((result) => result !== null);
+
 
     // 5. Construir contexto para OpenAI
     const documentSections: string[] = [];
