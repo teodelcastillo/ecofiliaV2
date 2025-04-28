@@ -188,7 +188,7 @@ export async function POST(req: NextRequest) {
 
     const questionEmbedding = await embedder.embedQuery('Generate report content')
 
-    const { data: matches, error: matchError } = await supabase.rpc('match_document_chunks', {
+    const { data: matches, error: matchError } = await supabase.rpc('match_smart_chunks', {
       query_embedding: questionEmbedding,
       match_count: 60,
       filter_document_ids: documentIds,

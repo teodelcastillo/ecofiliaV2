@@ -153,7 +153,7 @@ export async function POST(req) {
 
     console.log("💾 Inserting chunks into database...");
     const { error: insertError } = await supabase
-      .from("document_chunks")
+      .from("smart_chunks")
       .insert(chunksToInsert);
 
     if (insertError) {

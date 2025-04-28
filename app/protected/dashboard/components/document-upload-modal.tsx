@@ -83,10 +83,7 @@ export function DocumentUploadModal({ isOpen, onClose, userId, onSuccess }: Docu
       if (fileInputRef.current) fileInputRef.current.value = ""
       onClose()
 
-      // Optional: reload to refresh list
-      setTimeout(() => {
-        window.location.reload()
-      }, 500)
+
     } catch (error) {
       console.error("❌ Error uploading or processing document:", error)
       toast({

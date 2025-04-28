@@ -1,3 +1,4 @@
+// hooks/upload-and-process-document.ts
 import { createClient } from "@/utils/supabase/client";
 
 export async function uploadAndProcessDocument({
@@ -40,42 +41,29 @@ export async function uploadAndProcessDocument({
       category: category || null,
       file_path: filePath,
       user_id: userId,
-      chunking_status: "pending", // ✅ clave
+      chunking_status: "pending",
     })
     .select()
     .single();
 
-
   if (error) throw error;
 
-  // 🔁 Solo disparamos el primer paso: extracción de texto
-  fetch("/api/extract-text", {
+  // ⏳ Paso 1: extracción de texto
+  await fetch("/api/extract-text", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       documentId: data.id,
       type: "user",
     }),
-  }).catch((err) => {
-    console.warn("⚠️ Error starting extraction:", err);
   });
-  // 🔁 Paso 1: extracción de texto
-await fetch("/api/extract-text", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    documentId: data.id,
-    type: "user",
-  }),
-});
 
-// ⏳ Paso 2: iniciar chunking inicial (procesa solo 1 bloque)
-await fetch("/api/chunk-openai", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ documentId: data.id }),
-});
-
+  // ⏳ Paso 2: chunking y embeddings locales
+  await fetch("/api/chunk-local", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ documentId: data.id }),
+  });
 
   return data;
 }
