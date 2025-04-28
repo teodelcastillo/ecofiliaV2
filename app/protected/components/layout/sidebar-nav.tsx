@@ -12,12 +12,12 @@ import {
   ChevronDown,
   Zap,
   Folder,
-  Leaf,
+  
   MessageCircle,
   LibraryBig,
   Home,
   UsersRound,
-  UserRoundCog,
+  
   ChartSpline
 } from "lucide-react"
 import {
@@ -68,7 +68,7 @@ const menuItems: MenuItem[] = [
     submenu: [
       { icon: GiMonsteraLeaf, label: "Sustainability Library", href: "/protected/sustainability-library" },
       { icon: LibraryBig, label: "My Library", href: "/protected/my-library" },
-      { icon: Folder, label: "Projects", href: "/protected/projects" },
+      { icon: Folder, label: "Projects", href: "/protected/projects" }, 
       { icon: MessageCircle, label: "Ecofilia Assistant", href: "/protected/ecofilia-expert" },
       { icon: TbReportAnalytics, label: "Reports", href: "/protected/reports" },
       { icon: ChartSpline, label: "Analytics", href: "/protected/analytics" },
@@ -87,12 +87,18 @@ export function Sidebar() {
   const { state } = useSidebar()
   const isCollapsed = state === "collapsed"
 
-  // Check if a path is active (exact match or starts with path for nested routes)
   const isActive = (href: string) => {
-    if (href === "/protected/" && pathname === "/protected") {
-      return true
+    const cleanedPathname = pathname?.replace(/\/$/, "")
+    const cleanedHref = href.replace(/\/$/, "")
+  
+    if (cleanedPathname === cleanedHref) return true
+  
+    if (cleanedHref === "/protected") {
+      // 👈 Home SOLO se activa con exact match
+      return false
     }
-    return pathname === href || pathname?.startsWith(`${href}/`)
+  
+    return cleanedPathname?.startsWith(cleanedHref + "/")
   }
 
   // Toggle dropdown state
