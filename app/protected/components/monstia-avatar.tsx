@@ -16,7 +16,7 @@ export function MonstiaAvatar({ size = "md", showFallback = false }: MonstiaAvat
 
   return (
     <Avatar className={sizeClass}>
-      <AvatarImage src="/monstia.png" alt="Monstia" />
+      <AvatarImage src="/ECOFILIAIA.png" alt="Ecofilia" />
       {showFallback && (
         <AvatarFallback className="bg-primary/10 text-primary">M</AvatarFallback>
       )}
