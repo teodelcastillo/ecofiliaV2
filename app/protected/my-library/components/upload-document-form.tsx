@@ -15,7 +15,7 @@ interface UploadDocumentFormProps {
   onSuccess: (document: any) => void
 }
 
-export function UploadDocumentForm({ userId, onSuccess }: UploadDocumentFormProps) {
+export function UploadDocumentForm({ onSuccess }: UploadDocumentFormProps) {
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [category, setCategory] = useState("")
@@ -27,6 +27,24 @@ export function UploadDocumentForm({ userId, onSuccess }: UploadDocumentFormProp
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      setFile(selectedFile);
+  
+      if (!name) {
+        setName(selectedFile.name.split(".")[0]);
+      }
+  
+      // 📢 Aviso si el documento es grande (>5 MB)
+      if (selectedFile.size > 5 * 1024 * 1024) { // 5 MB en bytes
+        toast({
+          title: "Large document detected",
+          description: "Processing will be limited to the first 50 sections for faster performance.",
+          variant: "default",
+        });
+      }
+    }
+
+      if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0]
       setFile(selectedFile)
 

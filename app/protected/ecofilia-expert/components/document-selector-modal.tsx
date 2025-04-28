@@ -17,7 +17,7 @@ interface DocumentSelectorModalProps {
   personalDocuments: Document[]
   projects?: Project[]
   selectedDocuments: Document[]
-  onDocumentsSelected: (documents: Document[]) => void
+  onDocumentsSelected: (documents: (Document & { type: "user" | "public" })[]) => void
   publicDocuments?: Document[]
 }
 
@@ -28,6 +28,7 @@ export function DocumentSelectorModal({
   projects = [],
   selectedDocuments,
   onDocumentsSelected,
+  
 }: DocumentSelectorModalProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState("personal")
@@ -56,7 +57,7 @@ export function DocumentSelectorModal({
   }
 
   const handleApply = () => {
-    onDocumentsSelected(localSelectedDocs)
+    onDocumentsSelected(localSelectedDocs.map(doc => ({ ...doc, type: doc.type as "public" | "user" })))
     onClose()
   }
 

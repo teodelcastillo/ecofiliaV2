@@ -2,64 +2,92 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { pipeline } from "@xenova/transformers";
-import * as tiktoken from "tiktoken";
+import { OpenAIEmbeddings } from "@langchain/openai";
+import { v4 as uuidv4 } from "uuid";
 
-const tokenizer = tiktoken.get_encoding("cl100k_base");
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PRIVATE_SERVICE_KEY!
 );
 
-// Lista de palabras comunes que queremos ignorar para keywords
-const STOPWORDS = new Set([
-  "the", "and", "for", "are", "with", "this", "that", "from", "have",
-  "has", "was", "were", "been", "will", "shall", "can", "could", "would",
-  "should", "on", "in", "at", "of", "to", "a", "an", "is", "it", "as", "by",
-  "we", "you", "your", "our", "their", "there", "be", "or", "but", "if",
-]);
+// Configuración
+const MAX_CHUNKS_TO_PROCESS = 50;
+const EMBEDDING_BATCH_SIZE = 50;
 
+const embedder = new OpenAIEmbeddings({
+  openAIApiKey: process.env.OPENAI_API_KEY!,
+});
+
+// Estimar tokens por longitud (sencillo, rápido y serverless-friendly)
 function countTokens(text: string) {
-  return tokenizer.encode(text).length;
+  return Math.ceil(text.length / 4);
 }
 
-function chunkText(text: string, maxLength: number) {
-  const chunks = [];
-  for (let i = 0; i < text.length; i += maxLength) {
-    chunks.push(text.slice(i, i + maxLength));
+// Chunkear texto basado en longitud
+function chunkText(text: string, chunkSizeTokens = 400, overlapTokens = 100): string[] {
+  const estimatedTokens = Math.ceil(text.length / 4);
+  const approxChunkSizeChars = Math.ceil((chunkSizeTokens / estimatedTokens) * text.length);
+
+  const chunks: string[] = [];
+  let i = 0;
+
+  while (i < text.length) {
+    const chunk = text.slice(i, i + approxChunkSizeChars);
+    chunks.push(chunk.trim());
+    i += approxChunkSizeChars - Math.floor(overlapTokens / 4);
   }
+
   return chunks;
 }
 
-// Generador rápido de title (primeras 7 palabras)
+// Crear título, resumen y keywords rápidamente
 function generateTitle(text: string) {
-  const words = text.split(/\s+/).slice(0, 7).join(" ");
-  return words.trim();
+  return text.split(/\s+/).slice(0, 7).join(" ").trim();
 }
 
-// Generador rápido de summary (primeras 25 palabras)
 function generateSummary(text: string) {
-  const words = text.split(/\s+/).slice(0, 25).join(" ");
-  return words.trim();
+  return text.split(/\s+/).slice(0, 25).join(" ").trim();
 }
 
-// Generador rápido de keywords
-function generateKeywords(text: string) {
-  const words = text.toLowerCase().match(/\b\w+\b/g) || [];
-  const freq: Record<string, number> = {};
-
-  for (const word of words) {
-    if (!STOPWORDS.has(word) && word.length > 2) {
-      freq[word] = (freq[word] || 0) + 1;
+function generateKeywords(text: string): string[] {
+    const words = text.toLowerCase().match(/\b\w+\b/g) || [];
+    const STOPWORDS = new Set([
+      "the", "and", "for", "are", "with", "this", "that", "from", "have",
+      "has", "was", "were", "been", "will", "shall", "can", "could", "would",
+      "should", "on", "in", "at", "of", "to", "a", "an", "is", "it", "as", "by",
+      "we", "you", "your", "our", "their", "there", "be", "or", "but", "if",
+    ]);
+    const freq: Record<string, number> = {};
+  
+    for (const word of words) {
+      if (!STOPWORDS.has(word) && word.length > 2) {
+        freq[word] = (freq[word] || 0) + 1;
+      }
     }
+  
+    return Object.entries(freq)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 7)
+      .map(([word]) => word); // 👈 No join, devolver array real
+  }
+  
+
+// Batching de embeddings + procesamiento paralelo
+async function embedChunksInBatches(chunks: string[], batchSize = EMBEDDING_BATCH_SIZE) {
+  const batchPromises = [];
+
+  for (let i = 0; i < chunks.length; i += batchSize) {
+    const batch = chunks.slice(i, i + batchSize);
+    batchPromises.push(embedder.embedDocuments(batch));
   }
 
-  const sorted = Object.entries(freq).sort((a, b) => b[1] - a[1]);
-  const keywords = sorted.slice(0, 7).map(([word]) => word);
-  return keywords.join(", ");
+  const batchResults = await Promise.all(batchPromises);
+  return batchResults.flat(); // Unificar todos los embeddings
 }
 
 export async function POST(req: Request) {
+  const startTime = performance.now();
+
   try {
     const { documentId } = await req.json();
 
@@ -77,42 +105,49 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Document not found or no extracted text" }, { status: 404 });
     }
 
-    const text = document.extracted_text;
-    const chunks = chunkText(text, 1000);
+    console.log(`📄 Extracted text length: ${document.extracted_text.length}`);
 
-    const embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+    const chunkingStart = performance.now();
+    const chunks = chunkText(document.extracted_text);
+    console.log(`🧩 Chunks generated: ${chunks.length}`);
+    console.log(`⏱️ Chunking time: ${(performance.now() - chunkingStart).toFixed(1)} ms`);
 
-    const insertedChunks = [];
-
-    for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i];
-      const tokenCount = countTokens(chunk);
-
-      const embeddingResult = await embedder(chunk, { pooling: 'mean' });
-      const embeddingVector = Array.from(embeddingResult.data);
-
-      insertedChunks.push({
-        public_document_id: documentId,
-        chunk_index: i,
-        content: chunk,
-        token_count: tokenCount,
-        title: generateTitle(chunk),
-        summary: generateSummary(chunk),
-        keywords: generateKeywords(chunk),
-        embedding: embeddingVector,
-      });
+    const limitedChunks = chunks.slice(0, MAX_CHUNKS_TO_PROCESS);
+    if (chunks.length > MAX_CHUNKS_TO_PROCESS) {
+      console.warn(`⚠️ Limiting to first ${MAX_CHUNKS_TO_PROCESS} chunks to avoid timeout.`);
     }
+
+    const embeddingStart = performance.now();
+    const embeddings = await embedChunksInBatches(limitedChunks);
+    console.log(`🧠 Embeddings generated for ${embeddings.length} chunks.`);
+    console.log(`⏱️ Embedding time (parallelized): ${(performance.now() - embeddingStart).toFixed(1)} ms`);
+
+    const insertedChunks = limitedChunks.map((chunk, i) => ({
+      id: uuidv4(),
+      public_document_id: null,
+      document_id: documentId,
+      chunk_index: i,
+      content: chunk,
+      token_count: countTokens(chunk),
+      title: generateTitle(chunk),
+      summary: generateSummary(chunk),
+      keywords: generateKeywords(chunk),
+      embedding: embeddings[i],
+      created_at: new Date().toISOString(),
+    }));
 
     const { error: insertError } = await supabase.from("smart_chunks").insert(insertedChunks);
 
     if (insertError) {
-      console.error("Error inserting chunks:", insertError);
+      console.error("❌ Error inserting chunks:", insertError);
       return NextResponse.json({ error: "Failed to insert chunks" }, { status: 500 });
     }
 
     await supabase.from("documents").update({ chunking_status: "done" }).eq("id", documentId);
 
-    return NextResponse.json({ success: true, chunkCount: chunks.length });
+    console.log(`✅ Total processing time: ${(performance.now() - startTime).toFixed(1)} ms`);
+
+    return NextResponse.json({ success: true, chunksInserted: insertedChunks.length });
   } catch (err) {
     console.error("🔥 Unexpected error:", err);
     return NextResponse.json({ error: "Unexpected server error" }, { status: 500 });
