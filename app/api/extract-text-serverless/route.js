@@ -8,8 +8,6 @@ import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import OpenAI from "openai";
 
-// ...todo lo demás igual
-
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,

@@ -24,8 +24,13 @@ export async function uploadAndProcessDocument({
   }
 
   const userId = user.id;
-  const fileExt = file.name.split(".").pop();
-  const filePath = `${userId}/${Date.now()}.${fileExt}`;
+  const allowedExtensions = ["pdf", "docx", "xlsx"];
+  const fileExt = file.name.split(".").pop()?.toLowerCase();
+  
+  if (!fileExt || !allowedExtensions.includes(fileExt)) {
+    throw new Error("Unsupported file type. Please upload a PDF, Word (.docx), or Excel (.xlsx) file.");
+  }
+    const filePath = `${userId}/${Date.now()}.${fileExt}`;
 
   const { error: uploadError } = await supabase.storage
     .from("user-documents")

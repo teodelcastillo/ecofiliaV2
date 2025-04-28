@@ -5,6 +5,8 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 // @ts-expect-error
 import pdf from "pdf-parse/lib/pdf-parse.js";
+import mammoth from "mammoth"; // Para Word
+import * as XLSX from "xlsx";  // Para Excel
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,6 +19,38 @@ function getDocumentSource(type: "user" | "public") {
     bucket: type === "public" ? "documents" : "user-documents",
     pathField: type === "public" ? "file_url" : "file_path",
   };
+}
+
+// 🔥 Nuevo: función para detectar tipo de archivo y extraer texto
+async function extractText(buffer: Buffer, fileName: string): Promise<string> {
+  const extension = fileName.split('.').pop()?.toLowerCase();
+
+  if (!extension) throw new Error("No file extension found.");
+
+  if (extension === "pdf") {
+    const parsed = await pdf(buffer);
+    return parsed.text;
+  }
+
+  if (extension === "docx") {
+    const result = await mammoth.extractRawText({ buffer });
+    return result.value;
+  }
+
+  if (extension === "xlsx") {
+    const workbook = XLSX.read(buffer, { type: "buffer" });
+    let text = "";
+
+    workbook.SheetNames.forEach((sheetName) => {
+      const sheet = workbook.Sheets[sheetName];
+      const sheetText = XLSX.utils.sheet_to_csv(sheet);
+      text += `\n\n=== Sheet: ${sheetName} ===\n\n${sheetText}`;
+    });
+
+    return text;
+  }
+
+  throw new Error(`Unsupported file type: ${extension}`);
 }
 
 export async function POST(req: Request) {
@@ -64,13 +98,12 @@ export async function POST(req: Request) {
 
     let extractedText = "";
     try {
-      const parsed = await pdf(buffer);
-      extractedText = parsed.text;
+      extractedText = await extractText(buffer, filePath); // 🔥 ahora extraemos el tipo correcto
       console.log("📄 Extracted text length:", extractedText.length);
     } catch (err) {
-      console.error("❌ PDF parsing failed:", err);
+      console.error("❌ Text extraction failed:", err);
       await supabase.from(table).update({ chunking_status: "failed" }).eq("id", documentId);
-      return NextResponse.json({ error: "PDF parsing failed" }, { status: 500 });
+      return NextResponse.json({ error: "Text extraction failed" }, { status: 500 });
     }
 
     if (!extractedText || extractedText.length < 20) {
