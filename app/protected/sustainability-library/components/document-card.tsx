@@ -22,7 +22,6 @@ export function DocumentCard({ document }: DocumentCardProps) {
         )}
         <CardTitle>{name || "Unnamed Document"}</CardTitle>
         <CardDescription className="line-clamp-2">{description || "No description available"}</CardDescription>
-        <Badge>{processing_status}</Badge>
     </CardHeader>
       <CardContent className="flex-grow">
         <div className="space-y-2 text-sm text-muted-foreground">
