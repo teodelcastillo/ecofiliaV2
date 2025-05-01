@@ -57,7 +57,7 @@ export function ContactSection() {
                   <Mail className="mt-1 h-6 w-6 text-primary flex-shrink-0" />
                   <div>
                     <h3 className="text-xl font-bold text-foreground">Email</h3>
-                    <p className="text-muted-foreground">info@ecofilia.com</p>
+                    <p className="text-muted-foreground">info@ecofilia.site</p>
                   </div>
                 </div>
               </CardContent>
