@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { FileText, Map, Target, PieChart, Thermometer, Leaf } from "lucide-react"
 import Link from "next/link"
 import { GiMonsteraLeaf } from "react-icons/gi"
+import { TbReportSearch } from "react-icons/tb"
 
 const resources = [
   {
@@ -48,6 +49,42 @@ const resources = [
       "Explore biodiversity assessments from the Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services.",
     category: "IPBES",
   },
+  {
+    icon: Thermometer,
+    title: "Environmental Impact Assessments (EIAs)",
+    description:
+    "Evaluate the potential environmental impacts of proposed projects and policies.",
+    category: "EIAs",
+  },
+  {
+    icon: Thermometer, 
+    title: "Executive Reports",
+    description:
+    "Explore executive summaries and reports on sustainability initiatives.",
+    category: "Executive",
+  },
+  {
+    icon: Thermometer,
+    title: "Legislative Reports",
+    description:
+    "Explore legislative documents and reports related to sustainability.",
+    category: "Legislative",
+  },
+  {
+    icon: TbReportSearch,
+    title: "Reports",
+    description:
+    "Discover various reports on sustainability topics, including climate change, biodiversity, and more.",
+    category: "Reports",
+  },
+  {
+    icon: TbReportSearch,
+    title: "United Nations Framework Convention on Climate Change (UNFCCC)",
+    description:
+    "Access documents and reports related to the UNFCCC and its processes.",
+    category: "UNFCCC",
+  },
+
 ]
 
 export default function SustainabilityOverview() {

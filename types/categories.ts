@@ -7,6 +7,11 @@ export const PUBLIC_DOCUMENT_CATEGORIES = [
     "ESG",
     "IPCC",
     "IPBES",
+    "EIAs",
+    "Executive",
+    "Legislative",
+    "Reports",
+    "UNFCCC",
     null
   ] as const
   
