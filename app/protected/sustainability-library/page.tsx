@@ -53,7 +53,7 @@ const resources = [
     icon: Thermometer,
     title: "Environmental Impact Assessments (EIAs)",
     description:
-    "Evaluate the potential environmental impacts of proposed projects and policies.",
+    "Explore official EIAs, benchmarks, safeguards, and best practices used to assess and manage environmental and social impacts across sectors.",
     category: "EIAs",
   },
   {
