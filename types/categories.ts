@@ -12,7 +12,7 @@ export const PUBLIC_DOCUMENT_CATEGORIES = [
     "Legislative",
     "Reports",
     "UNFCCC",
-    null
+    "SDGs",
   ] as const
   
   export type PublicDocumentCategory = typeof PUBLIC_DOCUMENT_CATEGORIES[number]
