@@ -27,7 +27,6 @@ export function LinkDocumentsBadge({ projectId, onDocumentsLinked }: LinkDocumen
     setIsLoading(true)
 
     try {
-      // Get current user
       const {
         data: { user },
       } = await supabase.auth.getUser()
@@ -36,7 +35,6 @@ export function LinkDocumentsBadge({ projectId, onDocumentsLinked }: LinkDocumen
         throw new Error("User not authenticated")
       }
 
-      // Fetch user's documents
       const { data: userDocs, error: userDocsError } = await supabase
         .from("documents")
         .select("id, name, file_path, created_at, user_id, category, description")
@@ -44,7 +42,6 @@ export function LinkDocumentsBadge({ projectId, onDocumentsLinked }: LinkDocumen
 
       if (userDocsError) throw userDocsError
 
-      // Fetch public documents
       const { data: publicDocs, error: publicDocsError } = await supabase
         .from("public_documents")
         .select("id, name, file_url, created_at, category")
@@ -54,8 +51,15 @@ export function LinkDocumentsBadge({ projectId, onDocumentsLinked }: LinkDocumen
       setPersonalDocuments(userDocs || [])
       setPublicDocuments(publicDocs || [])
       setIsOpen(true)
-    } catch (error) {
-      console.error("Error fetching documents:", error)
+    } catch (error: any) {
+      console.error("Error loading documents:", {
+        message: error?.message,
+        name: error?.name,
+        details: error?.details,
+        hint: error?.hint,
+        error,
+      })
+
       toast({
         title: "Error",
         description: "Failed to load documents. Please try again.",
@@ -75,41 +79,58 @@ export function LinkDocumentsBadge({ projectId, onDocumentsLinked }: LinkDocumen
     setIsLoading(true)
 
     try {
-      // Create links for each selected document
       if (!projectId) {
-        throw new Error("Project ID is required");
+        throw new Error("Project ID is required")
       }
 
-      const links = documents.map((doc) => {
-        if (doc.type === "user") {
-          return {
-            project_id: projectId,
-            document_id: doc.id,
-            public_document_id: null,
-          }
-        } else {
-          return {
-            project_id: projectId,
-            document_id: null,
-            public_document_id: doc.id,
-          }
-        }
-      })
+      // Get existing linked document/public_document IDs
+      const { data: existingLinks, error: existingError } = await supabase
+        .from("project_documents")
+        .select("document_id, public_document_id")
+        .eq("project_id", projectId)
 
-      // Insert links into project_documents table
-      const { error } = await supabase.from("project_documents").insert(links)
+      if (existingError) throw existingError
+
+      const existingIds = new Set(
+        existingLinks?.map(link => link.document_id ?? link.public_document_id)
+      )
+
+      // Filter only new links
+      const newLinks = documents
+        .filter(doc => !existingIds.has(doc.id))
+        .map(doc => ({
+          project_id: projectId,
+          document_id: doc.type === "user" ? doc.id : null,
+          public_document_id: doc.type === "public" ? doc.id : null,
+        }))
+
+      if (newLinks.length === 0) {
+        toast({
+          title: "No new documents to link",
+          description: "All selected documents are already linked to this project.",
+        })
+        return
+      }
+
+      const { error } = await supabase.from("project_documents").insert(newLinks)
 
       if (error) throw error
 
       toast({
         title: "Documents linked",
-        description: `${documents.length} document${documents.length !== 1 ? "s" : ""} linked to project.`,
+        description: `${newLinks.length} document${newLinks.length !== 1 ? "s" : ""} linked to project.`,
       })
 
-      // Call the callback to refresh documents
       onDocumentsLinked()
-    } catch (error) {
-      console.error("Error linking documents:", error)
+    } catch (error: any) {
+      console.error("Error linking documents:", {
+        message: error?.message,
+        name: error?.name,
+        details: error?.details,
+        hint: error?.hint,
+        error,
+      })
+
       toast({
         title: "Error",
         description: "Failed to link documents to project. Please try again.",

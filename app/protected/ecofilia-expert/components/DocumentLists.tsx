@@ -1,4 +1,3 @@
-// components/DocumentLists.tsx
 import React from "react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { FileText, Briefcase, Tag } from "lucide-react"
@@ -10,6 +9,7 @@ interface DocumentListProps {
   selectedDocuments: Document[]
   onToggle: (document: Document) => void
   emptyMessage?: string
+  disabledDocumentIds?: Set<string>
 }
 
 export const DocumentList: React.FC<DocumentListProps> = ({
@@ -17,6 +17,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   selectedDocuments,
   onToggle,
   emptyMessage = "No documents found",
+  disabledDocumentIds = new Set(),
 }) => {
   if (documents.length === 0) {
     return <EmptyState message={emptyMessage} icon={FileText} />
@@ -27,6 +28,8 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       <AnimatePresence initial={false}>
         {documents.map((doc) => {
           const isSelected = selectedDocuments.some((d) => d.id === doc.id)
+          const isDisabled = doc.id ? disabledDocumentIds.has(doc.id) : false
+
           return (
             <motion.div
               key={doc.id}
@@ -36,14 +39,16 @@ export const DocumentList: React.FC<DocumentListProps> = ({
               transition={{ duration: 0.2 }}
             >
               <div
-                className={`flex items-center space-x-3 p-2.5 rounded-md cursor-pointer transition-colors ${
-                  isSelected
-                    ? "bg-primary/10 hover:bg-primary/15 border-l-2 border-primary"
-                    : "hover:bg-accent/50 border-l-2 border-transparent"
+                className={`flex items-center space-x-3 p-2.5 rounded-md transition-colors border-l-2 ${
+                  isDisabled
+                    ? "opacity-50 cursor-not-allowed border-transparent"
+                    : isSelected
+                    ? "bg-primary/10 hover:bg-primary/15 border-primary cursor-pointer"
+                    : "hover:bg-accent/50 border-transparent cursor-pointer"
                 }`}
-                onClick={() => onToggle(doc)}
+                onClick={() => !isDisabled && onToggle(doc)}
               >
-                <Checkbox checked={isSelected} />
+                <Checkbox checked={isSelected} disabled={isDisabled} />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{doc.name}</p>
                   {doc.category && (
@@ -67,6 +72,7 @@ interface ProjectListProps {
   selectedDocuments: Document[]
   onToggleDocument: (document: Document) => void
   emptyMessage?: string
+  disabledDocumentIds?: Set<string>
 }
 
 export const ProjectList: React.FC<ProjectListProps> = ({
@@ -74,6 +80,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({
   selectedDocuments,
   onToggleDocument,
   emptyMessage = "No projects found",
+  disabledDocumentIds = new Set(),
 }) => {
   if (projects.length === 0) {
     return <EmptyState message={emptyMessage} icon={Briefcase} />
@@ -98,17 +105,21 @@ export const ProjectList: React.FC<ProjectListProps> = ({
             <div className="p-2 space-y-1 bg-background/50">
               {(project.documents ?? []).map((doc) => {
                 const isSelected = selectedDocuments.some((d) => d.id === doc.id)
+                const isDisabled = doc.id ? disabledDocumentIds.has(doc.id) : false
+
                 return (
                   <div
                     key={doc.id}
-                    className={`flex items-center space-x-3 p-2 rounded-md cursor-pointer transition-colors ${
-                      isSelected
-                        ? "bg-primary/5 hover:bg-primary/10 border-l-2 border-primary"
-                        : "hover:bg-accent/30 border-l-2 border-transparent"
+                    className={`flex items-center space-x-3 p-2 rounded-md transition-colors border-l-2 ${
+                      isDisabled
+                        ? "opacity-50 cursor-not-allowed border-transparent"
+                        : isSelected
+                        ? "bg-primary/5 hover:bg-primary/10 border-primary cursor-pointer"
+                        : "hover:bg-accent/30 border-transparent cursor-pointer"
                     }`}
-                    onClick={() => onToggleDocument(doc)}
+                    onClick={() => !isDisabled && onToggleDocument(doc)}
                   >
-                    <Checkbox checked={isSelected} />
+                    <Checkbox checked={isSelected} disabled={isDisabled} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm truncate">{doc.name}</p>
                       {doc.category && (
