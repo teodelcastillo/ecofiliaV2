@@ -17,7 +17,7 @@ export function SustainabilityLibraryWrapper({
   const searchParams = useSearchParams()
   const categoryParam = searchParams.get("category")
 
-  const [initialCategory, setInitialCategory] = useState<PublicDocumentCategory | null>(null)
+  const [initialCategory, setInitialCategory] = useState<PublicDocumentCategory | undefined>(undefined)
 
   useEffect(() => {
     if (categoryParam && categories.includes(categoryParam as PublicDocumentCategory)) {
