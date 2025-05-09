@@ -20,7 +20,7 @@ export function SustainabilityLibraryWrapperEnhanced({
   const searchParams = useSearchParams()
   const categoryParam = searchParams.get("category")
 
-  const [initialCategory, setInitialCategory] = useState<PublicDocumentCategory | null>(null)
+  const [initialCategory, setInitialCategory] = useState<PublicDocumentCategory | undefined>(undefined)
 
   useEffect(() => {
     if (categoryParam && typeof categoryParam === "string" && categories?.includes(categoryParam)) {
@@ -65,7 +65,7 @@ export function SustainabilityLibraryWrapperEnhanced({
       <SustainabilityLibraryEnhanced
         initialDocuments={documents}
         categories={categories}
-        initialCategory={initialCategory ?? undefined}
+        initialCategory={initialCategory}
       />
     </div>
   )
