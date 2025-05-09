@@ -65,7 +65,7 @@ export function SustainabilityLibraryWrapperEnhanced({
       <SustainabilityLibraryEnhanced
         initialDocuments={documents}
         categories={categories}
-        initialCategory={initialCategory}
+        initialCategory={initialCategory ?? undefined}
       />
     </div>
   )
