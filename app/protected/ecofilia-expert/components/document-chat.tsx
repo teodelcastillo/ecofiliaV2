@@ -24,7 +24,7 @@ interface DocumentChatProps {
 const supabase = createClient();
 
 export function DocumentChat({ personalDocuments, publicDocuments, userId, projects = [] }: DocumentChatProps) {
-  const [selectedDocuments, setSelectedDocuments] = useState<(Document & { type: "user" | "public" })[]>([]);
+  const [selectedDocuments, setSelectedDocuments] = useState<(Document & { type: "user" | "public" | "project" })[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -47,18 +47,22 @@ export function DocumentChat({ personalDocuments, publicDocuments, userId, proje
     loadChatSessions();
   }, []);
 
-  const handleDocumentSelect = useCallback((documents: (Document & { type: "user" | "public" })[]) => {
-    setSelectedDocuments(documents);
-    setIsSelectorOpen(false);
-
-    if (documents.length > 0 && messages.length === 0) {
-      toast({
-        title: "Documents selected",
-        description: `${documents.length} document${documents.length !== 1 ? "s" : ""} ready for chat`,
-        duration: 3000,
-      });
-    }
-  }, [messages.length, toast]);
+  const handleDocumentSelect = useCallback(
+    (documents: (Document & { type: "user" | "public" | "project" })[]) => {
+      setSelectedDocuments(documents);
+      setIsSelectorOpen(false);
+  
+      if (documents.length > 0 && messages.length === 0) {
+        toast({
+          title: "Documents selected",
+          description: `${documents.length} document${documents.length !== 1 ? "s" : ""} ready for chat`,
+          duration: 3000,
+        });
+      }
+    },
+    [messages.length, toast]
+  );
+  
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => setInput(e.target.value);
 
@@ -228,7 +232,6 @@ export function DocumentChat({ personalDocuments, publicDocuments, userId, proje
         onClose={() => setIsSelectorOpen(false)}
         personalDocuments={personalDocsWithType}
         publicDocuments={publicDocsWithType}
-        projects={projects}
         onDocumentsSelected={handleDocumentSelect}
         selectedDocuments={selectedDocuments}
       />
