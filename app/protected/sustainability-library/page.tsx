@@ -57,6 +57,34 @@ const resources = [
     category: "EIAs",
   },
   {
+    icon: Thermometer,
+    title: "Biodiversity & Nature based Solutions (NbS)",
+    description:
+    "Explore documents related to biodiversity and nature-based solutions for sustainability and climate action.",
+    category: "Biodiversity",
+  },
+  {
+    icon: Thermometer,
+    title: "National Green House Gas (GHG) Inventories",
+    description:
+    "Explore National GHG Inventories (2024 Annex I Party GHG Inventory Submissions) to understand emissions and mitigation strategies.",
+    category: "GHG",
+  },
+  {
+    icon: Thermometer,
+    title: "Green Taxonomies & Sustainable Finance",
+    description:
+    "Explore green taxonomies and sustainable finance frameworks to understand how financial systems can support sustainability.",
+    category: "GreenTaxonomies",
+  },
+  {
+    icon: Thermometer,
+    title: "Paris Agreement & Climate negotiations",
+    description:
+    "Explore documents related to the Paris Agreement and climate negotiations, including COP decisions and outcomes.",
+    category: "ParisAgreement",
+  },
+  {
     icon: Thermometer, 
     title: "Executive Reports",
     description:

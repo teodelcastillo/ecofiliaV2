@@ -13,10 +13,11 @@ import { Check, ChevronDown, Filter } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import {
   PublicDocumentCategory,
+  CATEGORY_LABELS,
 } from "../../../../types/categories"
 
 interface DocumentFiltersProps {
-  categories: PublicDocumentCategory[]
+  categories: (PublicDocumentCategory | null | undefined)[]
   selectedCategory: PublicDocumentCategory | null
   onSelectCategory: (category: PublicDocumentCategory | null) => void
 }
@@ -27,6 +28,11 @@ export function DocumentFilters({
   onSelectCategory,
 }: DocumentFiltersProps) {
   const [isOpen, setIsOpen] = useState(false)
+
+  const validCategories = categories.filter(
+    (category): category is PublicDocumentCategory =>
+      typeof category === "string" && category.trim() !== ""
+  )
 
   return (
     <div className="flex items-center gap-2">
@@ -51,7 +57,7 @@ export function DocumentFilters({
               {selectedCategory === null && <Check className="h-4 w-4" />}
             </DropdownMenuItem>
 
-            {categories.map((category) => (
+            {validCategories.map((category) => (
               <DropdownMenuItem
                 key={category}
                 className="flex items-center justify-between cursor-pointer"
@@ -60,7 +66,7 @@ export function DocumentFilters({
                   setIsOpen(false)
                 }}
               >
-                <span>{category}</span>
+                <span>{CATEGORY_LABELS[category]}</span>
                 {selectedCategory === category && <Check className="h-4 w-4" />}
               </DropdownMenuItem>
             ))}
@@ -70,7 +76,7 @@ export function DocumentFilters({
 
       {selectedCategory && (
         <Badge variant="secondary" className="gap-1">
-          {selectedCategory}
+          {CATEGORY_LABELS[selectedCategory]}
           <button onClick={() => onSelectCategory(null)} className="ml-1 hover:text-foreground rounded-full">
             ×
           </button>

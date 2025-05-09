@@ -5,52 +5,44 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Search, FileText, FolderOpen, X, BookOpen, Briefcase, Layers, Tag } from "lucide-react"
+import { Search, FileText, FolderOpen, X, BookOpen, Briefcase } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from "framer-motion"
 import type { Document } from "@/models"
 import { usePublicDocuments } from "@/hooks/usePublicDocuments"
-
-interface Project {
-  id: string
-  name: string
-  description?: string
-  documents: Document[]
-}
+import { useUserProjects } from "@/hooks/useUserProjects"
 
 interface DocumentSelectorProps {
   personalDocuments: Document[]
-  projects?: Project[]
   onDocumentsSelected: (documents: Document[]) => void
   selectedDocuments: Document[]
 }
 
 export function DocumentSelector({
   personalDocuments,
-  projects = [],
   onDocumentsSelected,
   selectedDocuments,
 }: DocumentSelectorProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState("personal")
-  const [expandedProjects, setExpandedProjects] = useState<string[]>([])
 
-  const { documents: publicDocuments, loading } = usePublicDocuments({
+  const { documents: publicDocuments, loading: loadingPublic } = usePublicDocuments({
     search: activeTab === "public" ? searchQuery : "",
   })
+
+  const { projects, loading: loadingProjects } = useUserProjects()
 
   const clearSelection = () => onDocumentsSelected([])
 
   const toggleDocumentSelection = (document: Document, type: "user" | "public" | "project") => {
     const isSelected = selectedDocuments.some((doc) => doc.id === document.id)
     const docWithType = { ...document, type }
-
     onDocumentsSelected(
       isSelected
         ? selectedDocuments.filter((doc) => doc.id !== document.id)
-        : [...selectedDocuments, docWithType],
+        : [...selectedDocuments, docWithType]
     )
   }
 
@@ -89,6 +81,7 @@ export function DocumentSelector({
           )}
         </div>
 
+        <div className="flex justify-between items-center mt-2">
           {selectedDocuments.length === 0 ? (
             <span className="text-xs text-muted-foreground">No documents selected</span>
           ) : (
@@ -96,14 +89,12 @@ export function DocumentSelector({
               {selectedDocuments.length} {selectedDocuments.length === 1 ? "document" : "documents"} selected
             </span>
           )}
-          
           {selectedDocuments.length > 0 && (
             <Button variant="ghost" size="sm" onClick={clearSelection}>
               Clear
             </Button>
           )}
-
-
+        </div>
       </CardHeader>
 
       <CardContent className="p-0 px-4 pb-4">
@@ -120,6 +111,7 @@ export function DocumentSelector({
             </TabsTrigger>
           </TabsList>
 
+          {/* Personal Documents */}
           <TabsContent value="personal">
             <ScrollArea className="h-[calc(100vh-25rem)]">
               <DocumentList
@@ -131,17 +123,20 @@ export function DocumentSelector({
             </ScrollArea>
           </TabsContent>
 
+          {/* Projects */}
           <TabsContent value="projects">
             <ScrollArea className="h-[calc(100vh-25rem)]">
-              {projects.length ? (
+              {loadingProjects ? (
+                <p className="text-center text-muted-foreground py-4">Loading projects...</p>
+              ) : projects.length ? (
                 projects.map((project) => (
                   <div key={project.id} className="border-b py-2">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 mb-1">
                       <Briefcase className="h-4 w-4 text-muted-foreground" />
                       <span className="font-semibold">{project.name}</span>
                     </div>
                     <DocumentList
-                      documents={filterLocalDocs(project.documents)}
+                      documents={filterLocalDocs(project.documents ?? [])}
                       selectedDocuments={selectedDocuments}
                       onToggle={(doc) => toggleDocumentSelection(doc, "project")}
                       emptyMessage="No documents"
@@ -154,10 +149,11 @@ export function DocumentSelector({
             </ScrollArea>
           </TabsContent>
 
+          {/* Public */}
           <TabsContent value="public">
             <ScrollArea className="h-[calc(100vh-25rem)]">
-              {loading ? (
-                <p className="text-center text-muted-foreground py-4">Loading...</p>
+              {loadingPublic ? (
+                <p className="text-center text-muted-foreground py-4">Loading public documents...</p>
               ) : (
                 <DocumentList
                   documents={publicDocuments}
@@ -174,6 +170,7 @@ export function DocumentSelector({
   )
 }
 
+// 🧱 Reutilizables
 interface DocumentListProps {
   documents: Document[]
   selectedDocuments: Document[]
@@ -208,7 +205,7 @@ function DocumentList({ documents, selectedDocuments, onToggle, emptyMessage }: 
 
 interface EmptyStateProps {
   message: string
-  icon: any
+  icon: React.ElementType
 }
 
 const EmptyState = ({ message, icon: Icon }: EmptyStateProps) => (

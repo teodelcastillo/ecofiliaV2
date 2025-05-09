@@ -69,18 +69,16 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 
 interface ProjectListProps {
   projects: Project[]
-  selectedDocuments: Document[]
-  onToggleDocument: (document: Document) => void
+  selectedDocumentIds: string[] // solo IDs
+  onToggleProject: (project: Project) => void
   emptyMessage?: string
-  disabledDocumentIds?: Set<string>
 }
 
 export const ProjectList: React.FC<ProjectListProps> = ({
   projects,
-  selectedDocuments,
-  onToggleDocument,
+  selectedDocumentIds,
+  onToggleProject,
   emptyMessage = "No projects found",
-  disabledDocumentIds = new Set(),
 }) => {
   if (projects.length === 0) {
     return <EmptyState message={emptyMessage} icon={Briefcase} />
@@ -89,56 +87,37 @@ export const ProjectList: React.FC<ProjectListProps> = ({
   return (
     <div className="space-y-3">
       <AnimatePresence initial={false}>
-        {projects.map((project) => (
-          <motion.div
-            key={project.id}
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            className="border rounded-md overflow-hidden"
-          >
-            <div className="flex items-center gap-2 p-3 bg-secondary/20">
-              <Briefcase className="h-4 w-4 text-primary" />
-              <span className="font-medium text-sm truncate">{project.name}</span>
-            </div>
-            <div className="p-2 space-y-1 bg-background/50">
-              {(project.documents ?? []).map((doc) => {
-                const isSelected = selectedDocuments.some((d) => d.id === doc.id)
-                const isDisabled = doc.id ? disabledDocumentIds.has(doc.id) : false
+        {projects.map((project) => {
+          const projectDocIds = project.documents?.map((d) => d.id).filter((id): id is string => id !== null) ?? []
+          const allSelected = projectDocIds.filter((id): id is string => id !== null).every((id) => selectedDocumentIds.includes(id))
 
-                return (
-                  <div
-                    key={doc.id}
-                    className={`flex items-center space-x-3 p-2 rounded-md transition-colors border-l-2 ${
-                      isDisabled
-                        ? "opacity-50 cursor-not-allowed border-transparent"
-                        : isSelected
-                        ? "bg-primary/5 hover:bg-primary/10 border-primary cursor-pointer"
-                        : "hover:bg-accent/30 border-transparent cursor-pointer"
-                    }`}
-                    onClick={() => !isDisabled && onToggleDocument(doc)}
-                  >
-                    <Checkbox checked={isSelected} disabled={isDisabled} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm truncate">{doc.name}</p>
-                      {doc.category && (
-                        <div className="flex items-center gap-1 mt-0.5">
-                          <Tag className="h-3 w-3 text-muted-foreground" />
-                          <p className="text-xs text-muted-foreground">{doc.category.toUpperCase()}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </motion.div>
-        ))}
+          return (
+            <motion.div
+              key={project.id}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="border rounded-md overflow-hidden"
+            >
+              <div
+                className={`flex items-center gap-2 p-3 bg-secondary/20 cursor-pointer ${
+                  allSelected ? "bg-primary/10" : ""
+                }`}
+                onClick={() => onToggleProject(project)}
+              >
+                <Checkbox checked={allSelected} />
+                <Briefcase className="h-4 w-4 text-primary" />
+                <span className="font-medium text-sm truncate">{project.name}</span>
+              </div>
+            </motion.div>
+          )
+        })}
       </AnimatePresence>
     </div>
   )
 }
+
 
 interface EmptyStateProps {
   message: string

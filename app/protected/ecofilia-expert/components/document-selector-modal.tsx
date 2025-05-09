@@ -1,23 +1,45 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Search, FolderOpen, X, FileText, BookOpen, Briefcase } from "lucide-react"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  Search,
+  FolderOpen,
+  X,
+  FileText,
+  BookOpen,
+  Briefcase,
+} from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import type { Document, Project } from "@/models"
+import type { Document } from "@/models"
 import { usePublicDocuments } from "@/hooks/usePublicDocuments"
-import { DocumentList, ProjectList } from "./DocumentLists"
+import { DocumentList } from "./DocumentLists"
+import { ProjectList } from "../../projects/components/projects-list"
+import { useUserProjects } from "@/hooks/useUserProjects"
 
 interface DocumentSelectorModalProps {
   isOpen: boolean
   onClose: () => void
   personalDocuments: Document[]
-  projects?: Project[]
   selectedDocuments: Document[]
-  onDocumentsSelected: (documents: (Document & { type: "user" | "public" })[]) => void
+  onDocumentsSelected: (
+    documents: (Document & { type: "user" | "public" | "project" })[]
+  ) => void
   publicDocuments?: Document[]
 }
 
@@ -25,55 +47,83 @@ export function DocumentSelectorModal({
   isOpen,
   onClose,
   personalDocuments,
-  projects = [],
   selectedDocuments,
   onDocumentsSelected,
-  
 }: DocumentSelectorModalProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState("personal")
-  const [localSelectedDocs, setLocalSelectedDocs] = useState<Document[]>(selectedDocuments)
-
+  const [localSelectedDocs, setLocalSelectedDocs] = useState<
+    (Document & { type: "user" | "public" | "project" })[]
+  >(selectedDocuments.map(doc => ({ ...doc, type: "user" })))
+  const { projects, loading: loadingProjects } = useUserProjects()
   const { documents: publicDocuments, loading } = usePublicDocuments({
     search: activeTab === "public" ? searchQuery : "",
   })
 
   useEffect(() => {
     if (isOpen) {
-      setLocalSelectedDocs(selectedDocuments)
+      setLocalSelectedDocs(selectedDocuments.map(doc => ({ ...doc, type: "user" })))
       setSearchQuery("")
     }
   }, [isOpen, selectedDocuments])
 
-  const toggleDocumentSelection = (document: Document, type: "user" | "public" | "project") => {
+  // 🔧 Toggle for individual documents
+  const toggleDocumentSelection = (
+    document: Document,
+    type: "user" | "public" | "project"
+  ) => {
     const isSelected = localSelectedDocs.some((doc) => doc.id === document.id)
     const docWithType = { ...document, type }
 
     setLocalSelectedDocs(
       isSelected
         ? localSelectedDocs.filter((doc) => doc.id !== document.id)
-        : [...localSelectedDocs, docWithType],
+        : [...localSelectedDocs, docWithType]
     )
   }
 
+  // 🔧 Toggle for entire project (adds/removes all its documents)
+  const toggleProjectSelection = (project: { documents?: Document[] }) => {
+    const projectDocIds = project.documents?.map((d) => d.id) ?? []
+    const alreadySelected = projectDocIds.every((id) =>
+      localSelectedDocs.some((doc) => doc.id === id)
+    )
+
+    if (alreadySelected) {
+      // Deselect all project documents
+      setLocalSelectedDocs((prev) =>
+        prev.filter((doc) => !projectDocIds.includes(doc.id))
+      )
+    } else {
+      const newDocs = (project.documents ?? []).map((doc) => ({
+        ...doc,
+        type: "project" as const,
+      }))
+      const existingIds = new Set(localSelectedDocs.map((doc) => doc.id))
+      const combined = [...localSelectedDocs, ...newDocs.filter((d) => !existingIds.has(d.id))]
+      setLocalSelectedDocs(combined)
+    }
+  }
+
   const handleApply = () => {
-    onDocumentsSelected(localSelectedDocs.map(doc => ({ ...doc, type: doc.type as "public" | "user" })))
+    onDocumentsSelected(localSelectedDocs)
     onClose()
   }
 
   const filteredPersonalDocs = personalDocuments.filter((doc) =>
-    doc.name?.toLowerCase().includes(searchQuery.toLowerCase()),
+    doc.name?.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   const filteredProjects = projects.filter(
     (project) =>
       project.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (project.documents ?? []).some((doc) => doc.name?.toLowerCase().includes(searchQuery.toLowerCase())),
+      (project.documents ?? []).some((doc) =>
+        doc.name?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
   )
 
-  function clearSelection(): void {
-    setLocalSelectedDocs([]);
-  }
+  const clearSelection = () => setLocalSelectedDocs([])
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[80vh]">
@@ -106,38 +156,37 @@ export function DocumentSelectorModal({
         </div>
 
         <div className="mt-2 flex justify-between items-center bg-secondary/50 p-2 rounded-md">
-          {localSelectedDocs.length === 0 ? (
-            <span className="text-xs text-muted-foreground">No documents selected </span>
-          ) : (
-            <span className="text-xs text-muted-foreground">
-              {localSelectedDocs.length} {localSelectedDocs.length === 1 ? "document" : "documents"} selected
-            </span>
-            
-          )}
-          
+          <span className="text-xs text-muted-foreground">
+            {localSelectedDocs.length === 0
+              ? "No documents selected"
+              : `${localSelectedDocs.length} ${
+                  localSelectedDocs.length === 1 ? "document" : "documents"
+                } selected`}
+          </span>
           {localSelectedDocs.length > 0 && (
             <Button variant="ghost" size="sm" onClick={clearSelection}>
               Clear
             </Button>
           )}
-        </div>          
-          {selectedDocuments.length > 0 && (
-            <Button variant="ghost" size="sm" onClick={clearSelection}>
-              Clear
-            </Button>
-          )}
+        </div>
 
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-auto mt-2">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="flex-1 overflow-auto mt-2"
+        >
           <TabsList className="grid grid-cols-3">
             <TabsTrigger value="personal">
-              <FileText className="h-4 w-4 mr-2" />My Library
+              <FileText className="h-4 w-4 mr-2" />
+              My Library
             </TabsTrigger>
             <TabsTrigger value="projects">
-              <Briefcase className="h-4 w-4 mr-2" />Projects
+              <Briefcase className="h-4 w-4 mr-2" />
+              Projects
             </TabsTrigger>
             <TabsTrigger value="public">
-              <BookOpen className="h-4 w-4 mr-2" />Public
+              <BookOpen className="h-4 w-4 mr-2" />
+              Public
             </TabsTrigger>
           </TabsList>
 
@@ -156,8 +205,8 @@ export function DocumentSelectorModal({
             <ScrollArea className="h-full">
               <ProjectList
                 projects={filteredProjects}
-                selectedDocuments={localSelectedDocs}
-                onToggleDocument={(doc) => toggleDocumentSelection(doc, "project")}
+                selectedDocumentIds={localSelectedDocs.map((doc) => doc.id).filter((id): id is string => id !== null)}
+                onToggleProject={toggleProjectSelection}
                 emptyMessage="No projects found"
               />
             </ScrollArea>
@@ -184,7 +233,9 @@ export function DocumentSelectorModal({
             {localSelectedDocs.length} selected
           </span>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={onClose}>Cancel</Button>
+            <Button variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
             <Button onClick={handleApply}>Apply</Button>
           </div>
         </DialogFooter>
