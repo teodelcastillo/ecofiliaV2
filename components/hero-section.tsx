@@ -63,14 +63,13 @@ export function HeroSection() {
 
               </span>
             </h1>
-            <p className="max-w-[700px] mx-auto text-muted-foreground md:text-xl">
-              Ecofilia brings innovative eco-friendly solutions to help businesses and communities thrive while
-              protecting our planet.
+            <p className="max-w-[800px] mx-auto text-muted-foreground md:text-xl">
+              Ecofilia helps you analyze, report, and scale climate action <br/>Smarter, faster, and more effectively.
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 mt-4">
-            <Button size="lg">Learn More</Button>
+            <Button size="lg">Sign Up</Button>
             <Button variant="outline" size="lg">
               Contact Us
             </Button>
