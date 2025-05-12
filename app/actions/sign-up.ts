@@ -22,6 +22,8 @@ export async function signUpAction(formData: FormData) {
       data: { full_name: fullName },
     },
   });
+  console.log("🔍 Email redirect origin:", origin);
+  console.log("🔍 Email redirect URL:", `${origin}/auth/callback`);
 
   if (error) {
     return redirect(`/auth&type=error&message=${encodeURIComponent(error.message)}`);
