@@ -6,8 +6,12 @@ import { ArrowRight, Zap, Target, Shield } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
+import { useRouter } from "next/navigation"
+
 
 export function SolutionSection() {
+  const router = useRouter()
+
   return (
     <section id="solutions" className="py-24 relative overflow-hidden">
       {/* Background elements */}
@@ -52,9 +56,9 @@ export function SolutionSection() {
             color="primary"
             buttonText="Explore Platform"
             delay={0.1}
+            onClick={() => router.push("/auth")}
           />
 
-          {/* Consultancy approach */}
           <ApproachCard
             title="Expert Consultancy"
             description="Our team of sustainability experts provides personalized guidance tailored to your specific needs."
@@ -62,7 +66,12 @@ export function SolutionSection() {
             color="accent"
             buttonText="Discover Services"
             delay={0.3}
+            onClick={() => {
+              const contact = document.getElementById("contact")
+              if (contact) contact.scrollIntoView({ behavior: "smooth" })
+            }}
           />
+
         </motion.div>
 
         {/* Bottom CTA */}
@@ -74,7 +83,7 @@ export function SolutionSection() {
           className="mt-20 text-center"
         >
           <div className="inline-block p-1 rounded-full bg-gradient-to-r from-primary/50 via-primary to-primary/50">
-            <Button size="lg" className="px-8 rounded-full group">
+            <Button size="lg" className="px-8 rounded-full group" onClick={() => window.location.href = "#contact"}>
               <span>Discover How We Can Help</span>
               <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform duration-200" />
             </Button>
@@ -93,9 +102,11 @@ interface ApproachCardProps {
   color: "primary" | "accent"
   buttonText: string
   delay: number
+  onClick?: () => void
 }
 
-function ApproachCard({ title, description, icon, color, buttonText, delay }: ApproachCardProps) {
+
+function ApproachCard({ title, description, icon, color, buttonText, delay, onClick }: ApproachCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -125,10 +136,11 @@ function ApproachCard({ title, description, icon, color, buttonText, delay }: Ap
           <BenefitItem text="Improved compliance" />
         </ul>
 
-        <Button variant="outline" className="group/button">
+        <Button variant="outline" className="group/button" onClick={onClick}>
           {buttonText}
           <ArrowRight className="ml-2 h-4 w-4 transform group-hover/button:translate-x-1 transition-transform duration-200" />
         </Button>
+
       </div>
     </motion.div>
   )

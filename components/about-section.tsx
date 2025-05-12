@@ -266,10 +266,6 @@ function TeamMemberCard({
                       <Button variant="outline" onClick={closeModal}>
                         Close
                       </Button>
-                      <Button className="gap-2">
-                        <span>Connect</span>
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
                     </div>
                   </div>
                 </div>
