@@ -21,8 +21,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
-            <Image src="/ECOFILIALEAF.png" alt="Ecofilia Logo" width={32} height={32} className="h-8 w-8" />        
-             <span className="text-xl font-bold text-foreground">Ecofilia</span>
+            <Image src="/full-logo-ecofilia.jpg" alt="Ecofilia Logo" width={130} height={32}/>        
         </div>
 
         <nav className="hidden md:flex items-center gap-6">
@@ -31,7 +30,7 @@ export function Header() {
             variant="ghost"
             className="text-sm font-medium transition-colors hover:text-primary"
           >
-            The Solution
+            Solutions
           </Button>
           <Button
             onClick={() => scrollToSection("about")}
@@ -47,7 +46,7 @@ export function Header() {
           >
             Contact
           </Button>
-          <Button>Get Started</Button>
+          <Button>Sign In</Button>
         </nav>
 
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -64,7 +63,7 @@ export function Header() {
                 variant="ghost"
                 className="justify-start text-sm font-medium transition-colors hover:text-primary"
               >
-                The Solution
+                Solutions
               </Button>
               <Button
                 onClick={() => scrollToSection("about")}
@@ -80,7 +79,7 @@ export function Header() {
               >
                 Contact
               </Button>
-              <Button className="w-full">Get Started</Button>
+              <Button className="w-full">Sign In</Button>
             </div>
           </SheetContent>
         </Sheet>
