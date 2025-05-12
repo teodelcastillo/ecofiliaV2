@@ -4,7 +4,7 @@ import { SolutionSection } from "@/components/solution-section"
 import { AboutSection } from "@/components/about-section"
 import { ContactSection } from "@/components/contact-section"
 import { HeroSection } from "@/components/hero-section"
-import { ValuePropositionSection } from "@/components/value-proposition-section"
+import  {ValueProposition}  from "@/components/value-proposition-section"
 
 export default function Home() {
   return (
@@ -12,7 +12,7 @@ export default function Home() {
       <Header />
       <main className="flex-1">
         <HeroSection />
-        <ValuePropositionSection />
+        <ValueProposition />
         <SolutionSection />
         <AboutSection />
         <ContactSection />

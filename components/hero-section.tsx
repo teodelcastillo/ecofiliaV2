@@ -133,7 +133,7 @@ export function HeroSection() {
             <div className="relative inline-flex">
               <Button size="lg" onClick={() => router.push("/auth")}>Sign Up</Button>
               <div className="absolute -right-2 -top-2">
-                <div className="bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-medium text-xs shadow-sm">
+                <div className="bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full font-medium text-xs shadow-sm">
                   Free
                 </div>
               </div>

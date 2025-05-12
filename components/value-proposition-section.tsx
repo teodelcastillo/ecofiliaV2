@@ -1,75 +1,122 @@
-import { ArrowRight, BarChart3, Globe, Lightbulb } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+"use client"
 
-export function ValuePropositionSection() {
+import type React from "react"
+
+import { useState } from "react"
+import { Book, FolderSearch, BarChart3, Brain, ArrowRight, Zap, Target, Shield } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { motion } from "framer-motion"
+
+export function ValueProposition() {
   return (
-    <section className="w-full py-12 md:py-24 bg-green-50">
-      <div className="container px-4 md:px-6">
-        <div className="flex flex-col items-center justify-center space-y-4 text-center mb-8">
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight">Why Choose Ecofilia</h2>
-            <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-              We deliver measurable impact for businesses and the environment through our innovative platform.
-            </p>
+    <section id="value" className="py-24 relative overflow-hidden">
+      {/* Background elements */}
+      <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-background"></div>
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+
+      <div className="container mx-auto px-4 relative z-10">
+            {/* Core benefits section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <Badge className="px-4 py-1 border-primary/20 bg-primary/5 text-primary mb-4">Core Benefits</Badge>
+              <h2 className="text-4xl md:text-5xl font-bold text-foreground tracking-tight leading-[1.1] mb-4">
+                Our <span className="text-primary">Value Proposition</span>
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Ecofilia empowers sustainability professionals by automating repetitive, low-value tasks, freeing up their time to focus on impactful initiatives. <br/>Our AI-powered platform streamlines sustainability reporting, tracks KPI’s and serves as an intelligent sustainability assistant.
+              </p>
+            </motion.div>
+    
+            {/* Feature boxes with staggered animation */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
+            >
+              <FeatureBox
+                icon={<Book className="w-12 h-12" />}
+                title="CUSTOMIZED LIBRARY"
+                description="Access a comprehensive collection of sustainability resources tailored to your industry and needs."
+                delay={0.1}
+              />
+    
+              <FeatureBox
+                icon={<FolderSearch className="w-12 h-12" />}
+                title="DIAGNOSIS"
+                description="Identify opportunities and challenges in your sustainability practices with our thorough assessment tools."
+                delay={0.2}
+              />
+    
+              <FeatureBox
+                icon={<BarChart3 className="w-12 h-12" />}
+                title="DASHBOARDS KPI's MGMT"
+                description="Track and visualize your sustainability KPIs with intuitive dashboards and reporting tools."
+                delay={0.3}
+              />
+    
+              <FeatureBox
+                icon={<Brain className="w-12 h-12" />}
+                title="SUSTAINABILITY ASSISTANT"
+                description="Get AI-powered recommendations and assistance for your sustainability initiatives."
+                delay={0.4}
+              />
+            </motion.div>
           </div>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-3">
-          <Card className="border-green-100 bg-white">
-            <CardHeader className="pb-2">
-              <Globe className="h-12 w-12 text-green-600 mb-2" />
-              <CardTitle>Reduce Environmental Impact</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-base">
-                Our solutions help reduce carbon footprint by up to 40% while optimizing resource usage across your
-                operations.
-              </CardDescription>
-              <div className="mt-4 flex items-center text-green-600 font-medium">
-                <span>Learn more</span>
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-green-100 bg-white">
-            <CardHeader className="pb-2">
-              <BarChart3 className="h-12 w-12 text-green-600 mb-2" />
-              <CardTitle>Increase Operational Efficiency</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-base">
-                Clients report an average of 25% improvement in operational efficiency and significant cost savings.
-              </CardDescription>
-              <div className="mt-4 flex items-center text-green-600 font-medium">
-                <span>Learn more</span>
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-green-100 bg-white">
-            <CardHeader className="pb-2">
-              <Lightbulb className="h-12 w-12 text-green-600 mb-2" />
-              <CardTitle>Future-Proof Your Business</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-base">
-                Stay ahead of regulations and market demands with our forward-thinking sustainable business solutions.
-              </CardDescription>
-              <div className="mt-4 flex items-center text-green-600 font-medium">
-                <span>Learn more</span>
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="mt-12 text-center">
-          <Button className="bg-green-600 hover:bg-green-700">Discover Our Full Impact</Button>
-        </div>
-      </div>
-    </section>
+        </section>
   )
+
+interface FeatureBoxProps {
+  icon: React.ReactNode
+  title: string
+  description: string
+  delay: number
+}
+
+function FeatureBox({ icon, title, description, delay }: FeatureBoxProps) {
+  const [isHovered, setIsHovered] = useState(false)
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay }}
+      viewport={{ once: true }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="group relative bg-background/50 backdrop-blur-sm rounded-xl p-8 border border-border/50 shadow-sm hover:shadow-md transition-all duration-300 hover:border-primary/50 h-full"
+    >
+      <div className="flex flex-col items-center text-center">
+        <motion.div
+          animate={{
+            y: isHovered ? -5 : 0,
+            scale: isHovered ? 1.05 : 1,
+          }}
+          transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          className="mb-6 relative"
+        >
+          <div className="absolute inset-0 bg-primary/10 rounded-full blur-xl transform scale-75 group-hover:scale-100 transition-transform duration-300"></div>
+          <div className="relative bg-gradient-to-br from-background to-accent/30 p-5 rounded-full border border-border/50 text-primary shadow-sm group-hover:border-primary/50 transition-colors duration-300">
+            {icon}
+          </div>
+        </motion.div>
+
+        <h3 className="text-lg font-bold text-foreground tracking-wide mb-3 group-hover:text-primary transition-colors duration-300">
+          {title}
+        </h3>
+
+        <p className="text-muted-foreground text-sm mb-4">{description}</p>
+
+        <div className="h-1 w-12 bg-primary/30 rounded-full mt-auto transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+      </div>
+    </motion.div>
+  )
+}
 }

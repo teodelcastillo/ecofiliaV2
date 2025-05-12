@@ -1,130 +1,144 @@
-import { CheckCircle, Leaf, Recycle, Sprout } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+"use client"
+
+import type React from "react"
+
+import { ArrowRight, Zap, Target, Shield } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { motion } from "framer-motion"
 
 export function SolutionSection() {
   return (
-    <section id="solution" className="w-full py-12 md:py-24 lg:py-32 bg-background">
-      <div className="container px-4 md:px-6">
-        <div className="flex flex-col items-center justify-center space-y-4 text-center">
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight text-foreground">The Solution</h2>
-            <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-              Our innovative platform integrates sustainable practices with cutting-edge technology to create a
-              comprehensive ecosystem for environmental management.
-            </p>
-          </div>
-        </div>
+    <section id="solutions" className="py-24 relative overflow-hidden">
+      {/* Background elements */}
+      <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-background"></div>
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
 
-        <div className="mx-auto grid max-w-6xl items-center gap-12 py-12 lg:grid-cols-2">
-          {/* Video Section */}
-          <div className="aspect-video w-full rounded-xl overflow-hidden bg-muted flex items-center justify-center">
-            <div className="text-center p-8">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-primary-foreground"
-                >
-                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                </svg>
-              </div>
-              <p className="text-muted-foreground">Click to play our solution overview</p>
-            </div>
-          </div>
+      <div className="container mx-auto px-4 relative z-10">
+        {/* Heading section with animated reveal */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+          viewport={{ once: true }}
+          className="flex flex-col items-center text-center mb-16"
+        >
+          <Badge variant="outline" className="px-4 py-1 border-primary/20 bg-primary/5 text-primary mb-4">
+            Why Choose Us
+          </Badge>
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground tracking-tight leading-[1.1] mb-4">
+                Comprehensive <span className="text-primary">Sustainability Solutions</span>
+          </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+            Ecofilia empowers sustainability professionals by combining powerful technology with expert guidance,
+            creating a comprehensive solution for your environmental management needs.
+          </p>
+        </motion.div>
 
-          {/* Features Grid */}
-          <div className="grid gap-6 sm:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Sprout className="mr-2 h-5 w-5 text-primary" />
-                  Sustainable Resource Management
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Our platform optimizes resource allocation and usage, reducing waste and maximizing efficiency across
-                  your operations.
-                </CardDescription>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Recycle className="mr-2 h-5 w-5 text-primary" />
-                  Circular Economy Integration
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Transform your business model with our circular economy solutions that turn waste into resources and
-                  create sustainable value chains.
-                </CardDescription>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <CheckCircle className="mr-2 h-5 w-5 text-primary" />
-                  Environmental Compliance
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Stay ahead of regulations with our compliance tools that monitor, report, and optimize your
-                  environmental impact.
-                </CardDescription>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Leaf className="mr-2 h-5 w-5 text-primary" />
-                  Carbon Footprint Reduction
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Measure, track, and reduce your carbon emissions with our comprehensive carbon management system.
-                </CardDescription>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        {/* Dual approach section */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
+          className="grid md:grid-cols-2 gap-8 mb-20"
+        >
+          {/* Platform approach */}
+          <ApproachCard
+            title="Technology Platform"
+            description="Our AI-powered platform automates repetitive tasks and provides powerful tools for sustainability management."
+            icon={<Zap className="w-6 h-6" />}
+            color="primary"
+            buttonText="Explore Platform"
+            delay={0.1}
+          />
 
-        {/* Insights Section
-        <div className="mt-16 bg-muted rounded-xl p-8">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold mb-2 text-foreground">Key Insights</h3>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Our platform has delivered measurable results for businesses across various industries.
-            </p>
-          </div>
+          {/* Consultancy approach */}
+          <ApproachCard
+            title="Expert Consultancy"
+            description="Our team of sustainability experts provides personalized guidance tailored to your specific needs."
+            icon={<Target className="w-6 h-6" />}
+            color="accent"
+            buttonText="Discover Services"
+            delay={0.3}
+          />
+        </motion.div>
 
-          <div className="grid gap-8 md:grid-cols-3">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">40%</div>
-              <p className="font-medium text-foreground">Average reduction in carbon emissions</p>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">$2.5M</div>
-              <p className="font-medium text-foreground">Average annual savings for enterprise clients</p>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">98%</div>
-              <p className="font-medium text-foreground">Compliance rate with environmental regulations</p>
-            </div>
+        {/* Bottom CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.4 }}
+          viewport={{ once: true }}
+          className="mt-20 text-center"
+        >
+          <div className="inline-block p-1 rounded-full bg-gradient-to-r from-primary/50 via-primary to-primary/50">
+            <Button size="lg" className="px-8 rounded-full group">
+              <span>Discover How We Can Help</span>
+              <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform duration-200" />
+            </Button>
           </div>
-        </div> */}
+        </motion.div>
       </div>
     </section>
+  )
+}
+
+
+interface ApproachCardProps {
+  title: string
+  description: string
+  icon: React.ReactNode
+  color: "primary" | "accent"
+  buttonText: string
+  delay: number
+}
+
+function ApproachCard({ title, description, icon, color, buttonText, delay }: ApproachCardProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay }}
+      viewport={{ once: true }}
+      className={`rounded-2xl p-8 border border-border/50 hover:border-${color}/30 transition-all duration-300 hover:shadow-lg group relative overflow-hidden`}
+    >
+      <div
+        className={`absolute top-0 right-0 w-32 h-32 bg-${color}/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2`}
+      ></div>
+      <div
+        className={`absolute bottom-0 left-0 w-24 h-24 bg-${color}/5 rounded-full blur-xl translate-y-1/2 -translate-x-1/2`}
+      ></div>
+
+      <div className="relative z-10">
+        <div className={`inline-flex items-center justify-center p-3 rounded-xl bg-${color}/10 text-${color} mb-6`}>
+          {icon}
+        </div>
+
+        <h3 className="text-2xl font-bold mb-3">{title}</h3>
+        <p className="text-muted-foreground mb-6">{description}</p>
+
+        <ul className="space-y-3 mb-8">
+          <BenefitItem text="Streamlined workflows" />
+          <BenefitItem text="Data-driven insights" />
+          <BenefitItem text="Improved compliance" />
+        </ul>
+
+        <Button variant="outline" className="group/button">
+          {buttonText}
+          <ArrowRight className="ml-2 h-4 w-4 transform group-hover/button:translate-x-1 transition-transform duration-200" />
+        </Button>
+      </div>
+    </motion.div>
+  )
+}
+
+function BenefitItem({ text }: { text: string }) {
+  return (
+    <li className="flex items-center">
+      <Shield className="h-4 w-4 text-primary mr-2 flex-shrink-0" />
+      <span className="text-sm">{text}</span>
+    </li>
   )
 }

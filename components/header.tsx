@@ -27,7 +27,14 @@ export function Header() {
 
         <nav className="hidden md:flex items-center gap-6">
           <Button
-            onClick={() => scrollToSection("solution")}
+            onClick={() => scrollToSection("value")}
+            variant="ghost"
+            className="text-sm font-medium transition-colors hover:text-primary"
+          >
+            Value
+          </Button>
+          <Button
+            onClick={() => scrollToSection("solutions")}
             variant="ghost"
             className="text-sm font-medium transition-colors hover:text-primary"
           >
