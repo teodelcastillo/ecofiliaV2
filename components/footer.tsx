@@ -1,14 +1,14 @@
 import Link from "next/link"
 import { Leaf } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
+import { Logo } from "./logo"
 
 export function Footer() {
   return (
     <footer className="w-full border-t bg-background py-6">
       <div className="container flex flex-col items-center justify-between gap-4 md:flex-row px-4 md:px-6">
         <div className="flex items-center gap-2">
-          <Leaf className="h-5 w-5 text-primary" />
-          <span className="text-lg font-semibold text-foreground">Ecofilia</span>
+          <Logo size="sm"  />
         </div>
         <p className="text-center text-sm text-muted-foreground md:text-left">
           &copy; {new Date().getFullYear()} Ecofilia. All rights reserved.
