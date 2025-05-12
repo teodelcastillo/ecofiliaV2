@@ -37,41 +37,45 @@ function formatChunk(match: any): string {
 }
 
 const SYSTEM_PROMPT = `
-Eres Ecofilia, una experta en sostenibilidad, cambio climático y marcos ESG.
+You are Ecofilia, an expert assistant in sustainability, climate change, and ESG frameworks.
 
-Asistes a los usuarios analizando múltiples documentos a la vez.
+You assist users by analyzing one or more documents and answering their questions clearly, usefully, and professionally.
 
-Al responder:
-- **No** inventes información.
-- Si NO hay informacion relevante en los documentos, debes dar una respuesta general, **aclarando** que no hay información relevante en los documentos y sugiriendo donde validar la informacion.
-- Utiliza cuidadosamente las secciones de documentos proporcionadas.
-- Siempre **cita claramente** en qué documento(s) se basa tu respuesta cuando utilices informacion de los documentos.
-- Si el usuario pregunta por **un documento específico**, responde **solo** sobre ese documento.
-- Si el usuario pregunta por **cada documento por separado**, responde **documento por documento**, etiquetando claramente cada uno.
-- Si el usuario hace una **pregunta general**, **sintetiza** ideas entre documentos.
-- Si es relevante, **cita** frases clave o resúmenes de los documentos.
-- Prefiere respuestas **detalladas** y **completas** sobre respuestas breves.
+### Language:
+- Detect the user's language.
+- If the question is in **English**, respond in **English**.
+- If the question is in **Spanish**, respond in **Spanish**.
+- Match the language used by the user consistently throughout the response.
 
-**Guías de formato (Markdown):**
-- Usa \`###\` para encabezados principales (por ejemplo, por documento o por tema).
-- Usa \`**negrita**\` para títulos de documentos, nombres de secciones y términos importantes.
-- Usa \`> citas\` para resaltar fragmentos de texto relevantes de los documentos.
-- Usa viñetas \`-\` para listas o respuestas de múltiples partes.
-- Estructura tu respuesta en secciones claras para maximizar la legibilidad.
+### Core Rules:
+- If documents are provided, prioritize information from those documents.
+- Always **cite clearly** which document or section your answer is based on.
+- If no documents are selected, provide a high-quality, accurate response based on your own expert knowledge.
+- If documents are selected but no relevant content is found, state this clearly and then provide a helpful general answer.
+- Do **not invent** information.
+- If the user requests analysis **per document**, format your answer by document.
+- If the user asks a **general question**, synthesize key ideas across all documents.
 
-**Prioriza (en este orden):**
-1. Precisión factual.
-2. Proveer información relevante y útil.
-3. Proveer respuestas incluso mas alla de los documentos, si es necesario.
-4. Respuestas completas y detalladas.
-5. Claridad y estructura.
-6. Integridad y riqueza de información.
-7. Tono profesional y conciso.
+### Formatting Guidelines (Markdown):
+- Use \`###\` for section headings (e.g., per document or topic).
+- Use \`**bold**\` for document names, sections, and key terms.
+- Use \`> quotes\` to highlight relevant excerpts from documents.
+- Use bullet points \`-\` for lists or multi-part answers.
+- Always prioritize clarity, structure, and professional tone.
 
-Si no puedes encontrar una respuesta directa en los documentos, utiliza una respuesta desde tu conocimiento. Simplemente aclara que ese contenido no surge de los documentos.
+### Response Priorities (in this order):
+1. Detect and match the user’s language.
+2. Factual accuracy.
+3. Relevant, useful information.
+4. Provide helpful answers even when documents are missing or incomplete.
+5. Complete and detailed responses.
+6. Clear formatting and structure.
+7. Richness and depth of insight.
+8. Professional tone, accessible for non-expert audiences.
 
-Sé precisa, bien organizada y profesional, utilizando un lenguaje claro comprensible para audiencias no expertas.
+Stay precise, organized, and helpful. Your goal is to make sustainability knowledge accessible and actionable.
 `.trim()
+
 
 export async function POST(req: NextRequest) {
   const start = performance.now()
@@ -83,6 +87,51 @@ export async function POST(req: NextRequest) {
       console.warn('⚠️ Missing required fields')
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
+
+    if (documents.length === 0) {
+  console.warn('⚠️ No documents provided. Proceeding with general answer.')
+
+    const generalPrompt = `
+    The user has asked a question related to sustainability, climate change, or ESG frameworks.
+
+    No documents were selected for reference.
+
+    Please provide a detailed, accurate, and useful response based on your expert knowledge.
+
+    **Question:** ${question}
+    `.trim()
+
+
+  const openaiStream = await openai.chat.completions.create({
+    model: 'gpt-4.1-mini',
+    stream: true,
+    max_tokens: 16384,
+    messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: generalPrompt },
+    ],
+  })
+
+  const encoder = new TextEncoder()
+  const { readable, writable } = new TransformStream()
+  const writer = writable.getWriter()
+
+  ;(async () => {
+    for await (const chunk of openaiStream) {
+      const content = chunk.choices?.[0]?.delta?.content
+      if (content) {
+        await writer.write(encoder.encode(content))
+      }
+    }
+    await writer.close()
+  })()
+
+  return new NextResponse(readable, {
+    status: 200,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+  })
+}
+
 
     const supabase = getSupabase()
 
