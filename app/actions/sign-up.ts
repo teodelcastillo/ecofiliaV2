@@ -26,8 +26,8 @@ export async function signUpAction(formData: FormData) {
   console.log("🔍 Email redirect URL:", `${origin}/auth/callback`);
 
   if (error) {
-    return redirect(`/auth&type=error&message=${encodeURIComponent(error.message)}`);
+    return redirect(`/auth?tab=signup&type=error&message=${encodeURIComponent(error.message)}`);
   }
 
-  return redirect(`/auth&type=success&message=${encodeURIComponent("Verification email sent")}`);
+  return redirect(`/auth?tab=signup&type=success&message=${encodeURIComponent("Verification email sent")}`);
 }
