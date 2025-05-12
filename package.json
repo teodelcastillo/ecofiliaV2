@@ -71,6 +71,7 @@
     "react-markdown": "^10.1.0",
     "react-resizable-panels": "^2.1.7",
     "recharts": "^2.15.1",
+    "resend": "^4.5.1",
     "sonner": "^2.0.1",
     "supabase": "^2.20.12",
     "tiktoken": "^1.0.20",

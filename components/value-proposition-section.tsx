@@ -50,14 +50,14 @@ export function ValueProposition() {
     
               <FeatureBox
                 icon={<FolderSearch className="w-12 h-12" />}
-                title="DIAGNOSIS"
-                description="Identify opportunities and challenges in your sustainability practices with our thorough assessment tools."
+                title="SUSTAINABILITY REPORTING"
+                description="Generate detailed sustainability reports with ease, ensuring compliance and transparency."
                 delay={0.2}
               />
     
               <FeatureBox
                 icon={<BarChart3 className="w-12 h-12" />}
-                title="DASHBOARDS KPI's MGMT"
+                title="DASHBOARDS & KPI's"
                 description="Track and visualize your sustainability KPIs with intuitive dashboards and reporting tools."
                 delay={0.3}
               />

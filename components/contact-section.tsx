@@ -29,30 +29,31 @@ export function ContactSection() {
     })
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+  setIsSubmitting(true)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+  try {
+    const response = await fetch("/api/send-contact-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formState),
+    })
 
-    // Here you would typically send the form data to your backend
-    console.log("Form submitted:", formState)
+    if (!response.ok) throw new Error("Failed to send message")
 
-    // Reset form and show success
-    setIsSubmitting(false)
     setIsSubmitted(true)
+    setFormState({ name: "", email: "", message: "" })
 
-    // Reset after 5 seconds
-    setTimeout(() => {
-      setIsSubmitted(false)
-      setFormState({
-        name: "",
-        email: "",
-        message: "",
-      })
-    }, 5000)
+    setTimeout(() => setIsSubmitted(false), 5000)
+  } catch (err) {
+    console.error("Submit error:", err)
+    alert("There was an error sending your message. Please try again later.")
+  } finally {
+    setIsSubmitting(false)
   }
+}
+
 
   return (
     <section id="contact" className="w-full py-24 md:py-32 relative overflow-hidden">
