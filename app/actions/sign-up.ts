@@ -8,7 +8,7 @@ export const signUpAction = async (formData: FormData) => {
   const fullName = formData.get("full_name")?.toString();
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
-  const supabase = await createClient();
+  const supabase = createClient();
   const origin = (await headers()).get("origin");
 
   if (!email || !password) {
@@ -33,7 +33,7 @@ export const signUpAction = async (formData: FormData) => {
 
   if (error) {
     console.error(error.code + " " + error.message);
-    return encodedRedirect("error", "/sign-up", error.message);
+  return encodedRedirect("error", "/auth?tab=sign-up", error.message);
   } else {
     return encodedRedirect(
       "success",
