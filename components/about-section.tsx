@@ -21,44 +21,46 @@ const teamMembers = [
     id: 1,
     name: "Sofia del Castillo",
     role: "CSO & Co-Founder",
-    image: "/TEO2.jpg",
+    image: "/HEADSHOTSOFIA.jpeg",
     fallback: "SdC",
     bio: "Sustainability professional with 10+ years of experience in sustainability and corporate environmental strategy.",
     extendedBio: "A seasoned sustainability professional with over 10 years of global experience driving climate action and advancing environmental, social, and governance (ESG) goals. Sofía holds a Master’s degree in Climate, Land Use, and Ecosystem Services and has collaborated with leading organizations such as the Inter-American Development Bank, the United Nations, and government institutions. Her expertise spans climate finance, policy design, and sustainability, where she has led projects involving capacity building, international negotiations, stakeholder engagement, and multimillion-dollar funding proposals. With a deep commitment to creating a more sustainable future, Sofía leverages innovative solutions to bridge technology and sustainability, driving measurable impact and promoting resilience in public and private sectors.",
     education: "Ph.D. Environmental Science, Stanford University\nM.Sc. Sustainability Management, MIT\nB.Sc. Biology, UC Berkeley",
     achievements: ["Named in Forbes 40 Under 40 for Sustainability", "Author of 'Corporate Pathways to Net Zero'", "TED Talk: 'Reimagining Business in a Carbon-Constrained World'"],
     socialLinks: [
-      { platform: "linkedin", url: "https://www.linkedin.in/..." },
+      { platform: "linkedin", url: "https://www.linkedin.com/in/sofia-del-castillo" },
     ],
   },
   {
     id: 2,
-    name: "Michael Chen",
-    role: "CTO & Co-Founder",
-    image: "/team-member-2.png",
+    name: "Gonzalo Gambertoglio",
+    role: "CEO & Co-Founder",
+    image: "/HEADHSHOTGON.jpeg",
     fallback: "MC",
-    bio: "Tech innovator with expertise in AI and machine learning applications for environmental monitoring and optimization.",
-    extendedBio: "Michael pioneered the use of machine learning algorithms for environmental data analysis at Google before co-founding Ecofilia. His work has led to breakthrough innovations in resource optimization and predictive environmental modeling. He leads our technical team in developing scalable solutions that make sustainability measurable and actionable for businesses of all sizes.",
-    education: "M.S. Computer Science, Carnegie Mellon University\nB.S. Electrical Engineering, UC San Diego",
+    bio: "An entrepreneurial Sales and Operations leader with over 12 years of experience spanning multinational corporations and business ownership.",
+    extendedBio: "An entrepreneurial Sales and Operations leader with over 12 years of experience spanning multinational corporations and business ownership. Gonzalo Gambertoglio holds an MBA and a Bachelor's in Business Administration. His corporate tenure includes roles at Coca-Cola, Mattel, and Danone, where he excelled in business development, franchise management, and key account leadership, driving strategic initiatives and operational efficiencies. As Co-Managing Partner of Ammos Vacation Rentals, Gonzalo has successfully restructured the business, scaling operations while implementing innovative sales, customer service, and financial processes. He brings a strategic vision and hands-on expertise in transforming challenges into growth opportunities.",
+    education: "BBA Marketing, Summa Cum Laude, Alabama University\nMBA, UCEMA, Argentina\nDigital Transformation Diploma, ITBA, Buenos Aires",
     achievements: ["Patent holder for 5 AI-driven environmental monitoring systems", "Lead developer of GreenMetrics™ platform", "Winner of the Global CleanTech Innovation Award"],
     socialLinks: [
-      { platform: "github", url: "#" },
-      { platform: "linkedin", url: "#" },
+      { platform: "linkedin", url: "https://www.linkedin.com/in/gonzalogambertoglio" },
     ],
   },
   {
-    id: 3,
-    name: "Elena Rodriguez",
-    role: "Head of Partnerships",
-    image: "/team-member-3.png",
-    fallback: "ER",
-    bio: "Business development expert specializing in creating sustainable partnerships across industries and sectors.",
-    extendedBio: "Elena has a proven track record of building strategic partnerships that drive both business growth and environmental impact. Before joining Ecofilia, she led global partnership initiatives at the World Wildlife Fund, connecting corporations with conservation projects. Her approach to partnership development focuses on creating shared value that benefits businesses, communities, and the environment.",
-    education: "MBA, Harvard Business School\nB.A. International Relations, Georgetown University",
-    achievements: ["Established partnerships generating over $50M in sustainable business", "Developed the Circular Economy Alliance with 30+ global brands", "Author of 'Partnership Economics: The Business Case for Sustainability'"],
-    socialLinks: [
+  id: 3,
+  name: "Teodoro del Castillo",
+  role: "CTO & Co-Founder",
+  image: "/HEADHSOTTEO.jpeg",
+  fallback: "TdC",
+  bio: "Technical co-founder of Ecofilia, leading the development of AI-powered tools that transform environmental data into actionable insights.",
+  extendedBio: "As CTO and co-founder of Ecofilia, Teodoro del Castillo spearheads the development of AI-driven solutions that streamline environmental data analysis and reporting. With a strong background in digital transformation and business development, he is dedicated to creating tools that empower environmental consultancies to make data-driven decisions. His leadership ensures that Ecofilia remains at the forefront of technological innovation in the environmental sector.",
+  education: "Law School, Universidad Empresarial Siglo 21, Argentina.\nCode your Future, Globant University",
+  achievements: [
+    "Co-founded Ecofilia, an AI-enhanced environmental intelligence platform.",
+    "Development of AI-powered tools for data analysis.",
+    "Advocated for digital transformation in environmental consultancies.",],
+  socialLinks: [
       { platform: "linkedin", url: "#" },
-      { platform: "twitter", url: "#" },
+      { platform: "github", url: "#" },
     ],
   },
 ]
@@ -73,7 +75,7 @@ export function AboutSection() {
           <div className="space-y-2">
             <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight text-foreground">About Us</h2>
             <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-              Meet the team behind Ecofilia's mission to create sustainable solutions for a better world.
+              Ecofilia was born from the belief that sustainability work deserves better tools — intuitive, fast, and made for impact. Together, we’re blending AI and climate expertise to help professionals tackle today’s biggest environmental challenges.
             </p>
           </div>
         </div>
