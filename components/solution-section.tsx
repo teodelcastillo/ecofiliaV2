@@ -11,6 +11,20 @@ import { useRouter } from "next/navigation"
 
 export function SolutionSection() {
   const router = useRouter()
+  const platformBenefits = [
+  "Automated ESG & climate reporting",
+  "AI-based document analysis",
+  "Real-time KPI tracking",
+  "Custom dashboards & integrations",
+]
+
+const consultancyBenefits = [
+  "Strategic advisory & regulatory alignment",
+  "NDC, TCFD, SDG integration",
+  "Climate finance guidance",
+  "Climate impact modeling & disclosure",
+]
+
 
   return (
     <section id="solutions" className="py-24 relative overflow-hidden">
@@ -56,21 +70,24 @@ export function SolutionSection() {
             color="primary"
             buttonText="Explore Platform"
             delay={0.1}
+            benefits={platformBenefits}
             onClick={() => router.push("/auth")}
           />
 
           <ApproachCard
             title="Expert Consultancy"
-            description="Our team of sustainability experts provides personalized guidance tailored to your specific needs."
+            description="Partner with our experts to design AI-powered strategies tailored to your goals — unlocking opportunities, driving impact, and ensuring global compliance."
             icon={<Target className="w-6 h-6" />}
             color="accent"
             buttonText="Discover Services"
             delay={0.3}
+            benefits={consultancyBenefits}
             onClick={() => {
               const contact = document.getElementById("contact")
               if (contact) contact.scrollIntoView({ behavior: "smooth" })
             }}
           />
+
 
         </motion.div>
 
@@ -103,10 +120,12 @@ interface ApproachCardProps {
   buttonText: string
   delay: number
   onClick?: () => void
+  benefits: string[]
 }
 
 
-function ApproachCard({ title, description, icon, color, buttonText, delay, onClick }: ApproachCardProps) {
+
+function ApproachCard({ title, description, icon, color, buttonText, delay, onClick, benefits }: ApproachCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -131,10 +150,11 @@ function ApproachCard({ title, description, icon, color, buttonText, delay, onCl
         <p className="text-muted-foreground mb-6">{description}</p>
 
         <ul className="space-y-3 mb-8">
-          <BenefitItem text="Streamlined workflows" />
-          <BenefitItem text="Data-driven insights" />
-          <BenefitItem text="Improved compliance" />
+          {benefits.map((text, idx) => (
+            <BenefitItem key={idx} text={text} />
+          ))}
         </ul>
+
 
         <Button variant="outline" className="group/button" onClick={onClick}>
           {buttonText}
