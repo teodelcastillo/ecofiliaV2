@@ -5,9 +5,11 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Menu } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false)
+  const router = useRouter()
 
   const scrollToSection = (id: string) => {
     setIsOpen(false)
@@ -46,7 +48,11 @@ export function Header() {
           >
             Contact
           </Button>
-          <Button>Sign In</Button>
+              <Button 
+                className="w-full" 
+                onClick={() => router.push("/auth")}>
+                Sign In
+              </Button>
         </nav>
 
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -79,7 +85,11 @@ export function Header() {
               >
                 Contact
               </Button>
-              <Button className="w-full">Sign In</Button>
+              <Button 
+                className="w-full" 
+                onClick={() => router.push("/auth")}>
+                Sign In
+              </Button>
             </div>
           </SheetContent>
         </Sheet>
