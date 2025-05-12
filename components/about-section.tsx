@@ -57,8 +57,7 @@ const teamMembers = [
     education: "Law School, Universidad Empresarial Siglo 21, Argentina.\nCode your Future, Globant University",
 
     socialLinks: [
-      { platform: "linkedin", url: "#" },
-      { platform: "github", url: "#" },
+      { platform: "linkedin", url: "https://ar.linkedin.com/in/teodoro-del-castillo" },
     ],
   },
 ]
