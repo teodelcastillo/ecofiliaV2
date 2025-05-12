@@ -25,7 +25,7 @@ const teamMembers = [
     role: "Sustainability Expert",
     image: "/HEADSHOTSOFIA.jpeg",
     fallback: "SdC",
-    bio: "Sustainability professional with 10+ years of experience in sustainability and corporate environmental strategy.",
+    bio: "Climate & Sustainability Expert y la descripcion breve Climate and sustainability expert with over 10 years of experience driving environmental strategy, ESG integration, and policy innovation across public and private sectors.",
     extendedBio:
       "A seasoned sustainability professional with over 10 years of global experience driving climate action and advancing environmental, social, and governance (ESG) goals. Sofía holds a Master’s degree in Climate, Land Use, and Ecosystem Services and has collaborated with leading organizations such as the Inter-American Development Bank, the United Nations, and government institutions. Her expertise spans climate finance, policy design, and sustainability, where she has led projects involving capacity building, international negotiations, stakeholder engagement, and multimillion-dollar funding proposals. With a deep commitment to creating a more sustainable future, Sofía leverages innovative solutions to bridge technology and sustainability, driving measurable impact and promoting resilience in public and private sectors.",
     education:
