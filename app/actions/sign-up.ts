@@ -1,44 +1,31 @@
 "use server";
 
-import { encodedRedirect } from "@/utils/utils";
-import { createClient } from "@/utils/supabase/server";
-import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { supabaseAdmin } from "@/utils/supabase/admin";
 
-export const signUpAction = async (formData: FormData) => {
+export async function signUpAction(formData: FormData) {
   const fullName = formData.get("full_name")?.toString();
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
-  const supabase = createClient();
-  const origin = (await headers()).get("origin");
+
+  const origin = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.ecofilia.host";
 
   if (!email || !password) {
-    return encodedRedirect(
-      "error",
-      "/auth?tab=sign-up",
-      "Email and password are required",
-    );
+    return redirect("/auth?tab=sign-up&type=error&message=Missing credentials");
   }
 
-  const { error } = await supabase.auth.signUp({
+  const { error } = await supabaseAdmin.auth.signUp({
     email,
     password,
     options: {
       emailRedirectTo: `${origin}/auth/callback`,
-      data: {
-        full_name: fullName, // 👈 this is what your DB trigger uses
-      },
+      data: { full_name: fullName },
     },
   });
-  
 
   if (error) {
-    console.error(error.code + " " + error.message);
-  return encodedRedirect("error", "/auth?tab=sign-up", error.message);
-  } else {
-    return encodedRedirect(
-      "success",
-      "/auth?tab=sign-up",
-      "Thanks for signing up! Please check your email for a verification link.",
-    );
+    return redirect(`/auth?tab=sign-up&type=error&message=${encodeURIComponent(error.message)}`);
   }
-};
+
+  return redirect(`/auth?tab=sign-up&type=success&message=${encodeURIComponent("Verification email sent")}`);
+}

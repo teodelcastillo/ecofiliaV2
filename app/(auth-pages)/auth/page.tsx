@@ -1,10 +1,6 @@
-import { Suspense } from "react";
+import { signUpAction } from "@/app/actions/sign-up";
 import { AuthClient } from "./auth-client";
 
-export default function AuthPageWrapper() {
-  return (
-    <Suspense>
-      <AuthClient />
-    </Suspense>
-  );
+export default function AuthPage() {
+  return <AuthClient onSignUp={signUpAction} />;
 }

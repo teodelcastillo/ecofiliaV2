@@ -3,30 +3,24 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { signUpAction } from "@/app/actions/sign-up";
-import { signInAction } from "@/app/actions/sign-in";
 import { FormMessage, type Message } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
+import { signInAction } from "@/app/actions/sign-in";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle
+  Card, CardContent, CardDescription, CardFooter,
+  CardHeader, CardTitle
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Mail, Lock, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
-export function AuthClient() {
+interface AuthClientProps {
+  onSignUp: (formData: FormData) => void;
+}
+
+export function AuthClient({ onSignUp }: AuthClientProps) {
   const searchParams = useSearchParams();
   const message = searchParams.get("message");
   const type = searchParams.get("type");
@@ -37,10 +31,7 @@ export function AuthClient() {
 
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { duration: 0.5, staggerChildren: 0.1 }
-    }
+    visible: { opacity: 1, transition: { duration: 0.5, staggerChildren: 0.1 } }
   };
 
   const itemVariants = {
@@ -51,12 +42,7 @@ export function AuthClient() {
   if (type === "success" && message && activeTab === "sign-up") {
     return (
       <div className="container flex items-center justify-center min-h-[80vh] px-4 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-md"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="w-full max-w-md">
           <Card className="shadow-lg border-primary/20">
             <CardContent className="p-6 text-center">
               <div className="mb-4 flex justify-center">
@@ -66,10 +52,7 @@ export function AuthClient() {
               </div>
               <h2 className="text-2xl font-bold mb-2">Verification Email Sent</h2>
               <p className="text-muted-foreground mb-4">Please check your email to complete your registration.</p>
-              <Link
-                href="/auth?tab=sign-in"
-                className="text-primary hover:underline flex items-center justify-center gap-1"
-              >
+              <Link href="/auth?tab=sign-in" className="text-primary hover:underline flex items-center justify-center gap-1">
                 Return to sign in <ArrowRight size={16} />
               </Link>
             </CardContent>
@@ -100,6 +83,7 @@ export function AuthClient() {
                   initial="hidden"
                   animate="visible"
                 >
+                  {/* Email */}
                   <motion.div className="space-y-2" variants={itemVariants}>
                     <Label htmlFor="signin-email">Email</Label>
                     <div className="relative">
@@ -110,6 +94,7 @@ export function AuthClient() {
                     </div>
                   </motion.div>
 
+                  {/* Password */}
                   <motion.div className="space-y-2" variants={itemVariants}>
                     <div className="flex items-center justify-between">
                       <Label htmlFor="signin-password">Password</Label>
@@ -138,20 +123,14 @@ export function AuthClient() {
                 <CardDescription>Enter your details to create your account</CardDescription>
                 <motion.form
                   className="space-y-4 mt-4"
-                  action={signUpAction}
+                  action={onSignUp}
                   variants={containerVariants}
                   initial="hidden"
                   animate="visible"
                 >
                   <motion.div className="space-y-2" variants={itemVariants}>
                     <Label htmlFor="signup-full-name">Full Name</Label>
-                    <Input
-                      id="signup-full-name"
-                      name="full_name"
-                      type="text"
-                      placeholder="John Doe"
-                      required
-                    />
+                    <Input id="signup-full-name" name="full_name" type="text" placeholder="John Doe" required />
                   </motion.div>
 
                   <motion.div className="space-y-2" variants={itemVariants}>
@@ -176,7 +155,7 @@ export function AuthClient() {
                   </motion.div>
 
                   <motion.div variants={itemVariants}>
-                    <SubmitButton formAction={signUpAction} pendingText="Creating account..." className="w-full">Sign up</SubmitButton>
+                    <SubmitButton formAction={onSignUp} pendingText="Creating account..." className="w-full">Sign up</SubmitButton>
                   </motion.div>
 
                   <motion.div variants={itemVariants}>
@@ -191,16 +170,12 @@ export function AuthClient() {
             {activeTab === "sign-in" ? (
               <p className="text-sm text-muted-foreground">
                 Don't have an account?{" "}
-                <button onClick={() => setActiveTab("sign-up")} className="text-primary font-medium hover:underline">
-                  Sign up
-                </button>
+                <button onClick={() => setActiveTab("sign-up")} className="text-primary font-medium hover:underline">Sign up</button>
               </p>
             ) : (
               <p className="text-sm text-muted-foreground">
                 Already have an account?{" "}
-                <button onClick={() => setActiveTab("sign-in")} className="text-primary font-medium hover:underline">
-                  Sign in
-                </button>
+                <button onClick={() => setActiveTab("sign-in")} className="text-primary font-medium hover:underline">Sign in</button>
               </p>
             )}
           </CardFooter>
