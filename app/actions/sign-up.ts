@@ -11,7 +11,7 @@ export async function signUpAction(formData: FormData) {
   const origin = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.ecofilia.host";
 
   if (!email || !password) {
-    return redirect("/auth?tab=sign-up&type=error&message=Missing credentials");
+    return redirect("/auth");
   }
 
   const { error } = await supabaseAdmin.auth.signUp({
@@ -24,8 +24,8 @@ export async function signUpAction(formData: FormData) {
   });
 
   if (error) {
-    return redirect(`/auth?tab=sign-up&type=error&message=${encodeURIComponent(error.message)}`);
+    return redirect(`/auth&type=error&message=${encodeURIComponent(error.message)}`);
   }
 
-  return redirect(`/auth?tab=sign-up&type=success&message=${encodeURIComponent("Verification email sent")}`);
+  return redirect(`/auth&type=success&message=${encodeURIComponent("Verification email sent")}`);
 }
