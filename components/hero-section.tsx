@@ -138,9 +138,10 @@ export function HeroSection() {
                 </div>
               </div>
             </div>
-            <Button variant="outline" size="lg">
-              Contact Us
-            </Button>
+            <a href="#contact">
+              <Button variant="outline" size="lg">Contact Us</Button>
+            </a>
+
           </div>
         </div>
         <div className="flex flex-col items-center justify-center text-center mt-8">
