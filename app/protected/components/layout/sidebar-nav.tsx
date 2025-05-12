@@ -39,6 +39,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import Image from "next/image"
 import { GiMonsteraLeaf } from "react-icons/gi"
+import { Logo } from "@/components/logo"
 
 // Define menu items with proper typing
 interface MenuItem {
@@ -128,10 +129,7 @@ export function Sidebar() {
     <ShadcnSidebar  >
       <SidebarHeader className="flex justify-center items-center gap-2 h-16 border-b" >
         <span onClick={() => redirect("/protected")} className="flex items-center gap-2 cursor-pointer">
-          <Image src="/ECOFILIALEAF.png" alt="Ecofilia Logo" width={32} height={32} className="h-8 w-8" />
-          <span className={`${montserrat.className} font-bold text-lg tracking-tight`}>
-            ECOFILIA
-          </span>
+          <Logo size="sm" />
         </span>
       </SidebarHeader>
 
