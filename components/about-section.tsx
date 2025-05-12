@@ -35,7 +35,7 @@ const teamMembers = [
   {
     id: 2,
     name: "Gonzalo Gambertoglio",
-    role: "Operational Manager & Business Development",
+    role: "Operational & Business manager",
     image: "/HEADHSHOTGON.jpeg",
     fallback: "MC",
     bio: "An entrepreneurial Sales and Operations leader with over 12 years of experience spanning multinational corporations and business ownership.",
