@@ -177,47 +177,65 @@ export async function POST(req: NextRequest) {
 
     const documentsMissing: string[] = []
 
-    // Buscar chunks para cada documento
-    const chunkResults = await Promise.all(
-      documents.map(async (doc: any) => {
-        const field = doc.type === 'public' ? 'public_document_id' : 'document_id'
+// Buscar chunks relevantes para cada documento
+const chunkResults = await Promise.all(
+  documents.map(async (doc: any) => {
+    const field = doc.type === 'public' ? 'public_document_id' : 'document_id'
 
-        try {
-          const { data: matches, error } = await supabase.rpc('match_smart_chunks', {
-            query_embedding: questionEmbedding,
-            match_count: 5,
-            filter_document_ids: [doc.id],
-            field_name: field,
-          })
-
-          if (error || !matches || matches.length === 0) {
-            console.warn(`⚠️ No good matches for document ${doc.id}. Trying fallback...`)
-
-            const { data: fallbackChunk, error: fallbackError } = await supabase
-              .from('smart_chunks')
-              .select('*')
-              .eq(field, doc.id)
-              .order('chunk_index', { ascending: true })
-              .limit(1)
-              .single()
-
-            if (fallbackError || !fallbackChunk) {
-              console.warn(`⚠️ No fallback chunk found for document ${doc.id}`)
-              documentsMissing.push(doc.id)
-              return null
-            }
-
-            return { docId: doc.id, chunks: [fallbackChunk] }
-          }
-
-          return { docId: doc.id, chunks: matches }
-        } catch (err) {
-          console.error(`🔥 Error fetching chunks for document ${doc.id}:`, err)
-          documentsMissing.push(doc.id)
-          return null
-        }
+    try {
+      // Buscar top 15 por embedding
+      const { data: matches, error } = await supabase.rpc('match_smart_chunks', {
+        query_embedding: questionEmbedding,
+        match_count: 15,
+        filter_document_ids: [doc.id],
+        field_name: field,
       })
-    )
+
+      if (error) {
+        throw new Error(`RPC error: ${error.message}`)
+      }
+
+      const filteredMatches = (matches || [])
+        .filter((m: { similarity: number }) => m.similarity >= 0.05)
+        .sort((a: { similarity: number }, b: { similarity: number }) => b.similarity - a.similarity)
+
+      if (filteredMatches.length > 0) {
+        console.log(`📌 Chunks relevantes para ${doc.id}:`, filteredMatches.map((m: { chunk_index: any; similarity: any; title: string | any[]; content: string | any[] }) => ({
+          index: m.chunk_index,
+          sim: (m.similarity ?? 0).toFixed(4),
+          title: m.title?.slice(0, 40),
+          content: m.content?.slice(0, 100),
+        })))
+        return { docId: doc.id, chunks: filteredMatches }
+      }
+
+      // Fallback si no hay chunks relevantes
+      console.warn(`⚠️ No chunks relevantes para documento ${doc.id}. Probando fallback...`)
+
+      const { data: fallbackChunk, error: fallbackError } = await supabase
+        .from('smart_chunks')
+        .select('*')
+        .eq(field, doc.id)
+        .order('chunk_index', { ascending: true })
+        .limit(1)
+        .single()
+
+      if (fallbackError || !fallbackChunk) {
+        console.warn(`⚠️ No se encontró fallback chunk para ${doc.id}`)
+        documentsMissing.push(doc.id)
+        return null
+      }
+
+      return { docId: doc.id, chunks: [fallbackChunk] }
+
+    } catch (err) {
+      console.error(`🔥 Error buscando chunks para ${doc.id}:`, err)
+      documentsMissing.push(doc.id)
+      return null
+    }
+  })
+)
+
 
     const perDocumentChunks = chunkResults.filter((r) => r !== null)
 

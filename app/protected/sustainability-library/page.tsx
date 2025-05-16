@@ -105,13 +105,6 @@ const resources = [
     "Discover various reports on sustainability topics, including climate change, biodiversity, and more.",
     category: "Reports",
   },
-  {
-    icon: TbReportSearch,
-    title: "United Nations Framework Convention on Climate Change (UNFCCC)",
-    description:
-    "Access documents and reports related to the UNFCCC and its processes.",
-    category: "UNFCCC",
-  },
 
 ]
 
