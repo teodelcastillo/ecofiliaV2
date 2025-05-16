@@ -8,7 +8,7 @@ export async function signUpAction(formData: FormData) {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
 
-  const origin = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.ecofilia.host";
+  const origin = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.ecofilia.site";
 
   if (!email || !password) {
     return redirect("/auth");
