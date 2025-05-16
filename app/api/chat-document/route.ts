@@ -184,12 +184,14 @@ const chunkResults = await Promise.all(
 
     try {
       // Buscar top 15 por embedding
-      const { data: matches, error } = await supabase.rpc('match_smart_chunks', {
+      const { data: matches, error } = await supabase.rpc('match_smart_chunks_by_public_id', {
         query_embedding: questionEmbedding,
         match_count: 15,
         filter_document_ids: [doc.id],
-        field_name: field,
       })
+
+      console.log(`🔍 Chunks encontrados para ${doc.id}:`, matches)
+
 
       if (error) {
         throw new Error(`RPC error: ${error.message}`)
