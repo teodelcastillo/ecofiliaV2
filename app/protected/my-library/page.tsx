@@ -2,10 +2,14 @@
 import { IntegratedLibrary } from "./components/integrated-library"
 import { LibraryBig } from "lucide-react"
 import { requireUser } from "@/lib/require-user"
+import { requireUserWithAdminStatus } from "@/lib/requireAdmin"
+import { LibraryComingSoonOverlay } from "./components/my-library-overlay"
 export const dynamic = "force-dynamic"
 
 export default async function MyLibraryPage() {
   const { user, supabase } = await requireUser()
+  const { isAdmin } = await requireUserWithAdminStatus()
+  
 
   // Fetch user's documents
   const INITIAL_PAGE_SIZE = 10
@@ -22,6 +26,12 @@ export default async function MyLibraryPage() {
   }
 
   console.log("✅ Documents fetched:", userDocuments?.length)
+
+  if (!isAdmin) {
+    return (
+      <LibraryComingSoonOverlay />
+    )
+  }
 
   return (
     <div className="container mx-auto py-8 px-4">
