@@ -98,7 +98,10 @@ export function ChatHistory({ sessions, activeSession, onSelectSession, onNewCha
                           ? "bg-primary/10 border-l-2 border-primary"
                           : "hover:bg-accent/50 border-l-2 border-transparent"
                       }`}
-                      onClick={() => onSelectSession(session.id)}
+onClick={() => {
+  console.log("🧪 clic en sesión:", session.id); // <- Este log confirma si se dispara el evento
+  onSelectSession(session.id);
+}}
                     >
                       <div className="flex flex-col gap-1">
                         <h3 className="text-sm font-medium truncate">{session.title}</h3>

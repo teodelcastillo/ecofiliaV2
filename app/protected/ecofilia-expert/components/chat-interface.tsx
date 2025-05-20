@@ -45,6 +45,9 @@ export function ChatInterface({
 
   const isSubmitDisabled = isLoading || !input.trim(); // remove document requirement
 
+  console.log("🔁 ChatInterface renderizado para", messages.length, "mensajes");
+
+
   return (
     <Card className="h-full shadow-md border-border/50 flex flex-col">
       <CardHeader className="pb-3">

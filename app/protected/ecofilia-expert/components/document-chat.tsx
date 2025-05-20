@@ -47,6 +47,8 @@ export function DocumentChat({ personalDocuments, publicDocuments, userId, proje
     loadChatSessions();
   }, []);
 
+
+
   const handleDocumentSelect = useCallback(
     (documents: (Document & { type: "user" | "public" | "project" })[]) => {
       setSelectedDocuments(documents);
@@ -73,19 +75,31 @@ export function DocumentChat({ personalDocuments, publicDocuments, userId, proje
   }, []);
 
 const saveMessage = async (chatId: string, role: "user" | "assistant", content: string) => {
-  const { error: msgError } = await supabase.from("messages").insert([{ chat_id: chatId, role, content }]);
+  console.log("💾 Guardando mensaje:", { chatId, role, content });
 
-if (!msgError) {
+  const { data, error: msgError } = await supabase
+    .from("messages")
+    .insert([{ chat_id: chatId, role, content }])
+    .select()
+    .single();
+
+  if (msgError) {
+    console.error("❌ Error al insertar mensaje:", msgError.message);
+    throw new Error(msgError.message);
+  }
+
   const { error: updateError } = await supabase
     .from("chats")
     .update({ updated_at: new Date().toISOString() })
     .eq("id", chatId);
 
   if (updateError) {
-    console.error("❌ Failed to update chat timestamp:", updateError.message);
+    console.error("❌ Error al actualizar updated_at en chats:", updateError.message);
   }
-}
+
+  return data; // Podés usarlo si luego querés mostrar algo en UI
 };
+
 
 
   const createNewChat = async (title: string) => {
@@ -168,6 +182,8 @@ if (!msgError) {
   };
 
 const loadChatSessions = async () => {
+    console.log("🚀 Ejecutando loadChatSessions"); // <- Verifica que se ejecuta
+
   const { data, error } = await supabase
     .from("chats")
     .select("*")
@@ -193,6 +209,8 @@ const loadChatSessions = async () => {
 
 
 const loadChatMessages = async (chatId: string) => {
+  console.log("📥 Ejecutando loadChatMessages para:", chatId); // 👈🏼 agrega esto
+
   const { data, error } = await supabase
     .from("messages")
     .select("*")
@@ -200,23 +218,25 @@ const loadChatMessages = async (chatId: string) => {
     .order("created_at", { ascending: true });
 
   if (error) {
-    console.error("Error fetching messages:", error.message);
+    console.error("❌ Error fetching messages:", error.message);
     return;
   }
 
   if (data) {
+    console.log("✅ Mensajes recuperados:", data); // 👈🏼 agrega esto
     setMessages(
       data
         .filter(msg => msg.role)
         .map(msg => ({
-          id: msg.id, // ✅ usa el id real
+          id: msg.id,
           role: msg.role as "user" | "assistant",
           content: msg.content,
         }))
     );
-    setInput(""); // opcional
+    setInput("");
   }
 };
+
 
 
   const toggleHistory = () => setShowHistory(prev => !prev);
@@ -238,16 +258,22 @@ const loadChatMessages = async (chatId: string) => {
           />
         </div>
 
-        <AnimatePresence initial={false}>
+        {/*<AnimatePresence initial={false}> */}
           {showHistory && (
             <motion.div initial={{ width: 0, opacity: 0 }} animate={{ width: "auto", opacity: 1 }} exit={{ width: 0, opacity: 0 }} transition={{ duration: 0.3 }} className="lg:col-span-3 overflow-hidden">
               <ChatHistory
                 sessions={chatSessions.map(session => ({ ...session, createdAt: session.date }))}
                 activeSession={activeSession}
-                onSelectSession={async (id) => {
-                  setActiveSession(id);
-                  await loadChatMessages(id);
+                onSelectSession={(id) => {
+                  console.log("🟡 Chat seleccionado:", id);
+                  setMessages([]);            // Limpia los mensajes anteriores inmediatamente
+                  setActiveSession(id);       // Actualiza el estado
+                  loadChatMessages(id);       // Carga los mensajes del nuevo chat
                 }}
+
+
+
+
                 onNewChat={() => {
                   setMessages([]);
                   setSelectedDocuments([]);
@@ -256,7 +282,7 @@ const loadChatMessages = async (chatId: string) => {
               />
             </motion.div>
           )}
-        </AnimatePresence>
+        {/*</AnimatePresence>*/}
       </div>
 
       <DocumentSelectorModal
