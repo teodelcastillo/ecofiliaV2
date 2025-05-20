@@ -72,9 +72,21 @@ export function DocumentChat({ personalDocuments, publicDocuments, userId, proje
     setMessages(prev => prev.map((msg, i) => (i === prev.length - 1 && msg.role === "assistant" ? { ...msg, content } : msg)));
   }, []);
 
-  const saveMessage = async (chatId: string, role: "user" | "assistant", content: string) => {
-    await supabase.from("messages").insert([{ chat_id: chatId, role, content }]);
-  };
+const saveMessage = async (chatId: string, role: "user" | "assistant", content: string) => {
+  const { error: msgError } = await supabase.from("messages").insert([{ chat_id: chatId, role, content }]);
+
+if (!msgError) {
+  const { error: updateError } = await supabase
+    .from("chats")
+    .update({ updated_at: new Date().toISOString() })
+    .eq("id", chatId);
+
+  if (updateError) {
+    console.error("❌ Failed to update chat timestamp:", updateError.message);
+  }
+}
+};
+
 
   const createNewChat = async (title: string) => {
     const { data: newChat, error } = await supabase.from("chats").insert([{ user_id: userId, title }]).select().single();
@@ -155,23 +167,30 @@ export function DocumentChat({ personalDocuments, publicDocuments, userId, proje
     }
   };
 
-  const loadChatSessions = async () => {
-    const { data, error } = await supabase.from("chats").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+const loadChatSessions = async () => {
+  const { data, error } = await supabase
+    .from("chats")
+    .select("*")
+    .eq("user_id", userId)
+    .order("updated_at", { ascending: false }); // 🔄 antes era created_at
 
-    if (error) {
-      console.error("Error loading chat sessions:", error.message);
-      return;
-    }
+  if (error) {
+    console.error("Error loading chat sessions:", error.message);
+    return;
+  }
 
-    if (data) {
-      setChatSessions(data.map(chat => ({
+  if (data) {
+    setChatSessions(
+      data.map((chat) => ({
         id: chat.id,
         title: chat.title || "Untitled Chat",
         preview: "",
-        date: chat.created_at ? new Date(chat.created_at) : new Date(),
-      })));
-    }
-  };
+        date: new Date(chat.updated_at ?? chat.created_at ?? ""), // 🔄 usar updated_at si existe, fallback to empty string if both are null
+      }))
+    );
+  }
+};
+
 
   const loadChatMessages = async (chatId: string) => {
     const { data, error } = await supabase.from("messages").select("*").eq("chat_id", chatId).order("created_at", { ascending: true });
