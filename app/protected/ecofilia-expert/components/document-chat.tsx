@@ -192,20 +192,32 @@ const loadChatSessions = async () => {
 };
 
 
-  const loadChatMessages = async (chatId: string) => {
-    const { data, error } = await supabase.from("messages").select("*").eq("chat_id", chatId).order("created_at", { ascending: true });
+const loadChatMessages = async (chatId: string) => {
+  const { data, error } = await supabase
+    .from("messages")
+    .select("*")
+    .eq("chat_id", chatId)
+    .order("created_at", { ascending: true });
 
-    if (error) {
-      console.error("Error fetching messages:", error.message);
-      return;
-    }
+  if (error) {
+    console.error("Error fetching messages:", error.message);
+    return;
+  }
 
-    if (data) {
-      setMessages(data
+  if (data) {
+    setMessages(
+      data
         .filter(msg => msg.role)
-        .map(msg => ({ id: nanoid(), role: msg.role as "user" | "assistant", content: msg.content })));
-    }
-  };
+        .map(msg => ({
+          id: msg.id, // ✅ usa el id real
+          role: msg.role as "user" | "assistant",
+          content: msg.content,
+        }))
+    );
+    setInput(""); // opcional
+  }
+};
+
 
   const toggleHistory = () => setShowHistory(prev => !prev);
   const openDocumentSelector = () => setIsSelectorOpen(true);
@@ -215,6 +227,7 @@ const loadChatSessions = async () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-full">
         <div className={`transition-all duration-300 ease-in-out ${showHistory ? "lg:col-span-9" : "lg:col-span-12"}`}>
           <ChatInterface
+            key={activeSession ?? "new"} // 👈 esto fuerza un remount al cambiar de sesión
             messages={messages}
             input={input}
             handleInputChange={handleInputChange}
