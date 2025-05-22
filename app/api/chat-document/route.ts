@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 import { OpenAIEmbeddings } from '@langchain/openai'
+import { generateSummary } from './utils/generateChatSummary'
+import { selectTopChunks } from './utils/selectTopChunks'
+import { detectStructuredQuestion } from './utils/detectStructuredQuestion'
+import { translateToEnglish } from './utils/translateToEnglish'
+
+
 
 // --- Configuración ---
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! })
@@ -37,56 +43,44 @@ function formatChunk(match: any): string {
 }
 
 const SYSTEM_PROMPT = `
-You are Ecofilia, an expert assistant in sustainability, climate change, and ESG frameworks.
+You are Ecofilia, an AI assistant specialized in sustainability, climate change, and ESG.
 
-You assist users by analyzing one or more documents and answering their questions clearly, usefully, and professionally.
+Your job is to help users understand and analyze key insights from selected documents. Be concise, fact-based, and professionally structured.
 
 ### Language:
-- Detect the user's language.
-- If the question is in **English**, respond in **English**.
-- If the question is in **Spanish**, respond in **Spanish**.
-- Match the language used by the user consistently throughout the response.
+- Always detect and match the user's language (Spanish or English).
 
-### Core Rules:
-- If documents are provided, prioritize information from those documents.
-- Always **cite clearly** which document or section your answer is based on.
-- If no documents are selected, provide a high-quality, accurate response based on your own expert knowledge.
-- If documents are selected but no relevant content is found, state this clearly and then provide a helpful general answer.
-- Do **not invent** information.
-- If the user requests analysis **per document**, format your answer by document.
-- If the user asks a **general question**, synthesize key ideas across all documents.
+### Knowledge Sources (in priority order):
+1. 📚 **Selected document fragments** (main source of truth).
+2. 🧠 **Conversation summary** (context only — do not treat as factual).
+3. 🤖 **General assistant knowledge** (only use if documents lack the answer, and clarify this explicitly).
 
-### Formatting Guidelines (Markdown):
-- Use \`###\` for section headings (e.g., per document or topic).
-- Use \`**bold**\` for document names, sections, and key terms.
-- Use \`> quotes\` to highlight relevant excerpts from documents.
-- Use bullet points \`-\` for lists or multi-part answers.
-- Always prioritize clarity, structure, and professional tone.
+### Core Instructions:
+- Base your response on document fragments first.
+- Clearly cite relevant document titles or sections when referencing.
+- If no answer is found in the fragments, explain that, then provide a general answer if possible.
+- Do NOT fabricate information.
 
-### Response Priorities (in this order):
-1. Detect and match the user’s language.
-2. Factual accuracy.
-3. Relevant, useful information.
-4. Provide helpful answers even when documents are missing or incomplete.
-5. Complete and detailed responses.
-6. Clear formatting and structure.
-7. Richness and depth of insight.
-8. Professional tone, accessible for non-expert audiences.
-
-Stay precise, organized, and helpful. Your goal is to make sustainability knowledge accessible and actionable.
+### Formatting (Markdown):
+- Use \`###\` for section headings.
+- Use \`**bold**\` for document titles or key terms.
+- Use \`> quotes\` for excerpts from the documents.
+- Use bullet points (\`-\`) when appropriate.
 `.trim()
+
+
 
 
 export async function POST(req: NextRequest) {
   const start = performance.now()
 
   try {
-    const { documents, question, userId } = await req.json()
+    const { chatId, documents, question, userId } = await req.json()
 
-    if (!question?.trim() || !userId || !Array.isArray(documents)) {
-      console.warn('⚠️ Missing required fields')
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
-    }
+  if (!chatId || !question?.trim() || !userId || !Array.isArray(documents)) {
+    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+  }
+
 
     if (documents.length === 0) {
   console.warn('⚠️ No documents provided. Proceeding with general answer.')
@@ -134,6 +128,7 @@ export async function POST(req: NextRequest) {
 
 
     const supabase = getSupabase()
+    
 
     // Separar documentos por tipo
     const userDocumentIds = documents.filter((d: any) => d.type === 'user').map((d: any) => d.id)
@@ -142,9 +137,33 @@ export async function POST(req: NextRequest) {
     console.log('📄 User Document IDs:', userDocumentIds)
     console.log('📄 Public Document IDs:', publicDocumentIds)
 
-    // Embedding de la pregunta
-    const questionEmbedding = await embedder.embedQuery(question)
-    console.log('🔍 Question embedded.')
+   // Paso previo al embedding:
+const normalizedQuery = await translateToEnglish(question.trim())
+const { intent, instruction } = await detectStructuredQuestion(question.trim())
+
+
+const expandedPrompt = (() => {
+  switch (intent) {
+    case 'extract_indicators':
+      return `Extract emissions targets, climate objectives and measurable goals. Question: ${normalizedQuery}`
+    case 'identify_actors':
+      return `Identify key institutions, implementers or responsible entities. Question: ${normalizedQuery}`
+    case 'extract_measures':
+      return `List adaptation or mitigation measures and climate strategies mentioned. Question: ${normalizedQuery}`
+    case 'summary_each':
+      return `Summarize each selected document individually, then identify a common theme. Question: ${normalizedQuery}`
+    case 'compare_documents':
+      return `Compare the approaches or outcomes described across the selected documents. Question: ${normalizedQuery}`
+    case 'common_themes':
+      return `What common topics or elements appear across the selected documents? Question: ${normalizedQuery}`
+    default:
+      return normalizedQuery
+  }
+})()
+
+const questionEmbedding = await embedder.embedQuery(expandedPrompt)
+console.log('🔍 Expanded prompt embedded.')
+
 
     // Cargar metadata
     const titleMap: Record<string, string> = {}
@@ -177,44 +196,83 @@ export async function POST(req: NextRequest) {
 
     const documentsMissing: string[] = []
 
-// Buscar chunks relevantes para cada documento
+// Buscar chunks relevantes para cada documento (parche: usar todos si hay pocos docs)
 const chunkResults = await Promise.all(
   documents.map(async (doc: any) => {
     const field = doc.type === 'public' ? 'public_document_id' : 'document_id'
 
     try {
-      // Buscar top 15 por embedding
-      const { data: matches, error } = await supabase.rpc('match_smart_chunks_by_public_id', {
+      // 👉 Si hay pocos documentos seleccionados, usar todos los chunks directamente
+      if (documents.length <= 2) {
+        const { data: allChunks, error: allChunksError } = await supabase
+          .from('smart_chunks')
+          .select('*')
+          .eq(field, doc.id)
+          .order('chunk_index', { ascending: true })
+
+          
+        if (allChunksError || !allChunks || allChunks.length === 0) {
+          throw new Error(`No chunks found for ${doc.id}`)
+        }
+
+        console.log(`✅ Usando todos los chunks para documento ${doc.id} (${allChunks.length} chunks)`)
+
+        return { docId: doc.id, chunks: allChunks }
+      }
+
+      // 🔍 Buscar chunks con scoring optimizado
+      const { data: matches, error } = await supabase.rpc('match_smart_chunks_by_public_id_v2', {
         query_embedding: questionEmbedding,
-        match_count: 15,
+        match_count: 30,
         filter_document_ids: [doc.id],
       })
-
-      console.log(`🔍 Chunks encontrados para ${doc.id}:`, matches)
-
 
       if (error) {
         throw new Error(`RPC error: ${error.message}`)
       }
 
-      const filteredMatches = (matches || [])
-        .filter((m: { similarity: number }) => m.similarity >= 0.05)
-        .sort((a: { similarity: number }, b: { similarity: number }) => b.similarity - a.similarity)
-
-      if (filteredMatches.length > 0) {
-        console.log(`📌 Chunks relevantes para ${doc.id}:`, filteredMatches.map((m: { chunk_index: any; similarity: any; title: string | any[]; content: string | any[] }) => ({
-          index: m.chunk_index,
-          sim: (m.similarity ?? 0).toFixed(4),
-          title: m.title?.slice(0, 40),
-          content: m.content?.slice(0, 100),
-        })))
-        return { docId: doc.id, chunks: filteredMatches }
+      if (!matches || matches.length === 0) {
+        console.warn(`⚠️ No chunks devueltos para documento ${doc.id}. Probando fallback...`)
+        throw new Error('Sin resultados')
       }
 
-      // Fallback si no hay chunks relevantes
-      console.warn(`⚠️ No chunks relevantes para documento ${doc.id}. Probando fallback...`)
+      // 🧠 Ordenar por relevance_score y filtrar por similarity (opcional)
+      const sortedMatches = matches
+        .filter((m: { similarity: number }) => m.similarity >= 0.05)
+        .sort((a: any, b: any) => (b.relevance_score ?? 0) - (a.relevance_score ?? 0))
 
-      const { data: fallbackChunk, error: fallbackError } = await supabase
+      // 🎯 Aplicar selección dinámica de top chunks
+      let filteredMatches = sortedMatches
+
+      if (intent === 'extract_indicators') {
+        const indicatorKeywords = ['meta', 'objetivo', 'target', 'reducción', '2030', 'emisiones', 'limite']
+        filteredMatches = sortedMatches.filter((chunk: { title: string; content: string }) =>
+          indicatorKeywords.some((kw) =>
+            (chunk.title?.toLowerCase() || '').includes(kw) ||
+            (chunk.content?.toLowerCase() || '').includes(kw)
+          )
+        )
+        if (filteredMatches.length === 0) {
+          filteredMatches = sortedMatches
+        }
+      }
+
+      const topChunks = selectTopChunks(filteredMatches, MAX_TOKENS_BUDGET * 0.25)
+
+      console.log(`📌 Chunks seleccionados para ${doc.id}:`, topChunks.map((m: any) => ({
+        index: m.chunk_index,
+        sim: (m.similarity ?? 0).toFixed(4),
+        score: (m.relevance_score ?? 0).toFixed(4),
+        title: m.title?.slice(0, 40),
+        content: m.content?.slice(0, 100),
+      })))
+
+      return { docId: doc.id, chunks: topChunks }
+
+    } catch (fallbackError) {
+      console.warn(`⚠️ Usando fallback para ${doc.id}: ${typeof fallbackError === 'object' && fallbackError && 'message' in fallbackError ? (fallbackError as { message: string }).message : String(fallbackError)}`)
+
+      const { data: fallbackChunk, error: fallbackQueryError } = await supabase
         .from('smart_chunks')
         .select('*')
         .eq(field, doc.id)
@@ -222,21 +280,19 @@ const chunkResults = await Promise.all(
         .limit(1)
         .single()
 
-      if (fallbackError || !fallbackChunk) {
-        console.warn(`⚠️ No se encontró fallback chunk para ${doc.id}`)
+      if (fallbackQueryError || !fallbackChunk) {
+        console.warn(`❌ No se encontró fallback chunk para ${doc.id}`)
         documentsMissing.push(doc.id)
         return null
       }
 
       return { docId: doc.id, chunks: [fallbackChunk] }
-
-    } catch (err) {
-      console.error(`🔥 Error buscando chunks para ${doc.id}:`, err)
-      documentsMissing.push(doc.id)
-      return null
     }
   })
 )
+
+
+
 
 
     const perDocumentChunks = chunkResults.filter((r) => r !== null)
@@ -247,53 +303,91 @@ const chunkResults = await Promise.all(
 
     for (const { docId, chunks } of perDocumentChunks) {
       const title = titleMap[docId] || `Document ${docId}`
-      const topChunks = chunks.slice(0, 3)
 
-      for (const match of topChunks) {
-        const chunkText = formatChunk(match)
-        const chunkTokens = estimateTokens(chunkText)
+      const formattedChunks = chunks.map(formatChunk)
+      const fullSection = `### 📘 ${title}\n\n${formattedChunks.join('\n\n')}`
 
-        if (totalTokens + chunkTokens > MAX_TOKENS_BUDGET) break
+      const sectionTokens = estimateTokens(fullSection)
+      if (totalTokens + sectionTokens > MAX_TOKENS_BUDGET) break
 
-        const section = `### 📘 ${title}\n\n${chunkText}`
-        documentSections.push(section)
-        totalTokens += chunkTokens
-      }
+      documentSections.push(fullSection)
+      totalTokens += sectionTokens
     }
 
+
     const summaryBlock = `
-**Resumen:**
-- Documentos incluidos:
-${perDocumentChunks.map(({ docId }) => `✅ ${titleMap[docId] || `Document ${docId}`}`).join('\n')}
-${documentsMissing.length > 0 ? `\n- Documentos omitidos:\n${documentsMissing.map((id) => `⚠️ ${id}`).join('\n')}` : ''}
-- Total fragmentos usados: ${documentSections.length}
-- Tokens usados: ${totalTokens}/${MAX_TOKENS_BUDGET}
-`.trim()
+      **Resumen:**
+      - Documentos incluidos:
+      ${perDocumentChunks.map(({ docId }) => `✅ ${titleMap[docId] || `Document ${docId}`}`).join('\n')}
+      ${documentsMissing.length > 0 ? `\n- Documentos omitidos:\n${documentsMissing.map((id) => `⚠️ ${id}`).join('\n')}` : ''}
+      - Total fragmentos usados: ${documentSections.length}
+      - Tokens usados: ${totalTokens}/${MAX_TOKENS_BUDGET}
+      `.trim()
+      
 
-    const userPrompt = `
-${summaryBlock}
+      const documentContext = `
+      ${summaryBlock}
 
-A continuación se presentan fragmentos de los documentos seleccionados:
+      A continuación se presentan fragmentos de los documentos seleccionados:
 
-${documentSections.join('\n\n')}
+      ${documentSections.join('\n\n')}
+      `.trim()
 
-Por favor, responde la siguiente pregunta basándote en la información anterior:
+      // 👉 Construcción del array con historial + contexto
 
-**Pregunta:** ${question}
-`.trim()
+      // ⏳ 1. Generar resumen del historial (20 mensajes máx)
+      const summary = await generateSummary(chatId, supabase)
 
-    // Llamar a OpenAI
-    console.log('🧠 Llamando a OpenAI...')
+      // 📋 2. Construir mensajes con prioridad: system > resumen > documento > pregunta
+      const messages = [
+        {
+          role: 'system',
+          content: SYSTEM_PROMPT,
+        },
+        ...(summary ? [{
+          role: 'system',
+          content: `🧠 *Resumen de la conversación anterior:* (usar solo como contexto general, no como fuente de verdad)\n${summary}`,
+        }] : []),
+        {
+          role: 'user',
+          content: `📄 *Usá exclusivamente los siguientes fragmentos de documentos como base para tu respuesta:* \n\n${documentContext}`,
+        },
 
-    const openaiStream = await openai.chat.completions.create({
-      model: 'gpt-4.1-mini',
-      stream: true,
-      max_tokens: 16384,
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: userPrompt },
-      ],
-    })
+        {
+          role: 'user',
+          content: `
+            Los mensajes anteriores contienen tres tipos de contexto:
+
+            1. Fragmentos de documentos seleccionados — *esto es tu fuente principal de verdad*.
+            2. Resumen del historial de conversación — *esto es útil para contexto, pero no debe usarse como fuente factual*.
+            3. Tu conocimiento general como asistente — *solo usar si es necesario, y aclararlo explícitamente*.
+
+            Respondé con base en estos fragmentos, citando lo relevante. Si no encontrás información suficiente, indicá claramente las limitaciones.
+            Si no encontrás respuesta en los fragmentos, indicá que no hay información suficiente y luego brindá una respuesta en base a tu razonamiento que pueda enriquecer al usuario.
+            Si la pregunta incluye múltiples subtemas, abordalos por separado en secciones distintas, incluso si no todos tienen respuesta documental.
+
+            ${instruction ? `🧭 *Instrucción adicional detectada automáticamente:* ${instruction}` : ''}
+
+            **Pregunta del usuario:** ${question.trim()}
+        `.trim(),
+        }
+
+      ]
+
+
+      console.log("🧠 Mensajes enviados a OpenAI:")
+      messages.forEach((msg, i) => {
+        const preview = msg.content.length > 100 ? msg.content.slice(0, 100) + '...' : msg.content
+        console.log(`  [${i}] (${msg.role}): ${preview.replace(/\n/g, ' ')}`)
+      })
+
+
+      const openaiStream = await openai.chat.completions.create({
+        model: 'gpt-4.1-mini',
+        stream: true,
+        max_tokens: 16384,
+        messages: messages as Array<{ role: 'system' | 'user' | 'assistant'; content: string }>,
+      })
 
     // Responder como stream
     const encoder = new TextEncoder()

@@ -136,6 +136,7 @@ const saveMessage = async (chatId: string, role: "user" | "assistant", content: 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          chatId,
           documents: selectedDocuments.map(doc => ({ id: doc.id, type: doc.type })),
           question: userQuestion,
           userId,
