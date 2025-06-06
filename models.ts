@@ -24,6 +24,8 @@ export interface Project {
   user_id: string | null
   created_at: string | null
   documents?: Document[]
+  document_count?: number
+
 }
 
 export interface Report {

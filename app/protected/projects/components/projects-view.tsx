@@ -28,21 +28,27 @@ export function ProjectsView({ onSelectProject, className = "" }: ProjectsViewPr
 
   const supabase = createClient()
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      setLoading(true)
-      const { data, error } = await supabase.from("projects").select("*").order("created_at", { ascending: false })
+useEffect(() => {
+  const fetchProjects = async () => {
+    setLoading(true)
 
-      if (error) {
-        console.error("Error fetching projects:", error.message)
-      } else {
-        setProjects(data || [])
-      }
-      setLoading(false)
+    const { data, error } = await supabase
+      .from("projects_with_document_count") 
+      .select("*")
+      .order("created_at", { ascending: false })
+
+    if (error) {
+      console.error("Error fetching projects:", error.message)
+    } else {
+      setProjects(data || [])
     }
 
-    fetchProjects()
-  }, [])
+    setLoading(false)
+  }
+
+  fetchProjects()
+}, [])
+
 
   const filteredProjects = projects.filter((project) => {
     const matchesSearch =

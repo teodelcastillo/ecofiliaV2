@@ -101,7 +101,9 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
     })
   }
 
-  const documentCount = project.documents?.length || 0
+  const documentCount = project.document_count || 0
+
+
 
   return (
     <>
