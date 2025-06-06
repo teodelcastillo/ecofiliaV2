@@ -132,7 +132,6 @@ export default function MDBReportsPage() {
     }
   }, [selectedProject])
 
-  // Obtener documentos del proyecto seleccionado
  // Obtener documentos del proyecto seleccionado
   const getProjectDocuments = () => {
     const project = projects.find((p) => p.id === selectedProject)
@@ -560,200 +559,376 @@ export default function MDBReportsPage() {
 
               <TabsContent value="document" className="space-y-4">
                 {reportStructure === "paris" ? (
-                  <div className="space-y-6">
-                    <div className="prose max-w-none">
-                      <h1 className="text-2xl font-bold mb-2">
-                        Paris Alignment Assessment: {projects.find((p) => p.id === selectedProject)?.name}
-                      </h1>
-                      <p className="text-muted-foreground mb-6">Fecha: {new Date().toLocaleDateString()}</p>
-                    </div>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg">
-                          4. Activities considered universally aligned to the mitigation goals of the Paris Alignment
-                        </CardTitle>
-                        <CardDescription>
-                          Review ALL activities to be financed by the operation and evaluate if support can be
-                          considered universally aligned to the mitigation goals of the PA by ticking on the categories
-                          in the options (can be more than one).
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-6">
-                        {/* ENERGY Section */}
-                        <div className="space-y-3">
-                          <h3 className="font-semibold text-base text-blue-900 border-b border-blue-200 pb-1">
-                            ENERGY
-                          </h3>
-                          <div className="grid gap-2">
-                            {[
-                              "Generation of renewable energy (RE) and/or conversion to electricity applications / energy efficiency/ electrification",
-                              "Rehabilitation + desilting of existing hydropower with climate resilience",
-                              "District heating or cooling systems with negligible lifecycle GHG emissions",
-                              "Green hydrogen",
-                              "Electricity transmission and distribution networks, mini-grids based on RE, smart grids and digitalization (excluding data centers), energy storage in batteries",
-                              "Regional integration for energy transport and exchange",
-                              "Decommissioning of fossil fuel power plants",
-                              "Cleaner cooking technologies",
-                              "Actions of the just transition agenda (for energy sector)",
-                              "Energy demand-side management investments",
-                            ].map((activity, index) => (
-                              <div key={index} className="flex items-start space-x-2 p-2 hover:bg-blue-50 rounded">
-                                <Checkbox id={`energy-${index}`} className="mt-1" />
-                                <Label htmlFor={`energy-${index}`} className="text-sm leading-relaxed cursor-pointer">
-                                  {activity}
-                                </Label>
-                              </div>
-                            ))}
-                          </div>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">
+                        Activities considered universally aligned to the mitigation goals of the Paris Alignment
+                      </CardTitle>
+                      <CardDescription>
+                        Automated assessment results based on project documentation and activities analysis.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      {/* Summary Statistics 
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                          <div className="text-2xl font-bold text-green-700">9</div>
+                          <div className="text-sm text-green-600">Aligned Activities</div>
                         </div>
-
-                        {/* AGRICULTURE Section */}
-                        <div className="space-y-3">
-                          <h3 className="font-semibold text-base text-green-900 border-b border-green-200 pb-1">
-                            AGRICULTURE
-                          </h3>
-                          <div className="grid gap-2">
-                            {[
-                              "Afforestation, reforestation, sustainable forest management, soil health improvement, including recuperation of degraded lands or ecosystems",
-                              "Climate smart agriculture*, agroecology*, sustainable fishing* and aquaculture*",
-                              "Conservation of natural habitats and ecosystems; coastal protection",
-                            ].map((activity, index) => (
-                              <div key={index} className="flex items-start space-x-2 p-2 hover:bg-green-50 rounded">
-                                <Checkbox id={`agriculture-${index}`} className="mt-1" />
-                                <Label
-                                  htmlFor={`agriculture-${index}`}
-                                  className="text-sm leading-relaxed cursor-pointer"
-                                >
-                                  {activity}
-                                </Label>
-                              </div>
-                            ))}
-                          </div>
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+                          <div className="text-2xl font-bold text-red-700">25</div>
+                          <div className="text-sm text-red-600">Non-Aligned Activities</div>
                         </div>
-
-                        {/* WATER AND SANITATION Section */}
-                        <div className="space-y-3">
-                          <h3 className="font-semibold text-base text-cyan-900 border-b border-cyan-200 pb-1">
-                            WATER AND SANITATION
-                          </h3>
-                          <div className="grid gap-2">
-                            {[
-                              "Efficiency in water management use, water management at watershed level",
-                              "RE- based irrigation systems",
-                              "Water and sanitation works connected to the electricity grid or that depend on their own RE generation",
-                              "Separate waste collection",
-                              "Composting & anaerobic digestion of biowaste",
-                              "Material recovery, mechanical biological treatment (MBT), refuse-derived fuel (RDF) or solid recovered fuel (SRF)",
-                              "Landfill gas recovery from open and closed landfills",
-                              "Drainage and flood control and management (e.g. macro and micro drainage works, urban drainage, separation of rainwater)",
-                              "Water management: projects to conserve and restore ecosystems, control erosion and stabilize riverbanks (including those conducted at basin level)",
-                            ].map((activity, index) => (
-                              <div key={index} className="flex items-start space-x-2 p-2 hover:bg-cyan-50 rounded">
-                                <Checkbox id={`water-${index}`} className="mt-1" />
-                                <Label htmlFor={`water-${index}`} className="text-sm leading-relaxed cursor-pointer">
-                                  {activity}
-                                </Label>
-                              </div>
-                            ))}
-                          </div>
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                          <div className="text-2xl font-bold text-blue-700">26.5%</div>
+                          <div className="text-sm text-blue-600">Alignment Rate</div>
                         </div>
+                      </div>*/}
 
-                        {/* TRANSPORT Section */}
-                        <div className="space-y-3">
-                          <h3 className="font-semibold text-base text-purple-900 border-b border-purple-200 pb-1">
-                            TRANSPORT
-                          </h3>
-                          <div className="grid gap-2">
-                            {[
-                              "Electric and non-motorized urban mobility",
-                              "Electric passenger or freight TSP, vehicles that do not depend on fossil fuels",
-                              "Low transit roads that provide access*",
-                              "Road upgrading, rehabilitation, reconstruction, and maintenance without capacity expansion*",
-                              "Short sea shipping of passengers and freight ships that do not depend on fossil fuels",
-                              "Port infrastructure (maritime inland waterways) that do not depend on fossil fuels",
-                              "Inland waterways passenger and freight transport vessels",
-                              "Rail infrastructure",
-                            ].map((activity, index) => (
-                              <div key={index} className="flex items-start space-x-2 p-2 hover:bg-purple-50 rounded">
-                                <Checkbox id={`transport-${index}`} className="mt-1" />
-                                <Label
-                                  htmlFor={`transport-${index}`}
-                                  className="text-sm leading-relaxed cursor-pointer"
-                                >
-                                  {activity}
-                                </Label>
-                              </div>
-                            ))}
-                          </div>
+                      {/* Progress Bar 
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span>Paris Alignment Progress</span>
+                          <span>26.5%</span>
                         </div>
+                        <div className="w-full bg-gray-200 rounded-full h-3">
+                          <div className="bg-green-500 h-3 rounded-full" style={{ width: "26.5%" }}></div>
+                        </div>
+                      </div>*/}
 
-                        {/* BUILDINGS Section */}
-                        <div className="space-y-3">
-                          <h3 className="font-semibold text-base text-orange-900 border-b border-orange-200 pb-1">
-                            BUILDINGS
-                          </h3>
-                          <div className="grid gap-2">
-                            <div className="flex items-start space-x-2 p-2 hover:bg-orange-50 rounded">
-                              <Checkbox id="buildings-1" className="mt-1" />
-                              <Label htmlFor="buildings-1" className="text-sm leading-relaxed cursor-pointer">
-                                Buildings that meet green certification criteria by IDB Group
-                              </Label>
+                      {/* ENERGY Section */}
+                      <div className="space-y-3">
+                        <h3 className="font-semibold text-base text-blue-900 border-b border-blue-200 pb-1">ENERGY</h3>
+                        <div className="grid gap-2">
+                          {[
+                            {
+                              text: "Generation of renewable energy (RE) and/or conversion to electricity applications / energy efficiency/ electrification",
+                              aligned: true,
+                            },
+                            {
+                              text: "Rehabilitation + desilting of existing hydropower with climate resilience",
+                              aligned: false,
+                            },
+                            {
+                              text: "District heating or cooling systems with negligible lifecycle GHG emissions",
+                              aligned: false,
+                            },
+                            { text: "Green hydrogen", aligned: false },
+                            {
+                              text: "Electricity transmission and distribution networks, mini-grids based on RE, smart grids and digitalization (excluding data centers), energy storage in batteries",
+                              aligned: false,
+                            },
+                            { text: "Regional integration for energy transport and exchange", aligned: false },
+                            { text: "Decommissioning of fossil fuel power plants", aligned: false },
+                            { text: "Cleaner cooking technologies", aligned: false },
+                            { text: "Actions of the just transition agenda (for energy sector)", aligned: false },
+                            { text: "Energy demand-side management investments", aligned: false },
+                          ].map((activity, index) => (
+                            <div
+                              key={index}
+                              className={`flex items-start space-x-2 p-3 rounded-lg border ${
+                                activity.aligned ? "bg-green-50 border-green-200" : "border-gray-200"
+                              }`}
+                            >
+                              <div
+                                className={`w-5 h-5 rounded-full border-full flex items-center justify-center mt-0.5 ${
+                                  activity.aligned ? "bg-green-500 text-white" : "text-white"
+                                }`}
+                              >
+                                {activity.aligned ? "✓" : ""}
+                              </div>
+                              <span className="text-sm leading-relaxed">{activity.text}</span>
                             </div>
-                          </div>
+                          ))}
                         </div>
+                      </div>
 
-                        {/* TECHNOLOGY Section */}
-                        <div className="space-y-3">
-                          <h3 className="font-semibold text-base text-indigo-900 border-b border-indigo-200 pb-1">
-                            TECHNOLOGY
-                          </h3>
-                          <div className="grid gap-2">
-                            <div className="flex items-start space-x-2 p-2 hover:bg-indigo-50 rounded">
-                              <Checkbox id="technology-1" className="mt-1" />
-                              <Label htmlFor="technology-1" className="text-sm leading-relaxed cursor-pointer">
-                                Information & communication (excluding data centers)
-                              </Label>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* SERVICES Section */}
-                        <div className="space-y-3">
-                          <h3 className="font-semibold text-base text-pink-900 border-b border-pink-200 pb-1">
-                            SERVICES
-                          </h3>
-                          <div className="grid gap-2">
-                            {[
-                              "Professional, scientific, R&D, and technical activities (provided that they do not increase dependency in fossil fuels nor in any other activities that require a specific assessment).",
-                              "Fiscal support that does not increase dependency in fossil fuels nor in any other activities that require a specific assessment.",
-                              "Public administration and compulsory social security. This also includes services such as labor intermediation and skills development (provided that they do not increase dependency in fossil fuels nor in any other activities that require a specific assessment).",
-                              "Human health, social work and education activities (non-infrastructure/buildings)",
-                              "Arts, entertainment, and recreation (non-infrastructure/buildings)",
-                            ].map((activity, index) => (
-                              <div key={index} className="flex items-start space-x-2 p-2 hover:bg-pink-50 rounded">
-                                <Checkbox id={`services-${index}`} className="mt-1" />
-                                <Label htmlFor={`services-${index}`} className="text-sm leading-relaxed cursor-pointer">
-                                  {activity}
-                                </Label>
+                      {/* AGRICULTURE Section */}
+                      <div className="space-y-3">
+                        <h3 className="font-semibold text-base text-green-900 border-b border-green-200 pb-1">
+                          AGRICULTURE
+                        </h3>
+                        <div className="grid gap-2">
+                          {[
+                            {
+                              text: "Afforestation, reforestation, sustainable forest management, soil health improvement, including recuperation of degraded lands or ecosystems",
+                              aligned: true,
+                            },
+                            {
+                              text: "Climate smart agriculture*, agroecology*, sustainable fishing* and aquaculture*",
+                              aligned: false,
+                            },
+                            {
+                              text: "Conservation of natural habitats and ecosystems; coastal protection",
+                              aligned: false,
+                            },
+                          ].map((activity, index) => (
+                            <div
+                              key={index}
+                              className={`flex items-start space-x-2 p-3 rounded-lg border ${
+                                activity.aligned ? "bg-green-50 border-green-200" : "border-gray-200"
+                              }`}
+                            >
+                              <div
+                                className={`w-5 h-5 rounded-full border-full flex items-center justify-center mt-0.5 ${
+                                  activity.aligned ? "bg-green-500 text-white" : "text-white"
+                                }`}
+                              >
+                                {activity.aligned ? "✓" : ""}
                               </div>
-                            ))}
+                              <span className="text-sm leading-relaxed">{activity.text}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* WATER AND SANITATION Section */}
+                      <div className="space-y-3">
+                        <h3 className="font-semibold text-base text-cyan-900 border-b border-cyan-200 pb-1">
+                          WATER AND SANITATION
+                        </h3>
+                        <div className="grid gap-2">
+                          {[
+                            {
+                              text: "Efficiency in water management use, water management at watershed level",
+                              aligned: true,
+                            },
+                            { text: "RE- based irrigation systems", aligned: false },
+                            {
+                              text: "Water and sanitation works connected to the electricity grid or that depend on their own RE generation",
+                              aligned: false,
+                            },
+                            { text: "Separate waste collection", aligned: true },
+                            { text: "Composting & anaerobic digestion of biowaste", aligned: false },
+                            {
+                              text: "Material recovery, mechanical biological treatment (MBT), refuse-derived fuel (RDF) or solid recovered fuel (SRF)",
+                              aligned: false,
+                            },
+                            { text: "Landfill gas recovery from open and closed landfills", aligned: false },
+                            {
+                              text: "Drainage and flood control and management (e.g. macro and micro drainage works, urban drainage, separation of rainwater)",
+                              aligned: false,
+                            },
+                            {
+                              text: "Water management: projects to conserve and restore ecosystems, control erosion and stabilize riverbanks (including those conducted at basin level)",
+                              aligned: false,
+                            },
+                          ].map((activity, index) => (
+                            <div
+                              key={index}
+                              className={`flex items-start space-x-2 p-3 rounded-lg border ${
+                                activity.aligned ? "bg-green-50 border-green-200" : "border-gray-200"
+                              }`}
+                            >
+                              <div
+                                className={`w-5 h-5 rounded-full border-full flex items-center justify-center mt-0.5 ${
+                                  activity.aligned ? "bg-green-500 text-white" : "text-white"
+                                }`}
+                              >
+                                {activity.aligned ? "✓" : ""}
+                              </div>
+                              <span className="text-sm leading-relaxed">{activity.text}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* TRANSPORT Section */}
+                      <div className="space-y-3">
+                        <h3 className="font-semibold text-base text-purple-900 border-b border-purple-200 pb-1">
+                          TRANSPORT
+                        </h3>
+                        <div className="grid gap-2">
+                          {[
+                            { text: "Electric and non-motorized urban mobility", aligned: true },
+                            {
+                              text: "Electric passenger or freight TSP, vehicles that do not depend on fossil fuels",
+                              aligned: false,
+                            },
+                            { text: "Low transit roads that provide access*", aligned: false },
+                            {
+                              text: "Road upgrading, rehabilitation, reconstruction, and maintenance without capacity expansion*",
+                              aligned: true,
+                            },
+                            {
+                              text: "Short sea shipping of passengers and freight ships that do not depend on fossil fuels",
+                              aligned: false,
+                            },
+                            {
+                              text: "Port infrastructure (maritime inland waterways) that do not depend on fossil fuels",
+                              aligned: false,
+                            },
+                            { text: "Inland waterways passenger and freight transport vessels", aligned: false },
+                            { text: "Rail infrastructure", aligned: false },
+                          ].map((activity, index) => (
+                            <div
+                              key={index}
+                              className={`flex items-start space-x-2 p-3 rounded-lg border ${
+                                activity.aligned ? "bg-green-50 border-green-200" : "border-gray-200"
+                              }`}
+                            >
+                              <div
+                                className={`w-5 h-5 rounded-full border-full flex items-center justify-center mt-0.5 ${
+                                  activity.aligned ? "bg-green-500 text-white" : "text-white"
+                                }`}
+                              >
+                                {activity.aligned ? "✓" : ""}
+                              </div>
+                              <span className="text-sm leading-relaxed">{activity.text}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* BUILDINGS Section */}
+                      <div className="space-y-3">
+                        <h3 className="font-semibold text-base text-orange-900 border-b border-orange-200 pb-1">
+                          BUILDINGS
+                        </h3>
+                        <div className="grid gap-2">
+                          <div className="flex items-start space-x-2 p-3 rounded-lg border bg-green-50 border-green-200">
+                            <div className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 bg-green-500 text-white">
+                              ✓
+                            </div>
+                            <span className="text-sm leading-relaxed">
+                              Buildings that meet green certification criteria by IDB Group
+                            </span>
                           </div>
                         </div>
+                      </div>
 
-
-                        {/* Additional Comments */}
-                        <div className="space-y-2">
-                          <Label htmlFor="comments">Additional Comments or Specifications</Label>
-                          <Textarea
-                            id="comments"
-                            placeholder="Provide any additional details or specifications for the selected activities..."
-                            className="min-h-[100px]"
-                          />
+                      {/* TECHNOLOGY Section */}
+                      <div className="space-y-3">
+                        <h3 className="font-semibold text-base text-indigo-900 border-b border-indigo-200 pb-1">
+                          TECHNOLOGY
+                        </h3>
+                        <div className="grid gap-2">
+                          <div className="flex items-start space-x-2 p-3 rounded-lg border bg-green-50 border-green-200">
+                            <div className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 bg-green-500 text-white">
+                              ✓
+                            </div>
+                            <span className="text-sm leading-relaxed">
+                              Information & communication (excluding data centers)
+                            </span>
+                          </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </div>
+                      </div>
+
+                      {/* SERVICES Section */}
+                      <div className="space-y-3">
+                        <h3 className="font-semibold text-base text-pink-900 border-b border-pink-200 pb-1">
+                          SERVICES
+                        </h3>
+                        <div className="grid gap-2">
+                          {[
+                            {
+                              text: "Professional, scientific, R&D, and technical activities (provided that they do not increase dependency in fossil fuels nor in any other activities that require a specific assessment).",
+                              aligned: true,
+                            },
+                            {
+                              text: "Fiscal support that does not increase dependency in fossil fuels nor in any other activities that require a specific assessment.",
+                              aligned: false,
+                            },
+                            {
+                              text: "Public administration and compulsory social security. This also includes services such as labor intermediation and skills development (provided that they do not increase dependency in fossil fuels nor in any other activities that require a specific assessment).",
+                              aligned: false,
+                            },
+                            {
+                              text: "Human health, social work and education activities (non-infrastructure/buildings)",
+                              aligned: false,
+                            },
+                            {
+                              text: "Arts, entertainment, and recreation (non-infrastructure/buildings)",
+                              aligned: false,
+                            },
+                          ].map((activity, index) => (
+                            <div
+                              key={index}
+                              className={`flex items-start space-x-2 p-3 rounded-lg border ${
+                                activity.aligned ? "bg-green-50 border-green-200" : "border-gray-200"
+                              }`}
+                            >
+                              <div
+                                className={`w-5 h-5 rounded-full border-full flex items-center justify-center mt-0.5 ${
+                                  activity.aligned ? "bg-green-500 text-white" : "text-white"
+                                }`}
+                              >
+                                {activity.aligned ? "✓" : ""}
+                              </div>
+                              <span className="text-sm leading-relaxed">{activity.text}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Other Options 
+                      <div className="space-y-3">
+                        <h3 className="font-semibold text-base text-gray-900 border-b border-gray-200 pb-1">
+                          OTHER OPTIONS
+                        </h3>
+                        <div className="grid gap-2">
+                          <div className="flex items-start space-x-2 p-3 rounded-lg border bg-red-50 border-red-200">
+                            <div className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 bg-red-500 text-white">
+                              ✗
+                            </div>
+                            <span className="text-sm leading-relaxed font-medium">
+                              No universally aligned activities are financed by the operation
+                            </span>
+                          </div>
+                          <div className="flex items-start space-x-2 p-3 rounded-lg border bg-red-50 border-red-200">
+                            <div className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 bg-red-500 text-white">
+                              ✗
+                            </div>
+                            <span className="text-sm leading-relaxed font-medium">Otras</span>
+                          </div>
+                        </div>
+                      </div>*/}
+
+                      {/* Assessment Comments */}
+                      <div className="space-y-2">
+                        <Label htmlFor="assessment-comments">Assessment Comments and Specifications</Label>
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                          <h4 className="font-medium text-yellow-800 mb-2">
+                            ⚠️ TRANSPORT. Road upgrading with significant addition of lanes or that rely on short-term
+                            increase of traffic to be economically viable
+                          </h4>
+                          <div className="text-sm text-yellow-700 space-y-3">
+                            <p>
+                              The operation includes the expansion of one additional lane on Avenida Beira Mar Norte and
+                              the creation of grade-separated intersections to improve traffic flow along key urban
+                              mobility corridors in Florianópolis. This activity falls under the category of road
+                              expansion with increased capacity, requiring a specific alignment assessment according to
+                              the Joint Methodology of MDBs.
+                            </p>
+                            <p>
+                              To ensure alignment with the Paris Agreement mitigation goals, the design of the Avenida
+                              Beira Mar Norte lane expansion and grade-separated intersections should incorporate the
+                              following recommendations:
+                            </p>
+                            <ul className="list-disc list-inside space-y-1 ml-4">
+                              <li>
+                                Public transport prioritization through dedicated lanes, operational sequencing, and
+                                performance indicators to ensure at least 30% of total traffic demand is met by public
+                                transport.
+                              </li>
+                              <li>
+                                Integration with sustainable mobility strategies, including expanded pedestrian
+                                infrastructure and bike lanes to encourage non-motorized transport.
+                              </li>
+                              <li>
+                                Incorporation of a Sustainable Urban Mobility Plan (PLAMUS) to align road investments
+                                with long-term low-carbon mobility strategies.
+                              </li>
+                              <li>
+                                Development of a decarbonization roadmap, outlining zero-carbon pilot initiatives for
+                                mobility, historic center, housing, and urban planning.
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ) : (
                   // Contenido original para otros tipos de reporte
 
