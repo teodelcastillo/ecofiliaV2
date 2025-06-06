@@ -91,6 +91,7 @@ const relevantAspects = [
   { id: "social", label: "Beneficios sociales", icon: Users },
   { id: "biodiversity", label: "Biodiversidad", icon: Leaf },
   { id: "compliance", label: "Cumplimiento normativo", icon: FileCheck },
+  { id: "recommendations", label: "Recomendaciones de mejora", icon: Lightbulb },
 ]
 
 const aiSuggestions: { [key: string]: string[] } = {
