@@ -124,6 +124,7 @@ const saveMessage = async (chatId: string, role: "user" | "assistant", content: 
 
     try {
       if (!chatId) chatId = await createNewChat(userQuestion.slice(0, 30));
+      if (!chatId) throw new Error("Chat ID is missing after attempting to create a new chat.");
 
       const userMessageId = nanoid();
       appendMessage({ id: userMessageId, role: "user", content: userQuestion });
