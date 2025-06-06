@@ -480,7 +480,23 @@ export default function MDBReportsPage() {
           <CardHeader>
             <CardTitle>Contenido del Reporte</CardTitle>
             <CardDescription>
-              Define el contenido específico para tu reporte MDB y aprovecha las sugerencias de IA
+             Este análisis automático evalúa el proyecto en función de su alineación con el Acuerdo de París y las metodologías conjuntas de los bancos multilaterales de desarrollo (MDBs).
+
+Ecofilia procesará los documentos cargados y generará un reporte estructurado que incluye:
+
+Resumen ejecutivo del proyecto
+
+Contexto climático del país y la región
+
+Riesgos y desafíos climáticos actuales y futuros
+
+Contribución del proyecto a la mitigación de emisiones
+
+Aportes a la adaptación y resiliencia climática
+
+Oportunidades para mejorar el impacto climático
+
+Recomendaciones técnicas alineadas con NDCs, políticas nacionales y marcos globales (ej. ODS)
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
