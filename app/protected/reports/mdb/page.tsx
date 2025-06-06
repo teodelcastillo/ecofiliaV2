@@ -75,6 +75,7 @@ const countries = [
 
 const sectors = [
   "Energía",
+  "Vivienda & Desarrollo Urbano",
   "Agricultura",
   "Transporte",
   "Industria",
@@ -110,6 +111,8 @@ const aiSuggestions: { [key: string]: string[] } = {
   ],
 }
 
+
+
 export default function MDBReportsPage() {
   const router = useRouter()
   const [currentStage, setCurrentStage] = useState(1)
@@ -122,6 +125,31 @@ export default function MDBReportsPage() {
   const [isGenerating, setIsGenerating] = useState<boolean>(false)
   const [reportGenerated, setReportGenerated] = useState<boolean>(false)
   const [currentSuggestions, setCurrentSuggestions] = useState<string[]>([])
+
+    const handleDownload = () => {
+    let fileName = ""
+
+    // Determinar el archivo a descargar según el tipo de reporte generado
+    if (reportStructure === "paris") {
+      fileName = "Brazil Urban Development Project - Climate Change and Sustainability Filter.docx"
+    } else if (reportStructure === "overview") {
+      fileName = "Brazil Urban Development Project - Project Overview.docx"
+    } else if (reportStructure === "annex") {
+      fileName = "Brazil Urban Development Project - Climate Change and Sustainability Annex.docx"
+    }
+
+    // Crear un elemento de descarga temporal
+    const link = document.createElement("a")
+    link.href = `/templates/${fileName}` // Ruta a los archivos en la carpeta templates
+    link.download = fileName
+    link.target = "_blank"
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    // Mostrar notificación de éxito (opcional)
+    console.log(`Descargando: ${fileName}`)
+  }
 
   // Actualizar sugerencias cuando cambia el proyecto seleccionado
   useEffect(() => {
@@ -1127,7 +1155,7 @@ export default function MDBReportsPage() {
               <ChevronLeft className="h-4 w-4 mr-1" />
               Editar
             </Button>
-            <Button className="gap-2">
+            <Button onClick={handleDownload} className="gap-2">
               <FileBarChart className="h-4 w-4" />
               Descargar Reporte
             </Button>
