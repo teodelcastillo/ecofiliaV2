@@ -126,7 +126,7 @@ export default function REDDReportsPage() {
 
     // Determinar el archivo a descargar según el tipo de reporte generado
     if (reportStructure === "filter") {
-      fileName = ""
+      fileName = "Reporte_REDD_Caimancito.pdf"
     } else if (reportStructure === "overview") {
       fileName = "Overview del Proyecto_ Plan Estratégico de Gestión Forestal – Cuenca Caimancito (Jujuy, Argentina).docx"
     }
