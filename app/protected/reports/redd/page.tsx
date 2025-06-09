@@ -66,8 +66,13 @@ export default function REDDReportsPage() {
 
   // Actualizar sugerencias cuando cambia el proyecto seleccionado
   useEffect(() => {
-    if (selectedProject && aiSuggestions[selectedProject]) {
-      setCurrentSuggestions(aiSuggestions[selectedProject])
+    if (
+      selectedProject &&
+      aiSuggestions[selectedProject as keyof typeof aiSuggestions]
+    ) {
+      setCurrentSuggestions(
+        aiSuggestions[selectedProject as keyof typeof aiSuggestions]
+      )
     } else {
       setCurrentSuggestions([])
     }
