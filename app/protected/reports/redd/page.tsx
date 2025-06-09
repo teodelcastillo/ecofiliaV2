@@ -126,9 +126,9 @@ export default function REDDReportsPage() {
 
     // Determinar el archivo a descargar según el tipo de reporte generado
     if (reportStructure === "filter") {
-      fileName = "Brazil Forest Conservation Project - REDD+ Filter.docx"
+      fileName = ""
     } else if (reportStructure === "overview") {
-      fileName = "Brazil Forest Conservation Project - Project Overview.docx"
+      fileName = "Overview del Proyecto_ Plan Estratégico de Gestión Forestal – Cuenca Caimancito (Jujuy, Argentina).docx"
     }
 
     // Crear un elemento de descarga temporal
