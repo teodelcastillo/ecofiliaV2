@@ -563,165 +563,153 @@ export default function REDDReportsPage() {
                   // Project Overview content
                   <div className="space-y-6">
                     <div className="prose max-w-none">
-                      <h1 className="text-2xl font-bold mb-2">Project Overview</h1>
+                      <h1 className="text-2xl font-bold mb-2">Overview del Proyecto</h1>
                       <h2 className="text-xl font-semibold text-emerald-800 mb-4">
-                        Amazon Forest Conservation and Sustainable Development Program
+                        Plan Estratégico de Gestión Forestal – Cuenca Caimancito (Jujuy, Argentina)
                       </h2>
                       <p className="text-muted-foreground mb-6">Fecha: {new Date().toLocaleDateString()}</p>
                     </div>
 
-                    {/* Project Summary */}
+                    {/* Project Description */}
                     <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg text-emerald-900">Project Summary</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm leading-relaxed">
-                          The Amazon Forest Conservation and Sustainable Development Program is a comprehensive REDD+
-                          initiative designed to reduce emissions from deforestation and forest degradation while
-                          promoting sustainable forest management and conservation. The project covers 2.5 million
-                          hectares of Amazon rainforest and aims to reduce deforestation by 60% over a 10-year period,
-                          resulting in significant carbon emission reductions and biodiversity conservation.
-                        </p>
-                      </CardContent>
-                    </Card>
+                      <CardContent className="p-6">
+                        <div className="space-y-4 text-sm leading-relaxed">
+                          <p>
+                            El presente proyecto tiene como objetivo implementar una estrategia integral de gestión
+                            forestal sostenible en la Cuenca Caimancito, en el este de la provincia de Jujuy. Abarcando
+                            más de 740.000 ha, el plan articula esfuerzos entre organismos públicos, comunidades
+                            locales, el sector privado y organizaciones técnicas para fortalecer el manejo forestal,
+                            conservar la biodiversidad y promover el desarrollo local con enfoque territorial.
+                          </p>
 
-                    {/* Objectives */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg text-emerald-900">REDD+ Objectives</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <p className="text-sm leading-relaxed">
-                          The project aims to implement comprehensive forest conservation strategies that address the
-                          main drivers of deforestation while providing sustainable livelihood alternatives for local
-                          communities and indigenous peoples.
-                        </p>
+                          <p>
+                            La zona de intervención incluye bosques de yungas y chaco seco, altos valores de
+                            biodiversidad, y una presencia significativa de comunidades indígenas (Guaraníes, Kollas y
+                            Ocloyas). El enfoque del proyecto se basa en cuatro pilares: fortalecimiento institucional,
+                            manejo de bosques nativos, desarrollo de plantaciones forestales sostenibles e impulso a la
+                            cadena de valor foresto-industrial local.
+                          </p>
 
-                        <div>
-                          <h4 className="font-medium mb-2">Specific objectives:</h4>
-                          <ul className="space-y-2 text-sm">
-                            <li className="flex items-start gap-2">
-                              <div className="w-2 h-2 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
-                              <span>
-                                Reduce deforestation rates by 60% compared to historical baseline (2010-2020).
-                              </span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <div className="w-2 h-2 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
-                              <span>Implement sustainable forest management practices across 500,000 hectares.</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <div className="w-2 h-2 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
-                              <span>Strengthen indigenous territories and community forest management systems.</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <div className="w-2 h-2 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
-                              <span>
-                                Establish comprehensive monitoring, reporting, and verification (MRV) systems.
-                              </span>
-                            </li>
-                          </ul>
+                          <p>
+                            El proyecto representa una experiencia concreta de planificación territorial forestal
+                            alineada con la Estrategia Nacional de REDD+ (ENREDD+) y el Plan de Acción Nacional de
+                            Bosques y Cambio Climático (PANByCC). A través de un enfoque inclusivo y basado en el
+                            paisaje, promueve la sostenibilidad ambiental, el desarrollo económico local y el
+                            cumplimiento progresivo de las salvaguardas REDD+ acordadas por Argentina en el marco de la
+                            CMNUCC.
+                          </p>
                         </div>
                       </CardContent>
                     </Card>
 
-                    {/* REDD+ Components */}
+                    {/* Evaluación de Salvaguardas */}
                     <Card>
                       <CardHeader>
-                        <CardTitle className="text-lg text-emerald-900">REDD+ Components and Activities</CardTitle>
+                        <CardTitle className="text-lg text-emerald-900">Evaluación de Salvaguardas REDD+</CardTitle>
+                        <CardDescription>
+                          Resumen de cumplimiento para las 7 salvaguardas establecidas en el Acuerdo de Cancún,
+                          adaptadas al marco nacional argentino
+                        </CardDescription>
                       </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="bg-emerald-50 p-4 rounded-lg">
-                            <h4 className="font-medium mb-2 text-emerald-800">Forest Conservation:</h4>
-                            <p className="text-sm">
-                              Protection of <span className="font-semibold text-2xl text-emerald-900">1.8M</span>{" "}
-                              hectares of primary forest through enhanced protection measures and community-based
-                              conservation.
-                            </p>
-                          </div>
-
-                          <div className="bg-green-50 p-4 rounded-lg">
-                            <h4 className="font-medium mb-2 text-green-800">Forest Restoration:</h4>
-                            <p className="text-sm">
-                              Restoration of <span className="font-semibold text-2xl text-green-900">200K</span>{" "}
-                              hectares of degraded forest lands through natural regeneration and assisted restoration
-                              techniques.
-                            </p>
-                          </div>
-
-                          <div className="bg-blue-50 p-4 rounded-lg">
-                            <h4 className="font-medium mb-2 text-blue-800">Sustainable Management:</h4>
-                            <p className="text-sm">
-                              Implementation of sustainable forest management practices across{" "}
-                              <span className="font-semibold text-2xl text-blue-900">500K</span> hectares with certified
-                              logging and agroforestry systems.
-                            </p>
-                          </div>
-
-                          <div className="bg-purple-50 p-4 rounded-lg">
-                            <h4 className="font-medium mb-2 text-purple-800">Carbon Enhancement:</h4>
-                            <p className="text-sm">
-                              Enhancement of forest carbon stocks through improved forest management, resulting in{" "}
-                              <span className="font-semibold text-2xl text-purple-900">15M</span> tCO2 additional
-                              sequestration.
-                            </p>
-                          </div>
+                      <CardContent>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm border-collapse border border-gray-300">
+                            <thead>
+                              <tr className="bg-emerald-50">
+                                <th className="border border-gray-300 px-4 py-3 text-left font-medium">Salvaguarda</th>
+                                <th className="border border-gray-300 px-4 py-3 text-center font-medium">Evaluación</th>
+                                <th className="border border-gray-300 px-4 py-3 text-left font-medium">
+                                  Observaciones clave
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td className="border border-gray-300 px-4 py-3">(a) Consistencia nacional</td>
+                                <td className="border border-gray-300 px-4 py-3 text-center">✅</td>
+                                <td className="border border-gray-300 px-4 py-3">Alineado con políticas REDD+</td>
+                              </tr>
+                              <tr className="bg-gray-50">
+                                <td className="border border-gray-300 px-4 py-3">(b) Gobernanza</td>
+                                <td className="border border-gray-300 px-4 py-3 text-center">✅</td>
+                                <td className="border border-gray-300 px-4 py-3">Institucionalidad activa</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-gray-300 px-4 py-3">(c) Derechos indígenas</td>
+                                <td className="border border-gray-300 px-4 py-3 text-center">⚠</td>
+                                <td className="border border-gray-300 px-4 py-3">Falta CLPI estructurado</td>
+                              </tr>
+                              <tr className="bg-gray-50">
+                                <td className="border border-gray-300 px-4 py-3">(d) Participación</td>
+                                <td className="border border-gray-300 px-4 py-3 text-center">✅</td>
+                                <td className="border border-gray-300 px-4 py-3">Talleres locales efectivos</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-gray-300 px-4 py-3">(e) Conservación</td>
+                                <td className="border border-gray-300 px-4 py-3 text-center">✅</td>
+                                <td className="border border-gray-300 px-4 py-3">Enfoque ecosistémico sólido</td>
+                              </tr>
+                              <tr className="bg-gray-50">
+                                <td className="border border-gray-300 px-4 py-3">(f) Riesgos socioambientales</td>
+                                <td className="border border-gray-300 px-4 py-3 text-center">⚠</td>
+                                <td className="border border-gray-300 px-4 py-3">Ausencia de PGAS</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-gray-300 px-4 py-3">(g) Reversión y desplazamiento</td>
+                                <td className="border border-gray-300 px-4 py-3 text-center">✅</td>
+                                <td className="border border-gray-300 px-4 py-3">Estrategias de sostenibilidad</td>
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
                       </CardContent>
                     </Card>
 
-                    {/* Expected Impact */}
+                    {/* Recomendaciones de Mejora */}
                     <Card>
                       <CardHeader>
-                        <CardTitle className="text-lg text-emerald-900">Expected Impact</CardTitle>
+                        <CardTitle className="text-lg text-emerald-900">Recomendaciones de Mejora</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-3">
-                            <div className="flex items-start gap-3 p-3 bg-emerald-50 rounded-lg">
-                              <TreePine className="h-5 w-5 text-emerald-600 mt-1 flex-shrink-0" />
-                              <div>
-                                <p className="text-sm font-medium">Carbon Impact</p>
-                                <p className="text-xs text-muted-foreground">
-                                  Reduction of 45 million tCO2 emissions over 10 years through avoided deforestation.
-                                </p>
-                              </div>
+                        <div className="space-y-3">
+                          <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold mt-0.5">
+                              1
                             </div>
-
-                            <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
-                              <Leaf className="h-5 w-5 text-green-600 mt-1 flex-shrink-0" />
-                              <div>
-                                <p className="text-sm font-medium">Biodiversity Impact</p>
-                                <p className="text-xs text-muted-foreground">
-                                  Protection of critical habitats for over 3,000 species including endangered fauna.
-                                </p>
-                              </div>
-                            </div>
+                            <p className="text-sm leading-relaxed">
+                              Incluir un módulo específico de salvaguardas dentro del documento del proyecto para
+                              facilitar el monitoreo y la rendición de cuentas.
+                            </p>
                           </div>
 
-                          <div className="space-y-3">
-                            <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                              <Users className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
-                              <div>
-                                <p className="text-sm font-medium">Social Impact</p>
-                                <p className="text-xs text-muted-foreground">
-                                  Improved livelihoods for 25,000 people in 150 communities through sustainable
-                                  alternatives.
-                                </p>
-                              </div>
+                          <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                            <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold mt-0.5">
+                              2
                             </div>
+                            <p className="text-sm leading-relaxed">
+                              Formalizar procesos de CLPI con pueblos indígenas, en línea con el Marco de Participación
+                              Indígena REDD+ Argentina.
+                            </p>
+                          </div>
 
-                            <div className="flex items-start gap-3 p-3 bg-orange-50 rounded-lg">
-                              <Building2 className="h-5 w-5 text-orange-600 mt-1 flex-shrink-0" />
-                              <div>
-                                <p className="text-sm font-medium">Economic Impact</p>
-                                <p className="text-xs text-muted-foreground">
-                                  Generation of $120M in sustainable forest-based income over the project period.
-                                </p>
-                              </div>
+                          <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                            <div className="w-6 h-6 rounded-full bg-yellow-500 text-white flex items-center justify-center text-xs font-bold mt-0.5">
+                              3
                             </div>
+                            <p className="text-sm leading-relaxed">
+                              Elaborar un PGAS (Plan de Gestión Ambiental y Social) que identifique riesgos
+                              diferenciados (por género, pueblos indígenas, biodiversidad).
+                            </p>
+                          </div>
+
+                          <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                            <div className="w-6 h-6 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs font-bold mt-0.5">
+                              4
+                            </div>
+                            <p className="text-sm leading-relaxed">
+                              Incorporar indicadores específicos por salvaguarda, alineados con el Sistema de
+                              Información de Salvaguardas (SIS) nacional.
+                            </p>
                           </div>
                         </div>
                       </CardContent>
