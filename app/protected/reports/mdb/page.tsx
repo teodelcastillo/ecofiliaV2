@@ -33,6 +33,7 @@ const projects = [
     name: "Brazil Housing Project",
     description: "Proyecto de desarrollo urbano y vivienda en Brasil",
     documents: [
+      { id: "doc-0", name: "Main project document", type: "main" },
       { id: "doc-1", name: "Florianopolis Sustaintable Strategy", type: "assessment" },
       { id: "doc-2", name: "NAP Brazil (Sectoral Strategies, 2016).pdf", type: "plan" },
       { id: "doc-3", name: "NAP Brazil (2016).pdf", type: "report" },
