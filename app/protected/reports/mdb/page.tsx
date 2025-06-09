@@ -36,7 +36,11 @@ const projects = [
       { id: "doc-1", name: "Florianopolis Sustaintable Strategy", type: "assessment" },
       { id: "doc-2", name: "NAP Brazil (Sectoral Strategies, 2016).pdf", type: "plan" },
       { id: "doc-3", name: "NAP Brazil (2016).pdf", type: "report" },
-      { id: "doc-3", name: "NDC Brazil (second NDC, 2024).pdf", type: "report" },
+      { id: "doc-4", name: "NDC Brazil (second NDC, 2024).pdf", type: "report" },
+      { id: "doc-5", name: "Anexo Técnico Componente 1", type: "report" },
+      { id: "doc-6", name: "Anexo Técnico Componente 2", type: "report" },
+      { id: "doc-7", name: "Anexo Técnico Componente 3", type: "report" },
+      { id: "doc-8", name: "Anexo Técnico Componente 4", type: "report" },
     ],
   },
 ]
