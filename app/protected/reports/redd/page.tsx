@@ -22,16 +22,7 @@ import { useRouter } from "next/navigation"
 
 // Datos simulados
 const projects = [
-  {
-    id: "proyecto-1",
-    name: "Proyecto Ecofilia",
-    description: "Iniciativa de conservación y desarrollo sostenible",
-    documents: [
-      { id: "doc-1", name: "Evaluación Ambiental", type: "assessment" },
-      { id: "doc-2", name: "Plan de Gestión", type: "plan" },
-      { id: "doc-3", name: "Informe de Impacto", type: "report" },
-    ],
-  },
+
   {
     id: "proyecto-2",
     name: "Proyecto Cuenca Caimancito (Jujuy, Argentina)",
@@ -42,16 +33,7 @@ const projects = [
       { id: "doc-6", name: "Plan Estrategico Forestal Cuenca Caimancito", type: "plan" },
     ],
   },
-  {
-    id: "proyecto-3",
-    name: "Proyecto Energía Renovable",
-    description: "Desarrollo de infraestructura para energía solar y eólica",
-    documents: [
-      { id: "doc-7", name: "Evaluación Técnica", type: "assessment" },
-      { id: "doc-8", name: "Estudio de Impacto", type: "study" },
-      { id: "doc-9", name: "Plan Operativo", type: "plan" },
-    ],
-  },
+
 ]
 
 const aiSuggestions = {
