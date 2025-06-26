@@ -124,7 +124,7 @@ export function HeroSection() {
               </span>
             </h1>
             <p className="max-w-[800px] mx-auto text-muted-foreground md:text-xl">
-                We help you analyze, report, monitor and scale climate action.
+                We help you analyze, report, monitor and scale climate action.<br/>
                 Smarter, faster, and more effectively.
 
             </p>

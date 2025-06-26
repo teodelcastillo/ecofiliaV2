@@ -26,10 +26,15 @@ export function ValueProposition() {
             >
               <Badge className="px-4 py-1 border-primary/20 bg-primary/5 text-primary mb-4">Core Benefits</Badge>
               <h2 className="text-4xl md:text-5xl font-bold text-foreground tracking-tight leading-[1.1] mb-4">
-                Our <span className="text-primary">Value Proposition</span>
+                Our <span className="text-primary">Strategy</span>
               </h2>
+              <h4 className="text-2xl md:text-2xl font-bold text-foreground tracking-tight leading-[1.1] mb-4">
+                <span className="text-primary">AI-Powered</span> <span>consulting to strengthen your sustainability impact</span>
+              </h4>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                Ecofilia empowers sustainability professionals by automating repetitive, low-value tasks, freeing up their time to focus on impactful initiatives. <br/>Our AI-powered platform streamlines sustainability reporting, tracks KPI’s and serves as an intelligent sustainability assistant.
+                Ecofilia is a consulting firm bringing AI-powered climate intelligence to help organizations
+                accelerate sustainability reporting, policy and data analysis, project monitoring & evaluation,
+                and ESG action.
               </p>
             </motion.div>
     

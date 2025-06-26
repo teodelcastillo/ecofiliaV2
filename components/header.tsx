@@ -31,7 +31,7 @@ export function Header() {
             variant="ghost"
             className="text-sm font-medium transition-colors hover:text-primary"
           >
-            Value
+            Strategy
           </Button>
           <Button
             onClick={() => scrollToSection("solutions")}

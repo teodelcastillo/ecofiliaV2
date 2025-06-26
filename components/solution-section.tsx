@@ -12,17 +12,19 @@ import { useRouter } from "next/navigation"
 export function SolutionSection() {
   const router = useRouter()
   const platformBenefits = [
-  "Automated ESG & climate reporting",
-  "AI-based document analysis",
-  "Real-time KPI tracking",
-  "Custom dashboards & integrations",
+  "Automated sustainability, ESG, and climate reporting",
+  "AI-powered document analysis (policies, projects, technical reports",
+  "Data structuring and indicator tracking for informed decision-making",
+  "Custom dashboards and integrations with your internal systems",
+  "Knowledge Hubs to systematize technical information"
 ]
 
 const consultancyBenefits = [
   "Strategic advisory & regulatory alignment",
-  "NDC, TCFD, SDG integration",
-  "Climate finance guidance",
-  "Climate impact modeling & disclosure",
+  "Integration of frameworks such as NDCs, TCFD, SDGs, GRI, MDBs, and others",
+  "Development, review, and validation of key reports, plans, and documents",
+  "Institutional knowledge management and capacity building",
+  "Benchmarking of sustainability tools and digital solutions",
 ]
 
 
@@ -65,7 +67,7 @@ const consultancyBenefits = [
           {/* Platform approach */}
           <ApproachCard
             title="Technology Platform"
-            description="Our AI-powered platform automates repetitive tasks and provides powerful tools for sustainability management."
+            description="Our proprietary platform integrates AI to automate operational tasks and streamline the analysis of complex data in sustainability, climate, and ESG."
             icon={<Zap className="w-6 h-6" />}
             color="primary"
             buttonText="Explore Platform"
