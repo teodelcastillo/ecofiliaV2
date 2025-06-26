@@ -30,10 +30,7 @@ export function SolutionSection() {
           <h2 className="text-4xl md:text-5xl font-bold text-foreground tracking-tight leading-[1.1] mb-4">
             Comprehensive <span className="text-primary">Sustainability Solutions</span>
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Ecofilia empowers sustainability professionals by combining powerful technology with expert guidance,
-            creating a comprehensive solution for your environmental management needs.
-          </p>
+
         </motion.div>
 
         {/* Feature cards */}
@@ -46,21 +43,21 @@ export function SolutionSection() {
         >
           <FeatureBox
             icon={<Book className="w-12 h-12" />}
-            title="Knowledge Hub"
+            title="Knowledge Hubs"
             description="Systematize technical documentation for policies, plans, and frameworks using AI-enhanced libraries."
             delay={0.1}
           />
 
           <FeatureBox
             icon={<FolderSearch className="w-12 h-12" />}
-            title="Document Analysis"
+            title="Sustainability Reporting"
             description="Extract insights from sustainability documents including ESG reports, climate policies, and project plans."
             delay={0.2}
           />
 
           <FeatureBox
             icon={<BarChart3 className="w-12 h-12" />}
-            title="KPI & Indicator Tracking"
+            title="Dashboards & KPIs"
             description="Track impact using sustainability indicators, climate goals, and operational metrics in real time."
             delay={0.3}
           />
@@ -87,7 +84,7 @@ export function SolutionSection() {
               className="px-8 rounded-full group"
               onClick={() => window.location.href = "#contact"}
             >
-              <span>Discover How We Can Help</span>
+              <span>Tailored Solutions</span>
               <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform duration-200" />
             </Button>
           </div>
