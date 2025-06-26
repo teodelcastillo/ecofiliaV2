@@ -50,12 +50,19 @@ export function ValueProposition() {
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Ecofilia is a consulting firm that combines technology and expert consultancy to strengthen sustainability impact.
           </p>
-        <Button
-          variant="outline"
-          className="my-8 text-primary hover:bg-primary/10 transition-colors duration-300"
-          onClick={() => router.push("#")}>
-            Download our Strategy
-          </Button>
+            <a
+              href="/EcofiliaBrochure-eng.pdf"
+              download
+              className="inline-block my-8"
+            >
+              <Button
+                variant="outline"
+                className="text-primary hover:bg-primary/10 transition-colors duration-300"
+              >
+                Download our Strategy
+              </Button>
+            </a>
+
         </motion.div>
 
 
