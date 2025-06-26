@@ -124,14 +124,15 @@ export function HeroSection() {
               </span>
             </h1>
             <p className="max-w-[800px] mx-auto text-muted-foreground md:text-xl">
-              Ecofilia helps you analyze, report, and scale climate action <br />
-              Smarter, faster, and more effectively.
+                We help you analyze, report, monitor and scale climate action.
+                Smarter, faster, and more effectively.
+
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 mt-4">
             <div className="relative inline-flex">
-              <Button size="lg" onClick={() => router.push("/auth")}>Sign Up</Button>
+              <Button size="lg" onClick={() => router.push("/auth")}>Try our Tool</Button>
               <div className="absolute -right-2 -top-2">
                 <div className="bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full font-medium text-xs shadow-sm">
                   Free
@@ -145,7 +146,7 @@ export function HeroSection() {
           </div>
         </div>
         <div className="flex flex-col items-center justify-center text-center mt-8">
-          <p className="text-sm text-muted-foreground">✅ Trusted by sustainability professionals across all Latin America.</p>
+          <p className="text-sm text-muted-foreground">✅ Trusted by sustainability professionals.</p>
           <p className="text-sm text-muted-foreground">No credit card required. Start making a difference today.</p>
         </div>
       </div>
