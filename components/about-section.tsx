@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Github, Linkedin, Twitter, Award, BookOpen, Briefcase, ArrowRight, ExternalLink } from "lucide-react"
+import { Github, Linkedin, Twitter, Award, BookOpen, ArrowRight, Globe } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -58,6 +58,7 @@ const teamMembers = [
 
     socialLinks: [
       { platform: "linkedin", url: "https://ar.linkedin.com/in/teodoro-del-castillo" },
+      { platform: "github", url: "https://github.com/teodelcastillo" },
     ],
   },
 ]
@@ -65,6 +66,48 @@ const teamMembers = [
 const collaborators = [
   {
     id: 101,
+    name: "Marcos Martinez",
+    role: "Technology Advisor",
+    image: "/HeadshotMarcos.jpg",
+    fallback: "MM",
+    bio: "Co-Founder and CTO/COO of Fligoo, a global AI company based in San Francisco (U.S.), and Córdoba (ARG).",
+    extendedBio:
+      "Marcos is the Co-Founder and Chief Technology & Operations Officer at Fligoo, a global AI company with offices in San Francisco and Córdoba. Since 2013, he has led the development of scalable AI solutions for Fortune 500 companies across finance, retail, and consumer goods sectors. He also mentors tech startups and has been recognized with awards such as Forbes 30 Promises and the Young Entrepreneur Award. At Ecofilia, Marcos brings strategic insight into how to build impactful, scalable, and data-driven products for sustainability.",
+    education: "Universidad Siglo 21 – Software Engineering",
+    socialLinks: [
+      {
+        platform: "linkedin",
+        url: "https://www.linkedin.com/in/martinez-marcos",
+      },
+      {
+        platform: "website",
+        url: "https://www.fligoo.com",
+      }
+    ]
+  },
+  {
+    id: 102,
+    name: "Lucilo del Castillo",
+    role: "Technology Advisor",
+    image: "/HeadhshotLucilo.jpeg", 
+    fallback: "LdC",
+    bio: "Full-stack developer and creative technologist with experience in Web3, AI applications, and interactive platforms.",
+    extendedBio:
+      "Lucilo is a full-stack developer with a background in Web3, AI, and immersive front-end experiences. He has built platforms ranging from blockchain-based marketplaces to 3D configurators, multiplayer games, and sustainability-focused web apps. His projects integrate technologies such as React, Next.js, Solidity, and LangChain. At Ecofilia, he supports the development of digital tools that connect environmental data with interactive, user-friendly applications.",
+    education: "Self-taught developer with professional certifications and a portfolio spanning blockchain, WebGL, and AI technologies.",
+    socialLinks: [
+      {
+        platform: "linkedin",
+        url: "https://www.linkedin.com/in/lucilodc/",
+      },
+      {
+        platform: "website",
+        url: "https://lucilo-portfolio.vercel.app/",
+      },
+    ],
+  },
+  {
+    id: 103,
     name: "Sayri Proano",
     role: "Sustainability Intern",
     image: "/HeadshotSayri.jpeg",
@@ -73,7 +116,12 @@ const collaborators = [
     extendedBio:
       "Sayri is a Biology and Innovation student at the University of Florida with a strong interest in AI-driven sustainability. She brings hands-on experience in green tech, climate innovation, and sustainability reporting. At Ecofilia, she supports benchmarking of AI tools for environmental analysis and contributes to aligning our consulting solutions with the evolving needs of climate-focused organizations.",
     education: "B.Sc. in Biology & Innovation, University of Florida (in progress)",
-    socialLinks: [],
+    socialLinks: [
+            {
+        platform: "linkedin",
+        url: "https://www.linkedin.com/in/sayri-proano-80b74a253/",
+      },
+    ],
   },
 ]
 
@@ -156,7 +204,7 @@ export function AboutSection() {
       </motion.div>
 
 
-<div className="mx-auto grid max-w-5xl gap-8 py-8 md:grid-cols-1 place-items-center">
+<div className="mx-auto grid max-w-5xl gap-8 py-8 md:grid-cols-3 place-items-center">
   {collaborators.map((member, index) => (
     <div key={member.id} className="w-full max-w-md">
       <TeamMemberCard
@@ -245,7 +293,7 @@ function TeamMemberCard({
               >
                 {link.platform === "github" && <Github className="h-4 w-4" />}
                 {link.platform === "linkedin" && <Linkedin className="h-4 w-4" />}
-                {link.platform === "twitter" && <Twitter className="h-4 w-4" />}
+                {link.platform === "website" && <Globe className="h-4 w-4" />}
                 <span className="sr-only">{link.platform}</span>
               </a>
             ))}
