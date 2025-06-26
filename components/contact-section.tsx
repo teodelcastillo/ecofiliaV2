@@ -108,7 +108,7 @@ const handleSubmit = async (e: React.FormEvent) => {
             <ContactCard
               icon={<MapPin className="h-6 w-6" />}
               title="Address"
-              content="5151 Collins Ave #828, Miami, Florida"
+              content="5151 Collins Ave #828, Miami, Florida. US (33140)"
               delay={0.3}
               href="https://www.google.com/maps?sca_esv=b703f1cd0674f892&output=search&q=5151+COLLINS+AVE+828&source=lnms&fbs=ABzOT_CWdhQLP1FcmU5B0fn3xuWpIgVFCTcbZI9VMGzNoV0iOTPryHVyOUisUiQWwjZrW-zxZQIG5sJB7n-SeI02-dWco9h2xGRpWYkDOeeVbWqXBaxhPoHbe_vTGDfiSosdd4v71Oo8VIcLq5Y3qXYHpvCpY6pT_SP9mIaVKTrqu26nBu49F9i8ASIRjVR6jqWeWTYEx3haPWbjfemxNZR0INHmjFee0Q&entry=mc&ved=1t:200715&ictx=111"
               external
