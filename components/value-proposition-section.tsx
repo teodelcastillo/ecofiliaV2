@@ -41,7 +41,7 @@ export function ValueProposition() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center"
         >
           <Badge className="px-4 py-1 border-primary/20 bg-primary/5 text-primary mb-4">Core Benefits</Badge>
           <h2 className="text-4xl md:text-5xl font-bold text-foreground tracking-tight leading-[1.1] mb-4">
@@ -50,7 +50,14 @@ export function ValueProposition() {
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Ecofilia is a consulting firm that combines technology and expert consultancy to strengthen sustainability impact.
           </p>
+        <Button
+          variant="outline"
+          className="my-8 text-primary hover:bg-primary/10 transition-colors duration-300"
+          onClick={() => router.push("#")}>
+            Download our Strategy
+          </Button>
         </motion.div>
+
 
         {/* Approach Cards */}
         <motion.div
@@ -58,10 +65,10 @@ export function ValueProposition() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="grid md:grid-cols-2 gap-8 mt-12"
+          className="grid md:grid-cols-2 gap-8 "
         >
           <ApproachCard
-            title="AI Strategy Platform"
+            title="Technology Platform"
             description="Ecofilia's platform leverages AI to deliver structured analysis, insights, and automation for climate and sustainability work."
             icon={<Zap className="w-6 h-6" />}
             color="primary"
@@ -72,7 +79,7 @@ export function ValueProposition() {
           />
 
           <ApproachCard
-            title="Advisory & Consulting"
+            title="Expert Consulting"
             description="Work hand-in-hand with our experts to design impactful climate strategies and reports aligned with global frameworks."
             icon={<Target className="w-6 h-6" />}
             color="accent"
