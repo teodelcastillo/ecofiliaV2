@@ -62,6 +62,22 @@ const teamMembers = [
   },
 ]
 
+const collaborators = [
+  {
+    id: 101,
+    name: "Sayri Proano",
+    role: "Sustainability Intern",
+    image: "/HeadshotSayri.jpeg",
+    fallback: "SP",
+    bio: "Biology and Innovation student at the University of Florida with a strong interest in AI-driven sustainability.",
+    extendedBio:
+      "Sayri is a Biology and Innovation student at the University of Florida with a strong interest in AI-driven sustainability. She brings hands-on experience in green tech, climate innovation, and sustainability reporting. At Ecofilia, she supports benchmarking of AI tools for environmental analysis and contributes to aligning our consulting solutions with the evolving needs of climate-focused organizations.",
+    education: "B.Sc. in Biology & Innovation, University of Florida (in progress)",
+    socialLinks: [],
+  },
+]
+
+
 export function AboutSection() {
   const [openModal, setOpenModal] = useState<number | null>(null)
   const [hoveredMember, setHoveredMember] = useState<number | null>(null)
@@ -97,6 +113,8 @@ export function AboutSection() {
           </div>
         </motion.div>
 
+        
+
         <div className="mx-auto grid max-w-5xl gap-8 py-8 md:grid-cols-3">
           {teamMembers.map((member, index) => (
             <TeamMemberCard
@@ -112,6 +130,49 @@ export function AboutSection() {
           ))}
         </div>
       </div>
+      {/* === Collaborators Section === */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7 }}
+        viewport={{ once: true }}
+        className="relative flex flex-col items-center justify-center space-y-4 text-center mt-24 mb-16 px-4"
+      >
+        {/* Fondo para mejorar contraste */}
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-md rounded-xl z-[-1]" />
+
+        <Badge variant="outline" className="px-4 py-1 border-primary/20 bg-primary/5 text-primary z-10">
+          Collaborators
+        </Badge>
+
+        <div className="space-y-4 z-10">
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tighter text-foreground">
+            Meet Our <span className="text-primary">Collaborators</span>
+          </h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Talented professionals and interns who enrich Ecofilia’s mission through research, innovation, and support across climate and sustainability projects.
+          </p>
+        </div>
+      </motion.div>
+
+
+<div className="mx-auto grid max-w-5xl gap-8 py-8 md:grid-cols-1 place-items-center">
+  {collaborators.map((member, index) => (
+    <div key={member.id} className="w-full max-w-md">
+      <TeamMemberCard
+        member={member}
+        index={index}
+        isHovered={hoveredMember === member.id}
+        setHovered={(isHovered) => setHoveredMember(isHovered ? member.id : null)}
+        openModal={() => setOpenModal(member.id)}
+        isModalOpen={openModal === member.id}
+        closeModal={() => setOpenModal(null)}
+      />
+    </div>
+  ))}
+</div>
+
+
     </section>
   )
 }
