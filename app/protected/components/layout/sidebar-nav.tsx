@@ -32,7 +32,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { TbReportAnalytics } from "react-icons/tb";
+import { TbAccessPoint, TbReportAnalytics } from "react-icons/tb";
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -73,6 +73,7 @@ const menuItems: MenuItem[] = [
       { icon: MessageCircle, label: "Ecofilia Assistant", href: "/protected/ecofilia-expert" },
       { icon: TbReportAnalytics, label: "Reports", href: "/protected/reports" },
       { icon: ChartSpline, label: "Analytics", href: "/protected/analytics" },
+      { icon: TbAccessPoint, label: "Strategy", href: "/protected/strategyAssistant" },
     ],
   },
   { icon: UsersRound, label: "Community", href: "/protected/community", badge: "SOON" },
