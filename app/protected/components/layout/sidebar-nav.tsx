@@ -73,7 +73,6 @@ const menuItems: MenuItem[] = [
       { icon: MessageCircle, label: "Ecofilia Assistant", href: "/protected/ecofilia-expert" },
       { icon: TbReportAnalytics, label: "Reports", href: "/protected/reports" },
       { icon: ChartSpline, label: "Analytics", href: "/protected/analytics" },
-      { icon: TbAccessPoint, label: "Strategy", href: "/protected/strategyAssistant" },
     ],
   },
   { icon: UsersRound, label: "Community", href: "/protected/community", badge: "SOON" },
