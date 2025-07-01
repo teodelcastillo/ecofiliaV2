@@ -1,5 +1,5 @@
 import { Folder } from "lucide-react"
-import { ProjectsView } from "./components/projects-view"
+import { ProjectsView } from "../projects-view"
 
 export default function ProjectsPage() {
   return (
