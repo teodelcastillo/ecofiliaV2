@@ -14,9 +14,7 @@ import {
   ChevronRight,
   FileCheck,
   Download,
-  Leaf,
-  Users,
-  Building2,
+
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 
@@ -31,6 +29,15 @@ const projects = [
       { id: "doc-4", name: "Plan de Acción Nacional de Bosques y Cambio Climatico (Argentina, 2017)", type: "study" },
       { id: "doc-5", name: "Primer resumen de Informacion Salvaguardas REDD (ARG, 2019)", type: "analysis" },
       { id: "doc-6", name: "Plan Estrategico Forestal Cuenca Caimancito", type: "plan" },
+      { id: "doc-7", name: "Guía para la integración de la perspectiva de género en la gestión de bosques y cambio climático", type: "study" },
+      { id: "doc-8", name: "Manual técnico para la consulta a pueblos originarios en la gestión de bosques y cambio climátic", type: "analysis" },
+      { id: "doc-9", name: "Guía para la participación de actores clave en la gestión de bosques y cambio climático", type: "analysis" },
+      { id: "doc-10", name: "Beneficios sociales y ambientales de los bosques nativos Guía metodológica y resultados por Región Forestal", type: "study" },
+      { id: "doc-11", name: "Implementación - Se conformó el Comité de Cuenca...", type: "implementation" },
+      { id: "doc-12", name: "Implementación - Noticias Proyecto REDD+...", type: "implementation" },
+      { id: "doc-13", name: "Implementación - Avances del Plan de Gestión...", type: "implementation" },
+      { id: "doc-14", name: "Implementación - Sociabilización del proyecto...", type: "implementation" },
+
     ],
   },
 
@@ -122,14 +129,31 @@ export default function REDDReportsPage() {
   }
 
   const handleDownload = () => {
-    let fileName = ""
+const today = new Date()
+const dateStr = today.toISOString().split("T")[0] // YYYY-MM-DD
 
-    // Determinar el archivo a descargar según el tipo de reporte generado
-    if (reportStructure === "filter") {
-      fileName = "Reporte_REDD_Caimancito.pdf"
-    } else if (reportStructure === "overview") {
-      fileName = "Overview del Proyecto_ Plan Estratégico de Gestión Forestal – Cuenca Caimancito (Jujuy, Argentina).docx"
-    }
+let fileName = ""
+
+if (reportStructure === "filter") {
+  fileName = `REDD_Caimancito_FiltroIndicadores_${dateStr}.pdf`
+} else if (reportStructure === "overview") {
+  fileName = `Overview_Cuenca_Caimancito_${dateStr}.docx`
+} else if (reportStructure === "progreso") {
+  fileName = `Reporte_de_Progreso_Cuenca_Caimancito_${dateStr}.docx`
+}
+
+// Simulación de descarga
+const blob = new Blob(["Contenido generado del reporte"], {
+  type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // para .docx
+})
+const url = URL.createObjectURL(blob)
+const a = document.createElement("a")
+a.href = url
+a.download = fileName
+a.click()
+URL.revokeObjectURL(url)
+
+
 
     // Crear un elemento de descarga temporal
     const link = document.createElement("a")
@@ -205,22 +229,61 @@ export default function REDDReportsPage() {
             </div>
 
             {/* Mostrar documentos incluidos en el proyecto seleccionado */}
-            {selectedProject && (
-              <div className="space-y-2">
-                <Label>Documentos incluidos en este proyecto</Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                  {getProjectDocuments().map((doc) => (
-                    <div key={doc.id} className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
-                      <FileCheck className="h-4 w-4 text-emerald-600" />
-                      <span className="text-sm">{doc.name}</span>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Todos estos documentos serán considerados para la generación del reporte
-                </p>
-              </div>
-            )}
+{selectedProject && (
+  <>
+    {/* Documento principal del proyecto */}
+    <div className="space-y-2">
+      <Label>📘 Documento del Proyecto</Label>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+        {getProjectDocuments()
+          .filter((doc) => doc.type === "plan")
+          .map((doc) => (
+            <div key={doc.id} className="flex items-center gap-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+              <FileCheck className="h-4 w-4 text-blue-600" />
+              <span className="text-sm font-medium">{doc.name}</span>
+            </div>
+          ))}
+      </div>
+    </div>
+
+    {/* Documentos técnicos y de referencia */}
+    <div className="space-y-2 mt-4">
+      <Label>📎 Documentos de análisis y referencia</Label>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+        {getProjectDocuments()
+          .filter((doc) => doc.type === "study" || doc.type === "analysis")
+          .filter((doc) => !doc.name.toLowerCase().includes("implementación")) // opcional si aún no cambiaste el tipo
+          .map((doc) => (
+            <div key={doc.id} className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+              <FileCheck className="h-4 w-4 text-emerald-600" />
+              <span className="text-sm">{doc.name}</span>
+            </div>
+          ))}
+      </div>
+    </div>
+
+    {/* Documentos de implementación */}
+    <div className="space-y-2 mt-4">
+      <Label>🚧 Documentos de implementación</Label>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+        {getProjectDocuments()
+          .filter((doc) => doc.type === "implementation")
+          .map((doc) => (
+            <div key={doc.id} className="flex items-center gap-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <FileCheck className="h-4 w-4 text-yellow-700" />
+              <span className="text-sm">{doc.name}</span>
+            </div>
+          ))}
+      </div>
+    </div>
+
+    <p className="text-xs text-muted-foreground mt-4">
+      Todos estos documentos serán considerados para la generación del reporte
+    </p>
+  </>
+)}
+
+
           </CardContent>
           <CardFooter className="flex justify-end">
             <Button onClick={handleNextStage} disabled={!selectedProject} className="gap-2">
@@ -244,7 +307,7 @@ export default function REDDReportsPage() {
                 <RadioGroupItem value="overview" id="overview" className="mt-1" />
                 <div className="grid gap-1.5">
                   <Label htmlFor="overview" className="font-medium text-base">
-                    Project Overview
+                    Ficha de proyecto
                   </Label>
                   <p className="text-sm text-muted-foreground">
                     Visión general del proyecto REDD+ con enfoque en conservación forestal y reducción de emisiones
@@ -256,10 +319,22 @@ export default function REDDReportsPage() {
                 <RadioGroupItem value="filter" id="filter" className="mt-1" />
                 <div className="grid gap-1.5">
                   <Label htmlFor="filter" className="font-medium text-base">
-                    REDD+ Filter
+                    Salvaguardas REDD+
                   </Label>
                   <p className="text-sm text-muted-foreground">
                     Análisis específico de cumplimiento con estándares REDD+ y criterios de elegibilidad
+                  </p>
+                </div>
+                </div>
+                <div className="flex items-start space-x-3 border rounded-lg p-4 hover:bg-muted/50 cursor-pointer">
+
+                <RadioGroupItem value="progreso" id="progreso" className="mt-1" />
+                <div className="grid gap-1.5">
+                  <Label htmlFor="progreso" className="font-medium text-base">
+                    Reporte de Progreso
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                     Informe detallado del avance del proyecto, incluyendo indicadores de desempeño y resultados  
                   </p>
                 </div>
               </div>
@@ -559,9 +634,10 @@ export default function REDDReportsPage() {
                       </div>
                     </CardContent>
                   </Card>
-                ) : (
+                ) : reportStructure === "overview" ? (
                   // Project Overview content
                   <div className="space-y-6">
+                    {/* Título y encabezado */}
                     <div className="prose max-w-none">
                       <h1 className="text-2xl font-bold mb-2">Overview del Proyecto</h1>
                       <h2 className="text-xl font-semibold text-emerald-800 mb-4">
@@ -570,35 +646,53 @@ export default function REDDReportsPage() {
                       <p className="text-muted-foreground mb-6">Fecha: {new Date().toLocaleDateString()}</p>
                     </div>
 
-                    {/* Project Description */}
+                    {/* Descripción del proyecto */}
                     <Card>
-                      <CardContent className="p-6">
-                        <div className="space-y-4 text-sm leading-relaxed">
-                          <p>
-                            El presente proyecto tiene como objetivo implementar una estrategia integral de gestión
-                            forestal sostenible en la Cuenca Caimancito, en el este de la provincia de Jujuy. Abarcando
-                            más de 740.000 ha, el plan articula esfuerzos entre organismos públicos, comunidades
-                            locales, el sector privado y organizaciones técnicas para fortalecer el manejo forestal,
-                            conservar la biodiversidad y promover el desarrollo local con enfoque territorial.
-                          </p>
-
-                          <p>
-                            La zona de intervención incluye bosques de yungas y chaco seco, altos valores de
-                            biodiversidad, y una presencia significativa de comunidades indígenas (Guaraníes, Kollas y
-                            Ocloyas). El enfoque del proyecto se basa en cuatro pilares: fortalecimiento institucional,
-                            manejo de bosques nativos, desarrollo de plantaciones forestales sostenibles e impulso a la
-                            cadena de valor foresto-industrial local.
-                          </p>
-
-                          <p>
-                            El proyecto representa una experiencia concreta de planificación territorial forestal
-                            alineada con la Estrategia Nacional de REDD+ (ENREDD+) y el Plan de Acción Nacional de
-                            Bosques y Cambio Climático (PANByCC). A través de un enfoque inclusivo y basado en el
-                            paisaje, promueve la sostenibilidad ambiental, el desarrollo económico local y el
-                            cumplimiento progresivo de las salvaguardas REDD+ acordadas por Argentina en el marco de la
-                            CMNUCC.
-                          </p>
-                        </div>
+                      <CardContent className="p-6 text-sm leading-relaxed space-y-4">
+                        <p>
+                          En el corazón de las Yungas y el Chaco jujeño, el proyecto tiene como objetivo implementar una estrategia integral de gestión forestal sostenible en la Cuenca Caimancito, en el este de la provincia de Jujuy. Abarcando más de 740.000 ha, el plan articula esfuerzos entre organismos públicos, comunidades locales, el sector privado y organizaciones técnicas para fortalecer el manejo forestal, conservar la biodiversidad y promover el desarrollo local con enfoque territorial.
+                        </p>
+                        <p>
+                          El proyecto representa una experiencia concreta de planificación territorial forestal alineada con la Estrategia Nacional de REDD+ (ENREDD+) y el Plan de Acción Nacional de Bosques y Cambio Climático (PANByCC). A través de un enfoque inclusivo y basado en el paisaje, promueve la sostenibilidad ambiental, el desarrollo económico local y el cumplimiento progresivo de las salvaguardas REDD+ acordadas por Argentina en el marco de la CMNUCC.
+                        </p>
+                        <p>
+                          <strong>📍 Localización geográfica</strong><br />
+                          Provincia: Jujuy, Argentina<br />
+                          Departamentos: Ledesma, Santa Bárbara y Valle Grande<br />
+                          Ecorregiones: Selva de Yungas y Chaco Serrano<br />
+                          Superficie total: +740.000 ha (~14,5% de la provincia)
+                        </p>
+                        <p>
+                          <strong>💰 Financiamiento:</strong> no especificado<br />
+                          <strong>📆 Periodo de ejecución:</strong> desde 2018
+                        </p>
+                        <p>
+                          <strong>🏛️ Ejecutores y entidades responsables:</strong><br />
+                          Ministerio de Ambiente de Jujuy, Secretaría de Ambiente y Desarrollo Sustentable de la Nación, INTA Yuto, Municipalidad de Caimancito, Fundación ProYungas, empresas como Ledesma S.A., El Mistol, Agropecuaria Jujuy y AFIJUY.
+                        </p>
+                        <p>
+                          <strong>🎯 Objetivo general:</strong><br />
+                          Consolidar una gestión forestal sustentable y territorialmente coordinada que fortalezca la gobernanza ambiental, el desarrollo económico y la inclusión social en la Cuenca Caimancito.
+                        </p>
+                        <p>
+                          <strong>Objetivos específicos:</strong>
+                          <ul className="list-disc list-inside">
+                            <li>Mejorar capacidades institucionales y de planificación.</li>
+                            <li>Fortalecer la cadena de valor forestal formal y sostenible.</li>
+                            <li>Promover el manejo responsable de bosques nativos y plantaciones.</li>
+                            <li>Aumentar la restauración, conservación y uso eficiente del bosque.</li>
+                            <li>Generar empleo y oportunidades locales con equidad social.</li>
+                          </ul>
+                        </p>
+                        <p>
+                          <strong>🧩 Componentes y actividades clave:</strong>
+                        </p>
+                        <ul className="list-disc list-inside">
+                          <li><strong>1. Fortalecimiento institucional:</strong> Mesa forestal, inventario forestal, OTBN, capacitación.</li>
+                          <li><strong>2. Industrias forestales:</strong> Aserraderos, formalización, parque industrial forestal.</li>
+                          <li><strong>3. Bosques nativos:</strong> Manejo sostenible, control de incendios, planes PM/POP.</li>
+                          <li><strong>4. Bosques cultivados:</strong> Nuevas forestaciones, fomento a productores, trazabilidad.</li>
+                        </ul>
                       </CardContent>
                     </Card>
 
@@ -607,8 +701,7 @@ export default function REDDReportsPage() {
                       <CardHeader>
                         <CardTitle className="text-lg text-emerald-900">Evaluación de Salvaguardas REDD+</CardTitle>
                         <CardDescription>
-                          Resumen de cumplimiento para las 7 salvaguardas establecidas en el Acuerdo de Cancún,
-                          adaptadas al marco nacional argentino
+                          Resumen de cumplimiento para las 7 salvaguardas establecidas en el Acuerdo de Cancún, adaptadas al marco nacional argentino
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
@@ -618,46 +711,44 @@ export default function REDDReportsPage() {
                               <tr className="bg-emerald-50">
                                 <th className="border border-gray-300 px-4 py-3 text-left font-medium">Salvaguarda</th>
                                 <th className="border border-gray-300 px-4 py-3 text-center font-medium">Evaluación</th>
-                                <th className="border border-gray-300 px-4 py-3 text-left font-medium">
-                                  Observaciones clave
-                                </th>
+                                <th className="border border-gray-300 px-4 py-3 text-left font-medium">Observaciones clave</th>
                               </tr>
                             </thead>
                             <tbody>
                               <tr>
-                                <td className="border border-gray-300 px-4 py-3">(a) Consistencia nacional</td>
-                                <td className="border border-gray-300 px-4 py-3 text-center">✅</td>
-                                <td className="border border-gray-300 px-4 py-3">Alineado con políticas REDD+</td>
+                                <td className="border px-4 py-3">(a) Consistencia nacional</td>
+                                <td className="border px-4 py-3 text-center">✅</td>
+                                <td className="border px-4 py-3">Alineado con políticas REDD+</td>
                               </tr>
                               <tr className="bg-gray-50">
-                                <td className="border border-gray-300 px-4 py-3">(b) Gobernanza</td>
-                                <td className="border border-gray-300 px-4 py-3 text-center">✅</td>
-                                <td className="border border-gray-300 px-4 py-3">Institucionalidad activa</td>
+                                <td className="border px-4 py-3">(b) Gobernanza</td>
+                                <td className="border px-4 py-3 text-center">✅</td>
+                                <td className="border px-4 py-3">Institucionalidad activa</td>
                               </tr>
                               <tr>
-                                <td className="border border-gray-300 px-4 py-3">(c) Derechos indígenas</td>
-                                <td className="border border-gray-300 px-4 py-3 text-center">⚠</td>
-                                <td className="border border-gray-300 px-4 py-3">Falta CLPI estructurado</td>
+                                <td className="border px-4 py-3">(c) Derechos indígenas</td>
+                                <td className="border px-4 py-3 text-center">⚠</td>
+                                <td className="border px-4 py-3">Falta CLPI estructurado</td>
                               </tr>
                               <tr className="bg-gray-50">
-                                <td className="border border-gray-300 px-4 py-3">(d) Participación</td>
-                                <td className="border border-gray-300 px-4 py-3 text-center">✅</td>
-                                <td className="border border-gray-300 px-4 py-3">Talleres locales efectivos</td>
+                                <td className="border px-4 py-3">(d) Participación</td>
+                                <td className="border px-4 py-3 text-center">✅</td>
+                                <td className="border px-4 py-3">Talleres locales efectivos</td>
                               </tr>
                               <tr>
-                                <td className="border border-gray-300 px-4 py-3">(e) Conservación</td>
-                                <td className="border border-gray-300 px-4 py-3 text-center">✅</td>
-                                <td className="border border-gray-300 px-4 py-3">Enfoque ecosistémico sólido</td>
+                                <td className="border px-4 py-3">(e) Conservación</td>
+                                <td className="border px-4 py-3 text-center">✅</td>
+                                <td className="border px-4 py-3">Enfoque ecosistémico sólido</td>
                               </tr>
                               <tr className="bg-gray-50">
-                                <td className="border border-gray-300 px-4 py-3">(f) Riesgos socioambientales</td>
-                                <td className="border border-gray-300 px-4 py-3 text-center">⚠</td>
-                                <td className="border border-gray-300 px-4 py-3">Ausencia de PGAS</td>
+                                <td className="border px-4 py-3">(f) Riesgos socioambientales</td>
+                                <td className="border px-4 py-3 text-center">⚠</td>
+                                <td className="border px-4 py-3">Ausencia de PGAS</td>
                               </tr>
                               <tr>
-                                <td className="border border-gray-300 px-4 py-3">(g) Reversión y desplazamiento</td>
-                                <td className="border border-gray-300 px-4 py-3 text-center">✅</td>
-                                <td className="border border-gray-300 px-4 py-3">Estrategias de sostenibilidad</td>
+                                <td className="border px-4 py-3">(g) Reversión y desplazamiento</td>
+                                <td className="border px-4 py-3 text-center">✅</td>
+                                <td className="border px-4 py-3">Estrategias de sostenibilidad</td>
                               </tr>
                             </tbody>
                           </table>
@@ -672,50 +763,270 @@ export default function REDDReportsPage() {
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-3">
-                          <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                            <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold mt-0.5">
-                              1
+                          {[
+                            {
+                              color: "blue",
+                              text: "Incluir un módulo específico de salvaguardas dentro del documento del proyecto para facilitar el monitoreo y la rendición de cuentas.",
+                            },
+                            {
+                              color: "green",
+                              text: "Formalizar procesos de CLPI con pueblos indígenas, en línea con el Marco de Participación Indígena REDD+ Argentina.",
+                            },
+                            {
+                              color: "yellow",
+                              text: "Elaborar un PGAS (Plan de Gestión Ambiental y Social) que identifique riesgos diferenciados (por género, pueblos indígenas, biodiversidad).",
+                            },
+                            {
+                              color: "purple",
+                              text: "Incorporar indicadores específicos por salvaguarda, alineados con el Sistema de Información de Salvaguardas (SIS) nacional.",
+                            },
+                          ].map((item, i) => (
+                            <div
+                              key={i}
+                              className={`flex items-start gap-3 p-3 bg-${item.color}-50 rounded-lg border border-${item.color}-200`}
+                            >
+                              <div
+                                className={`w-6 h-6 rounded-full bg-${item.color}-500 text-white flex items-center justify-center text-xs font-bold mt-0.5`}
+                              >
+                                {i + 1}
+                              </div>
+                              <p className="text-sm leading-relaxed">{item.text}</p>
                             </div>
-                            <p className="text-sm leading-relaxed">
-                              Incluir un módulo específico de salvaguardas dentro del documento del proyecto para
-                              facilitar el monitoreo y la rendición de cuentas.
-                            </p>
-                          </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
 
-                          <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
-                            <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold mt-0.5">
-                              2
-                            </div>
-                            <p className="text-sm leading-relaxed">
-                              Formalizar procesos de CLPI con pueblos indígenas, en línea con el Marco de Participación
-                              Indígena REDD+ Argentina.
-                            </p>
-                          </div>
+                    {/* Bosques involucrados */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-base text-emerald-900">🌳 Bosques involucrados</CardTitle>
+                      </CardHeader>
+                      <CardContent className="text-sm leading-relaxed space-y-2">
+                        <p>
+                          El proyecto abarca una amplia porción de las ecorregiones de Yungas y Chaco Serrano, caracterizadas por su alta biodiversidad y relevancia ambiental. Los bosques nativos presentes en la Cuenca Caimancito se encuentran en diversos estados de conservación, con zonas bien conservadas pero también áreas degradadas por presión agrícola, ganadera e informalidad productiva.
+                        </p>
+                        <p>
+                          Se estima que aproximadamente <strong>250.000 hectáreas</strong> son aptas para manejo forestal sustentable, representando un importante potencial de producción maderera, calculado en torno a los <strong>36.000 m³ anuales</strong>.
+                        </p>
+                        <p>
+                          A su vez, se promueve el desarrollo de <strong>plantaciones forestales</strong> como estrategia complementaria para abastecimiento industrial y restauración de áreas intervenidas. Esta combinación de bosques nativos y cultivados requiere una planificación técnica robusta, criterios de sostenibilidad y mecanismos efectivos de monitoreo.
+                        </p>
+                      </CardContent>
+                    </Card>
 
-                          <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                            <div className="w-6 h-6 rounded-full bg-yellow-500 text-white flex items-center justify-center text-xs font-bold mt-0.5">
-                              3
-                            </div>
-                            <p className="text-sm leading-relaxed">
-                              Elaborar un PGAS (Plan de Gestión Ambiental y Social) que identifique riesgos
-                              diferenciados (por género, pueblos indígenas, biodiversidad).
-                            </p>
-                          </div>
+                    {/* Involucramiento de actores */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-base text-emerald-900">🤝 Involucramiento de actores</CardTitle>
+                      </CardHeader>
+                      <CardContent className="text-sm leading-relaxed space-y-2">
+                        <p>
+                          El plan establece una <strong>Mesa Forestal Interinstitucional</strong> como espacio central de gobernanza, articulando a organismos públicos, empresas, universidades, comunidades locales y organizaciones sociales.
+                        </p>
+                        <p>
+                          En su formulación participaron activamente más de <strong>30 comunidades indígenas</strong> —entre ellas Guaraní, Kolla y Ocloya— mediante talleres y procesos de consulta previa, libre e informada, garantizando una planificación inclusiva y contextualizada.
+                        </p>
+                        <p>
+                          Además, se promueve un <strong>enfoque de género</strong> que busca fortalecer la participación de mujeres en actividades productivas, de gestión y toma de decisiones, aunque aún con desafíos para su plena implementación.
+                        </p>
+                      </CardContent>
+                    </Card>
 
-                          <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
-                            <div className="w-6 h-6 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs font-bold mt-0.5">
-                              4
-                            </div>
-                            <p className="text-sm leading-relaxed">
-                              Incorporar indicadores específicos por salvaguarda, alineados con el Sistema de
-                              Información de Salvaguardas (SIS) nacional.
-                            </p>
+                    {/* Impacto del proyecto */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-base text-emerald-900">📊 Impacto del proyecto (indicadores clave)</CardTitle>
+                      </CardHeader>
+                      <CardContent className="text-sm space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <p><strong>🌲 Superficie bajo manejo forestal:</strong><br />+150.000 ha en zonas de Yungas y Chaco jujeño</p>
+                          </div>
+                          <div>
+                            <p><strong>🪵 Producción maderera:</strong><br />36.000 m³/año de madera aprovechable de forma sostenible</p>
+                          </div>
+                          <div>
+                            <p><strong>🧰 Unidades productivas fortalecidas:</strong><br />17 aserraderos activos<br />+130 carpinterías rurales identificadas</p>
+                          </div>
+                          <div>
+                            <p><strong>👥 Población beneficiaria:</strong><br />+100.000 habitantes en la cuenca<br />32 comunidades indígenas<br />Microempresarios, aserraderos, carpinteros, agricultores, viveristas</p>
                           </div>
                         </div>
                       </CardContent>
                     </Card>
                   </div>
-                )}
+
+
+                ) :  (<div className="space-y-6">
+    {/* Resumen general del avance */}
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg text-emerald-900">📋 Resumen del Progreso</CardTitle>
+      </CardHeader>
+      <CardContent className="text-sm leading-r)elaxed space-y-4">
+        <p>
+          Desde su inclusión en el Proyecto REDD+ Pagos por Resultados, la Cuenca Caimancito ha avanzado en su fase de planificación técnica y territorial. Se constituyó el Comité de Cuenca Forestal, se realizó un diagnóstico integral participativo, y se entregó equipamiento a actores locales.
+        </p>
+        <p>
+          Se cuenta ya con un plan de trabajo consensuado, se inició el relevamiento ambiental y se están integrando los saberes locales en el diseño del plan de manejo. Se desarrolló un proceso de sociabilización comunitaria e institucional, con fuerte participación de pueblos originarios y sectores productivos.
+        </p>
+      </CardContent>
+    </Card>
+
+    {/* Timeline del proyecto */}
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg text-emerald-900">📆 Timeline del Proyecto</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <table className="w-full text-sm border-collapse border border-gray-300">
+          <thead className="bg-emerald-50">
+            <tr>
+              <th className="border px-4 py-2 text-left">Fecha</th>
+              <th className="border px-4 py-2 text-left">Hito</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              ["Ene 2023", "Inclusión de Caimancito en el Proyecto REDD+ Argentina (FAO-FVC)"],
+              ["Mayo 2024", "Inicio de sociabilización con actores territoriales"],
+              ["Julio 2024", "Creación del Comité de Cuenca Forestal"],
+              ["Ago 2024", "Lanzamiento del proceso de planificación participativa"],
+              ["Dic 2024", "Entrega de equipamiento institucional"],
+              ["Mayo 2025", "Firma del convenio FAO–INTA-Yuto para acompañamiento técnico"],
+              ["2025–2026", "Formulación, validación e implementación del plan de manejo forestal"],
+            ].map(([date, event], i) => (
+              <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                <td className="border px-4 py-2">📅 {date}</td>
+                <td className="border px-4 py-2">{event}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </CardContent>
+    </Card>
+
+    {/* Indicadores clave */}
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg text-emerald-900">📊 Indicadores Clave del Proyecto</CardTitle>
+        <CardDescription>Última actualización: Julio 2025</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <table className="w-full text-sm border-collapse border border-gray-300">
+          <thead className="bg-emerald-50">
+            <tr>
+              <th className="border px-4 py-2 text-left">Indicador</th>
+              <th className="border px-4 py-2 text-left">Meta esperada</th>
+              <th className="border px-4 py-2 text-left">Estado actual (2025)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              ["Superficie bajo manejo forestal sustentable", "+150.000 ha", "🟡 Diagnóstico en proceso"],
+              ["Producción maderera sostenible (estimada)", "36.000 m³/año", "🟢 Modelado técnico definido"],
+              ["Unidades productivas fortalecidas (aserraderos)", "17 activos", "🟢 Identificados y mapeados"],
+              ["Carpinterías rurales vinculadas", "+130", "🟢 Relevadas en el diagnóstico"],
+              ["Población beneficiaria directa", "+100.000 personas", "🟢 Cobertura territorial definida"],
+              ["Comunidades indígenas involucradas", "32", "🟢 Participación activa"],
+              ["Grupos socio-productivos clave", "Carpinteros, viveristas, agricultores", "🟡 Participación en expansión"],
+            ].map(([indicator, goal, status], i) => (
+              <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                <td className="border px-4 py-2">{indicator}</td>
+                <td className="border px-4 py-2">{goal}</td>
+                <td className="border px-4 py-2">{status}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </CardContent>
+    </Card>
+
+    {/* Seguimiento de Salvaguardas */}
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg text-emerald-900">📋 Monitoreo de Salvaguardas REDD+</CardTitle>
+        <CardDescription>Última actualización: Julio 2025</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="text-sm text-muted-foreground">
+          El siguiente resumen presenta el estado de avance por salvaguarda, junto con próximos pasos recomendados:
+        </div>
+        <table className="w-full text-sm border-collapse border border-gray-300">
+          <thead className="bg-emerald-50">
+            <tr>
+              <th className="border px-3 py-2 text-left">Salvaguarda REDD+</th>
+              <th className="border px-3 py-2 text-center">Estado actual</th>
+              <th className="border px-3 py-2 text-left">Progreso alcanzado</th>
+              <th className="border px-3 py-2 text-left">Próximos pasos</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              [
+                "(a) Consistencia con estrategias nacionales",
+                "🟢 Cumplida",
+                "Alineado con ENREDD+, PANByCC y prioridades nacionales",
+                "Sistematizar aportes y articular con nivel nacional",
+              ],
+              [
+                "(b) Transparencia y gobernanza forestal",
+                "🟢 En progreso alto",
+                "Comité conformado con INTA como formulador",
+                "Formalizar protocolos de operación e información",
+              ],
+              [
+                "(c) Derechos de pueblos indígenas",
+                "🟡 Progreso inicial",
+                "Participación sin marco CLPI formal",
+                "Desarrollar protocolo de consulta previa",
+              ],
+              [
+                "(d) Participación plena y efectiva",
+                "🟢 En progreso alto",
+                "Talleres, encuestas y consultas realizadas",
+                "Mantener participación activa y retroalimentación",
+              ],
+              [
+                "(e) Conservación de bosques y biodiversidad",
+                "🟢 En progreso alto",
+                "Plan de gestión en marcha en zonas críticas",
+                "Implementar monitoreo y restauración activa",
+              ],
+              [
+                "(f) Gestión de riesgos sociales y ambientales",
+                "🟡 Progreso limitado",
+                "Identificación de amenazas sin PGAS formal",
+                "Elaborar PGAS con enfoque diferenciado",
+              ],
+              [
+                "(g) Prevención de reversión y desplazamiento",
+                "🟢 En progreso",
+                "Estrategias de sostenibilidad en diseño",
+                "Establecer financiamiento y seguimiento",
+              ],
+            ].map(([safeguard, status, progress, next], i) => (
+              <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                <td className="border px-3 py-2">{safeguard}</td>
+                <td className="border px-3 py-2 text-center">{status}</td>
+                <td className="border px-3 py-2">{progress}</td>
+                <td className="border px-3 py-2">{next}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* Botón de descarga (simulado) */}
+        <div className="pt-4">
+          <button className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded hover:bg-emerald-700">
+            ⬇ Descargar Estatus de Proyecto
+          </button>
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+)}
               </TabsContent>
 
               <TabsContent value="preview">

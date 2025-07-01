@@ -118,11 +118,10 @@ export function ProjectView({ project, onBack, className = "" }: ProjectViewProp
 
       {/* Tabs */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
           <TabsTrigger value="monitoring">Monitoring</TabsTrigger>
-          <TabsTrigger value="workspace">Workspace</TabsTrigger>
           <TabsTrigger value="chat">Chat</TabsTrigger>
         </TabsList>
 

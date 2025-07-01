@@ -14,6 +14,7 @@ export const PUBLIC_DOCUMENT_CATEGORIES = [
   "ParisAgreement",
   "GreenTaxonomies",
   "Legislative",
+  "REDD"
 ] as const
 
 export type PublicDocumentCategory = typeof PUBLIC_DOCUMENT_CATEGORIES[number]
@@ -33,6 +34,7 @@ export const CATEGORY_LABELS: Record<PublicDocumentCategory, string> = {
   ParisAgreement: "Paris Agreement",
   GreenTaxonomies: "Green Taxonomies",
   Legislative: "Legislation",
+  REDD: "REDD+"
 
 }
 

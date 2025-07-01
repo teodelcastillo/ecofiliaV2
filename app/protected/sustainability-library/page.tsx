@@ -105,6 +105,13 @@ const resources = [
     "Discover various reports on sustainability topics, including climate change, biodiversity, and more.",
     category: "Reports",
   },
+  {
+    icon: Leaf,
+    title: "REDD+",
+    description:
+    "Explore REDD+ (Reducing Emissions from Deforestation and Forest Degradation) documents, including project reports and guidelines.",
+    category: "REDD",
+  },
 
 ]
 
