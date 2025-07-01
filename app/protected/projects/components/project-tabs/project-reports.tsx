@@ -5,9 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { FileText, Download, Eye, Calendar, Clock, ChevronLeft, TreePine, Shield } from "lucide-react"
+import { FileText, Download, Eye, ChevronLeft, TreePine, Shield } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { format, formatDistanceToNow } from "date-fns"
 import type { Project } from "@/models"
 
 interface ProjectReportsProps {
@@ -48,18 +47,14 @@ const availableReports = [
 
 export function ProjectReports({ project }: ProjectReportsProps) {
   const [selectedReport, setSelectedReport] = useState<string | null>(null)
-  const [showPreview, setShowPreview] = useState(false)
 
-  const handleReportClick = (reportId: string) => {
-    setSelectedReport(reportId)
-    if (reportId === "redd-safeguards-2025") {
-      setShowPreview(true)
-    }
-  }
+const handleReportClick = (reportId: string) => {
+  setSelectedReport(reportId)
+}
+
 
   const handleBackToList = () => {
     setSelectedReport(null)
-    setShowPreview(false)
   }
 
   const handleDownload = () => {
@@ -81,17 +76,19 @@ Este documento contiene la evaluación completa de las 7 salvaguardas REDD+ esta
     URL.revokeObjectURL(url)
   }
 
-  const getReportTypeColor = (type: string) => {
-    const colors: Record<string, string> = {
-      "REDD+ Safeguards": "bg-emerald-100 text-emerald-800",
-      "Progress Report": "bg-blue-100 text-blue-800",
-      "Stakeholder Engagement": "bg-purple-100 text-purple-800",
-    }
-    return colors[type] || "bg-gray-100 text-gray-800"
+const getReportTypeColor = (type: string) => {
+  const colors: Record<string, string> = {
+    "REDD+ Safeguards": "bg-emerald-100 text-emerald-800",
+    "Progress Report": "bg-blue-100 text-blue-800",
+    "Stakeholder Engagement": "bg-purple-100 text-purple-800",
   }
+  return colors[type] || "bg-gray-100 text-gray-800"
+}
 
-  {selectedReport === "redd-safeguards-2025" ?
-    (
+// Main render logic moved inside return
+let reportContent: React.ReactNode = null;
+if (selectedReport === "redd-safeguards-2025") {
+  reportContent =     (
       <div className="space-y-6">
         {/* Header with back button */}
         <div className="flex items-center gap-4">
@@ -417,11 +414,24 @@ Este documento contiene la evaluación completa de las 7 salvaguardas REDD+ esta
           </CardFooter>
         </Card>
       </div>
-    ) : selectedReport === "monthly-progress-dec" ? (<div className="space-y-6">
+    )
+} else if (selectedReport === "monthly-progress-dec") {
+  reportContent = (<div className="space-y-6">
     {/* Resumen general del avance */}
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg text-emerald-900">📋 Resumen del Progreso</CardTitle>
+                            {/* Título y encabezado */}
+                    <div className="prose max-w-none">
+                      <div className="flex items-center gap-4">
+                        <Button variant="ghost" size="icon" onClick={handleBackToList} className="h-9 w-9">
+                          <ChevronLeft className="h-5 w-5" />
+                        </Button>
+                        <div>
+                      <CardTitle className="text-2xl font-bold mb-2">📋 Resumen del Progreso del Proyecto </CardTitle>
+
+                        </div>
+                      </div>
+                    </div>
       </CardHeader>
       <CardContent className="text-sm leading-r)elaxed space-y-4">
         <p>
@@ -585,14 +595,23 @@ Este documento contiene la evaluación completa de las 7 salvaguardas REDD+ esta
       </CardContent>
     </Card>
   </div>
-) : (                  <div className="space-y-6">
+);
+} else if (selectedReport === "ficha-de-proyecto") {
+  reportContent = (                  
+                  <div className="space-y-6">
                     {/* Título y encabezado */}
                     <div className="prose max-w-none">
+                      <div className="flex items-center gap-4">
+                        <Button variant="ghost" size="icon" onClick={handleBackToList} className="h-9 w-9">
+                          <ChevronLeft className="h-5 w-5" />
+                        </Button>
+                        <div>
                       <h1 className="text-2xl font-bold mb-2">Overview del Proyecto</h1>
                       <h2 className="text-xl font-semibold text-emerald-800 mb-4">
                         Plan Estratégico de Gestión Forestal – Cuenca Caimancito (Jujuy, Argentina)
                       </h2>
-                      <p className="text-muted-foreground mb-6">Fecha: {new Date().toLocaleDateString()}</p>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Descripción del proyecto */}
@@ -804,94 +823,99 @@ Este documento contiene la evaluación completa de las 7 salvaguardas REDD+ esta
                         </div>
                       </CardContent>
                     </Card>
-                  </div>)}
-
+                  </div>);
+}
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="space-y-2">
-        <h3 className="text-lg font-semibold">Project Reports</h3>
-        <p className="text-sm text-muted-foreground">Access and manage all reports generated for {project.name}</p>
-      </div>
+    <>
+      {reportContent ? (
+        <div>{reportContent}</div>
+      ) : (
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold">Project Reports</h3>
+            <p className="text-sm text-muted-foreground">Access and manage all reports generated for {project.name}</p>
+          </div>
 
-      {/* Reports List */}
-      <div className="space-y-4">
-        <AnimatePresence>
-          {availableReports.map((report, index) => (
-            <motion.div
-              key={report.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card
-                className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => handleReportClick(report.id)}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-4">
-                      <div className="bg-primary/10 p-2 rounded-md">
-                        {report.type === "REDD+ Safeguards" ? (
-                          <Shield className="h-5 w-5 text-primary" />
-                        ) : (
-                          <FileText className="h-5 w-5 text-primary" />
-                        )}
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-medium">{report.name}</h4>
-                          <Badge className={getReportTypeColor(report.type)}>{report.type}</Badge>
+          {/* Reports List */}
+          <div className="space-y-4">
+            <AnimatePresence>
+              {availableReports.map((report, index) => (
+                <motion.div
+                  key={report.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card
+                    className="cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() => handleReportClick(report.id)}
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-4">
+                          <div className="bg-primary/10 p-2 rounded-md">
+                            {report.type === "REDD+ Safeguards" ? (
+                              <Shield className="h-5 w-5 text-primary" />
+                            ) : (
+                              <FileText className="h-5 w-5 text-primary" />
+                            )}
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-medium">{report.name}</h4>
+                              <Badge className={getReportTypeColor(report.type)}>{report.type}</Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{report.description}</p>
+                          </div>
                         </div>
-                        <p className="text-sm text-muted-foreground">{report.description}</p>
-
+                        <div className="flex items-center gap-2">
+                          {report.hasPreview && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleReportClick(report.id)
+                              }}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              Preview
+                            </Button>
+                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDownload()
+                            }}
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {report.hasPreview && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleReportClick(report.id)
-                          }}
-                        >
-                          <Eye className="h-4 w-4 mr-2" />
-                          Preview
-                        </Button>
-                      )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleDownload()
-                        }}
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
 
-      {availableReports.length === 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-12 border border-dashed rounded-lg"
-        >
-          <FileText className="mx-auto mb-4 h-8 w-8 text-muted-foreground" />
-          <h3 className="text-lg font-medium mb-2">No Reports Available</h3>
-          <p className="text-muted-foreground">This project doesn't have any reports yet.</p>
-        </motion.div>
+          {availableReports.length === 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-12 border border-dashed rounded-lg"
+            >
+              <FileText className="mx-auto mb-4 h-8 w-8 text-muted-foreground" />
+              <h3 className="text-lg font-medium mb-2">No Reports Available</h3>
+              <p className="text-muted-foreground">This project doesn't have any reports yet.</p>
+            </motion.div>
+          )}
+        </div>
       )}
-    </div>
+    </>
   )
 }
